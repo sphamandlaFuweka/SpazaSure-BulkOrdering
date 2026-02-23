@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SpazaSure | Register</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        .bg-spaza-green { background-color: #006847; }
+        .text-spaza-green { color: #006847; }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
+
+    <div class="max-w-md w-full bg-white rounded-3xl shadow-2xl p-8">
+        <div class="text-center mb-8">
+            <h2 class="text-3xl font-black text-spaza-green">SpazaSure</h2>
+            <p class="text-gray-500 font-medium">Register your business</p>
+        </div>
+
+        <form id="regForm" class="space-y-4">
+            <div class="grid grid-cols-2 gap-3">
+                <input type="text" id="first_name" placeholder="First Name" class="p-3 bg-gray-50 border border-gray-200 rounded-xl w-full outline-none focus:ring-2 focus:ring-green-500" required>
+                <input type="text" id="last_name" placeholder="Last Name" class="p-3 bg-gray-50 border border-gray-200 rounded-xl w-full outline-none focus:ring-2 focus:ring-green-500" required>
+            </div>
+            
+            <input type="tel" id="phone" placeholder="WhatsApp Number" class="p-3 bg-gray-50 border border-gray-200 rounded-xl w-full outline-none focus:ring-2 focus:ring-green-500" required>
+            <input type="text" id="store_name" placeholder="Store Name" class="p-3 bg-gray-50 border border-gray-200 rounded-xl w-full outline-none focus:ring-2 focus:ring-green-500" required>
+            
+            <select id="township" class="p-3 bg-gray-50 border border-gray-200 rounded-xl w-full outline-none focus:ring-2 focus:ring-green-500" required>
+                <option value="">Select Township</option>
+                <option value="Umlazi">Umlazi</option>
+                <option value="Soweto">Soweto</option>
+                <option value="Khayelitsha">Khayelitsha</option>
+            </select>
+
+            <div class="grid grid-cols-2 gap-3">
+                <select id="gender" class="p-3 bg-gray-50 border border-gray-200 rounded-xl w-full outline-none focus:ring-2 focus:ring-green-500">
+                    <option value="">Gender</option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                </select>
+                <select id="business_type" class="p-3 bg-gray-50 border border-gray-200 rounded-xl w-full outline-none focus:ring-2 focus:ring-green-500">
+                    <option value="Spaza Shop">Spaza Shop</option>
+                    <option value="Tuck Shop">Tuck Shop</option>
+                </select>
+            </div>
+
+            <input type="text" id="address" placeholder="Business Address" class="p-3 bg-gray-50 border border-gray-200 rounded-xl w-full outline-none focus:ring-2 focus:ring-green-500">
+
+            <button type="submit" id="submitBtn" class="w-full bg-spaza-green text-white py-4 rounded-2xl font-bold shadow-lg hover:bg-opacity-90 transition-all">
+                CREATE MY PROFILE
+            </button>
+            <p class="text-center mt-4 text-sm text-gray-600">Already have a store? <a href="index.html" class="text-blue-600 font-bold">Sign In</a></p>
+        </form>
+    </div>
+
+    <script>
+        const _supabaseUrl = 'https://clbhfxqxcugxcqutngpo.supabase.co';
+        const _supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNsYmhmeHF4Y3VneGNxdXRuZ3BvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE4MzgxMDMsImV4cCI6MjA4NzQxNDEwM30.VWj5TGjAQhj77BZyoSUmynUPDPTVGL_pAKNyrlpQR1Y';
+        const _spazaClient = supabase.createClient(_supabaseUrl, _supabaseKey);
+
+        document.getElementById('regForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('submitBtn');
+            btn.innerText = "SAVING...";
+            btn.disabled = true;
+
+            const profileData = {
+                whatsapp_number: document.getElementById('phone').value,
+                first_name: document.getElementById('first_name').value,
+                last_name: document.getElementById('last_name').value,
+                store_name: document.getElementById('store_name').value,
+                township: document.getElementById('township').value,
+                gender: document.getElementById('gender').value,
+                address: document.getElementById('address').value,
+                is_verified: false
+            };
+
+            const { error } = await _spazaClient.from('profiles').insert([profileData]);
+
+            if (error) {
+                alert("Error: " + error.message);
+                btn.innerText = "CREATE MY PROFILE";
+                btn.disabled = false;
+            } else {
+                alert("🎉 Success! Registration Complete.");
+                window.location.href = "index.html"; 
+            }
+        };
+    </script>
+</body>
+</html>
