@@ -1,0 +1,10 @@
+{
+  "rewrites": [
+    { "source": "/api/whatsapp", "destination": "/api/whatsapp.js" }
+  ],
+  "functions": {
+    "api/whatsapp.js": {
+      "runtime": "vercel-nodejs@20.x"
+    }
+  }
+}
