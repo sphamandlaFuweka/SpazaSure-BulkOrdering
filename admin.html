@@ -3,151 +3,68 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SpazaSure | Admin Console</title>
+    <title>SpazaSure | Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>body { font-family: 'Plus Jakarta Sans', sans-serif; }</style>
 </head>
-<body class="bg-slate-900 min-h-screen text-white font-sans">
+<body class="bg-gray-50 min-h-screen">
+    <header class="bg-blue-900 text-white p-6 shadow-xl">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <h1 class="text-2xl font-black italic uppercase">SpazaSure Admin</h1>
+            <span class="bg-red-600 text-[10px] font-black px-3 py-1 rounded-full uppercase">Live Dashboard</span>
+        </div>
+    </header>
 
-    <div class="container mx-auto p-6 max-w-5xl">
-        <header class="flex justify-between items-center mb-10 border-b border-slate-700 pb-6">
-            <div>
-                <h1 class="text-3xl font-black tracking-tighter text-green-500 uppercase">SpazaSure Admin</h1>
-                <p class="text-slate-400 text-sm">Manage Bulk Pallets & Fees</p>
+    <main class="max-w-7xl mx-auto p-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
+            <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
+                <p class="text-[10px] font-bold text-gray-400 uppercase">Total Revenue</p>
+                <p id="total-revenue" class="text-4xl font-black text-blue-900">R 0.00</p>
             </div>
-            <a href="index.html" class="bg-slate-800 px-6 py-2 rounded-full text-xs font-bold border border-slate-700 hover:bg-slate-700 transition-all">VIEW LIVE MARKET</a>
-        </header>
-
-        <div class="grid lg:grid-cols-3 gap-8">
-            <div class="lg:col-span-1">
-                <div class="bg-slate-800 p-6 rounded-3xl border border-slate-700 shadow-2xl sticky top-6">
-                    <h2 class="text-xl font-bold mb-6 text-green-400">Launch New Group</h2>
-                    <form id="createGroupForm" class="space-y-4">
-                        <div>
-                            <label class="text-[10px] font-bold text-slate-500 uppercase">Group Title</label>
-                            <input type="text" id="groupName" placeholder="e.g. Umlazi Soda Batch #1" class="w-full bg-slate-900 border border-slate-700 p-3 rounded-xl mt-1 text-sm outline-none focus:border-green-500">
-                        </div>
-                        <div>
-                            <label class="text-[10px] font-bold text-slate-500 uppercase">Items Included</label>
-                            <textarea id="itemsDesc" placeholder="e.g. 100x Switch Energy 500ml Mixed" class="w-full bg-slate-900 border border-slate-700 p-3 rounded-xl mt-1 text-sm h-20 outline-none focus:border-green-500"></textarea>
-                        </div>
-                        <div class="grid grid-cols-2 gap-3">
-                            <div>
-                                <label class="text-[10px] font-bold text-slate-500 uppercase">Min Spazas</label>
-                                <input type="number" id="minSpazas" value="10" class="w-full bg-slate-900 border border-slate-700 p-3 rounded-xl mt-1 text-sm outline-none">
-                            </div>
-                            <div>
-                                <label class="text-[10px] font-bold text-slate-500 uppercase">Join Fee (R)</label>
-                                <input type="number" id="joinFee" value="50" class="w-full bg-slate-900 border border-slate-700 p-3 rounded-xl mt-1 text-sm outline-none">
-                            </div>
-                        </div>
-                        <div>
-                            <label class="text-[10px] font-bold text-slate-500 uppercase">Stock Cost Per Spaza (R)</label>
-                            <input type="number" id="contribution" placeholder="2500" class="w-full bg-slate-900 border border-slate-700 p-3 rounded-xl mt-1 text-sm outline-none">
-                        </div>
-                        <button type="submit" class="w-full bg-green-600 text-white py-4 rounded-2xl font-black mt-4 hover:bg-green-500 transition-all uppercase tracking-widest text-xs">Publish Group</button>
-                    </form>
-                </div>
-            </div>
-
-            <div class="lg:col-span-2 space-y-6">
-                <h2 class="text-xl font-bold flex items-center gap-2 uppercase tracking-tight">
-                    <span class="w-3 h-3 bg-green-500 rounded-full animate-pulse"></span>
-                    Live Group Status
-                </h2>
-                <div id="admin-group-list" class="grid gap-6">
-                    </div>
+            <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
+                <p class="text-[10px] font-bold text-gray-400 uppercase">Total Orders</p>
+                <p id="order-count" class="text-4xl font-black text-blue-900">0</p>
             </div>
         </div>
-    </div>
+
+        <div class="bg-white rounded-[2rem] shadow-sm border border-gray-100 overflow-hidden">
+            <table class="w-full text-left">
+                <thead class="bg-gray-50 border-b border-gray-100">
+                    <tr>
+                        <th class="p-5 text-[10px] font-black text-gray-400 uppercase">Store</th>
+                        <th class="p-5 text-[10px] font-black text-gray-400 uppercase">Items</th>
+                        <th class="p-5 text-[10px] font-black text-gray-400 uppercase">Total Amount</th>
+                    </tr>
+                </thead>
+                <tbody id="admin-orders-table" class="divide-y divide-gray-50"></tbody>
+            </table>
+        </div>
+    </main>
 
     <script>
         const _supabaseUrl = 'https://clbhfxqxcugxcqutngpo.supabase.co';
         const _supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNsYmhmeHF4Y3VneGNxdXRuZ3BvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE4MzgxMDMsImV4cCI6MjA4NzQxNDEwM30.VWj5TGjAQhj77BZyoSUmynUPDPTVGL_pAKNyrlpQR1Y';
-        const _adminClient = supabase.createClient(_supabaseUrl, _supabaseKey);
+        const _spazaClient = supabase.createClient(_supabaseUrl, _supabaseKey);
 
-        document.getElementById('createGroupForm').onsubmit = async (e) => {
-            e.preventDefault();
-            const { error } = await _adminClient.from('buying_groups').insert([{
-                group_name: document.getElementById('groupName').value,
-                items_description: document.getElementById('itemsDesc').value,
-                min_spazas: document.getElementById('minSpazas').value,
-                joining_fee: document.getElementById('joinFee').value,
-                contribution_per_spaza: document.getElementById('contribution').value,
-                status: 'open'
-            }]);
-            if (error) alert(error.message);
-            else { alert("Group Live!"); location.reload(); }
-        };
-
-        async function loadTracker() {
-            const { data: groups } = await _adminClient.from('buying_groups').select('*, group_members(count)');
-            const container = document.getElementById('admin-group-list');
-            
-            container.innerHTML = groups.map(g => {
-                const count = g.group_members[0].count;
-                const isReady = count >= g.min_spazas;
-                const totalCash = (count * g.joining_fee) + (count * g.contribution_per_spaza);
-                
-                return `
-                <div class="bg-slate-800 p-6 rounded-3xl border ${isReady ? 'border-green-500 shadow-lg shadow-green-500/10' : 'border-slate-700'}">
-                    <div class="flex justify-between items-start mb-4">
-                        <div>
-                            <h3 class="font-black text-lg uppercase tracking-tight">${g.group_name}</h3>
-                            <p class="text-xs text-slate-500">${g.items_description}</p>
-                        </div>
-                        <button onclick="deleteGroup('${g.id}')" class="text-slate-600 hover:text-red-500 text-xl">✕</button>
-                    </div>
-
-                    <div class="bg-slate-900 rounded-2xl p-4 mb-4 border border-slate-700/50">
-                        <p class="text-[10px] font-bold text-slate-500 uppercase mb-3">Member Roll Call (${count})</p>
-                        <div id="members-${g.id}" class="space-y-2 max-h-40 overflow-y-auto pr-2 text-xs">
-                            <span class="text-slate-700 italic">Fetching spazas...</span>
-                        </div>
-                    </div>
-
-                    <div class="flex justify-between items-end">
-                        <div>
-                            <p class="text-[10px] text-slate-500 uppercase font-bold">Total Cash Potential</p>
-                            <p class="text-2xl font-black text-green-500">R ${totalCash.toFixed(2)}</p>
-                        </div>
-                        <div class="text-right">
-                            <p class="text-xs font-bold ${isReady ? 'text-green-500' : 'text-blue-500'}">${count} / ${g.min_spazas} SHOPS</p>
-                            <div class="w-32 bg-slate-900 h-2 rounded-full mt-1 overflow-hidden">
-                                <div class="bg-green-500 h-full" style="width: ${(count/g.min_spazas)*100}%"></div>
-                            </div>
-                        </div>
-                    </div>
-
-                    ${isReady ? `
-                        <button onclick="alert('Exporting Manifest...')" class="w-full mt-6 bg-green-600 text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-green-500 transition-all">Download Order Manifest</button>
-                    ` : ''}
-                </div>
-                `;
+        async function loadAdminData() {
+            const { data: orders } = await _spazaClient.from('orders').select('*').order('created_at', { ascending: false });
+            const table = document.getElementById('admin-orders-table');
+            let rev = 0;
+            table.innerHTML = orders.map(o => {
+                rev += o.total_amount;
+                return `<tr class="hover:bg-gray-50">
+                    <td class="p-5 font-bold text-blue-900">${o.store_name}</td>
+                    <td class="p-5 text-xs text-gray-500">${o.items.length} Pallets</td>
+                    <td class="p-5 font-black">R ${o.total_amount.toFixed(2)}</td>
+                </tr>`;
             }).join('');
-            groups.forEach(g => fetchMemberNames(g.id));
+            document.getElementById('total-revenue').innerText = "R " + rev.toFixed(2);
+            document.getElementById('order-count').innerText = orders.length;
         }
-
-        async function fetchMemberNames(groupId) {
-            const { data } = await _adminClient.from('group_members').select('profiles(store_name, whatsapp_number)').eq('group_id', groupId);
-            const div = document.getElementById(`members-${groupId}`);
-            if (data && data.length > 0) {
-                div.innerHTML = data.map(m => `
-                    <div class="flex justify-between border-b border-slate-800 pb-1">
-                        <span class="text-slate-300 font-medium">🏠 ${m.profiles.store_name}</span>
-                        <span class="text-slate-500 font-mono">${m.profiles.whatsapp_number}</span>
-                    </div>
-                `).join('');
-            } else { div.innerHTML = `<p class="text-slate-700 italic text-[10px]">No members yet.</p>`; }
-        }
-
-        async function deleteGroup(id) {
-            if(confirm("Permanently remove this group?")) {
-                await _adminClient.from('buying_groups').delete().eq('id', id);
-                location.reload();
-            }
-        }
-        loadTracker();
+        loadAdminData();
+        setInterval(loadAdminData, 5000); // Live update every 5 seconds
     </script>
 </body>
 </html>

@@ -4,168 +4,176 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SpazaSure | Market</title>
-    <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-</head>
-<body class="bg-gray-100 min-h-screen">
+    <style>
+        :root { --blue: #1E3A8A; --red: #E11D48; --bg: #F3F4F6; }
+        body { font-family: sans-serif; background: var(--bg); margin: 0; padding: 0; }
+        
+        /* Navigation Menu */
+        .nav-menu { display: flex; background: var(--blue); padding: 10px; gap: 10px; position: sticky; top: 0; z-index: 1000; }
+        .nav-btn { flex: 1; padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; background: rgba(255,255,255,0.1); color: white; transition: 0.3s; }
+        .nav-btn.active { background: white; color: var(--blue); }
 
-    <div id="login-section" class="max-w-md mx-auto pt-20 p-8">
-        <div class="bg-white p-8 rounded-3xl shadow-xl border-t-8 border-green-600">
-            <h2 class="text-2xl font-bold mb-6 text-center text-gray-800">Store Sign In</h2>
-            <input type="text" id="login-phone" placeholder="WhatsApp Number" class="w-full p-3 border rounded-xl mb-4 outline-none">
-            <input type="text" id="login-store" placeholder="Store Name" class="w-full p-3 border rounded-xl mb-6 outline-none">
-            <button onclick="handleLogin()" id="loginBtn" class="w-full bg-green-700 text-white py-4 rounded-xl font-bold uppercase">Enter Market</button>
+        .header { background: white; padding: 15px; border-bottom: 2px solid #ddd; display: flex; justify-content: space-between; align-items: center; }
+        .product-grid { padding: 15px; max-width: 800px; margin: auto; padding-bottom: 180px; }
+        
+        .card { background: white; border-radius: 15px; padding: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 12px; border-left: 5px solid var(--blue); display: flex; justify-content: space-between; align-items: center; }
+        
+        .btn-blue { background: var(--blue); color: white; border: none; padding: 15px; border-radius: 12px; font-weight: bold; width: 100%; cursor: pointer; }
+        .btn-red { background: var(--red); color: white; border: none; padding: 18px; border-radius: 12px; font-weight: bold; width: 100%; cursor: pointer; font-size: 16px; }
+        
+        .qty-input { width: 60px; padding: 8px; border: 2px solid #ddd; border-radius: 8px; text-align: center; font-weight: bold; font-size: 16px; }
+        .add-btn { background: var(--blue); color: white; border: none; padding: 10px 15px; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        .add-btn:active { transform: scale(0.9); background: #10B981; }
+
+        .total-box { position: fixed; bottom: 0; width: 100%; background: white; padding: 20px; box-sizing: border-box; border-top: 3px solid var(--red); }
+        .hidden { display: none; }
+        input[type="text"] { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
+    </style>
+</head>
+<body>
+
+    <div id="login-section" style="max-width: 400px; margin: 80px auto; padding: 20px;">
+        <div class="card" style="border-left: none; flex-direction: column;">
+            <h1 style="color: var(--blue); margin: 0;">SPAZASURE</h1>
+            <p>Enter Store Details</p>
+            <input type="text" id="login-phone" placeholder="WhatsApp Number">
+            <input type="text" id="login-store" placeholder="Store Name">
+            <button onclick="handleLogin()" class="btn-blue">LOGIN</button>
         </div>
     </div>
 
-    <div id="home-page" class="hidden container mx-auto p-4 max-w-6xl">
-        <header class="flex justify-between items-center mb-6 bg-white p-6 rounded-2xl shadow-sm border-b-4 border-green-600">
-            <h1 id="welcome-text" class="text-xl font-black italic uppercase">Welcome</h1>
-            <div class="flex items-center gap-4">
-                <div class="bg-blue-50 px-4 py-2 rounded-full font-bold text-blue-700">🛒 <span id="cart-count">0</span></div>
-                <button onclick="handleLogout()" class="text-xs font-bold text-red-500">LOGOUT</button>
+    <div id="home-page" class="hidden">
+        <nav class="nav-menu">
+            <button class="nav-btn active" id="btn-single" onclick="setMode('single')">SINGLE BUY</button>
+            <button class="nav-btn" id="btn-bulk" onclick="setMode('bulk')">BULK BUY</button>
+        </nav>
+
+        <div class="header">
+            <h2 id="mode-title" style="color: var(--blue); margin: 0;">Single Units</h2>
+            <div id="cart-count" style="background: var(--red); color: white; padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: bold;">0 Items</div>
+        </div>
+
+        <div style="padding: 0 15px;"><input type="text" id="product-search" placeholder="🔍 Search products..." onkeyup="renderProducts()"></div>
+
+        <div class="product-grid" id="product-list"></div>
+
+        <div class="total-box">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                <span style="font-weight: bold;">Total (7% Incl.):</span>
+                <span id="total-cost" style="font-size: 22px; font-weight: 900; color: var(--red);">R 0.00</span>
             </div>
-        </header>
-
-        <div class="flex flex-col lg:flex-row gap-8">
-            <div id="direct-market-view" class="grid grid-cols-2 md:grid-cols-3 gap-6 flex-grow"></div>
-
-            <div class="lg:w-96 bg-white p-6 rounded-3xl shadow-xl h-fit sticky top-8 border border-gray-200">
-                <h2 class="text-xl font-bold mb-4 tracking-tight">Your Order</h2>
-                <div id="cart-items" class="space-y-4 mb-6 max-h-60 overflow-y-auto pr-2"></div>
-
-                <div class="mt-6 p-4 bg-gray-50 rounded-2xl border border-gray-200">
-                    <p class="text-[10px] font-bold text-gray-400 uppercase mb-3">Select Payment Method</p>
-                    <div class="grid grid-cols-2 gap-2">
-                        <button onclick="setPayment('cash')" id="pay-cash" class="border-2 border-green-600 bg-green-50 p-2 rounded-xl text-xs font-bold text-green-700 flex flex-col items-center">
-                            <span>💵 Cash</span>
-                            <span class="text-[8px] font-normal italic">On Delivery</span>
-                        </button>
-                        <button class="border-2 border-transparent bg-gray-100 p-2 rounded-xl text-xs font-bold text-gray-400 flex flex-col items-center cursor-not-allowed">
-                            <span>💳 Card</span>
-                            <span class="text-[8px] font-normal">Coming Soon</span>
-                        </button>
-                    </div>
-                </div>
-
-                <div class="border-t mt-4 pt-4">
-                    <div class="flex justify-between text-2xl font-black text-gray-900">
-                        <span>Total</span>
-                        <span id="total-cost">R 0.00</span>
-                    </div>
-                </div>
-
-                <button onclick="processOrder()" id="checkout-btn" class="w-full bg-green-600 text-white py-4 rounded-2xl font-bold mt-6 shadow-lg hover:bg-green-700 active:scale-95 transition-all">
-                    CONFIRM & PLACE ORDER
-                </button>
-            </div>
+            <button onclick="processOrder()" class="btn-red">SEND ORDER VIA WHATSAPP</button>
         </div>
     </div>
 
     <script>
         const _supabaseUrl = 'https://clbhfxqxcugxcqutngpo.supabase.co';
         const _supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNsYmhmeHF4Y3VneGNxdXRuZ3BvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE4MzgxMDMsImV4cCI6MjA4NzQxNDEwM30.VWj5TGjAQhj77BZyoSUmynUPDPTVGL_pAKNyrlpQR1Y';
-        const _spazaClient = supabase.createClient(_supabaseUrl, _supabaseKey);
+        const _client = supabase.createClient(_supabaseUrl, _supabaseKey, { auth: { persistSession: false } });
 
-        let cart = [];
-        let selectedPayment = 'cash';
+        let cart = {}; 
+        let allProducts = [];
+        let currentMode = 'single'; // 'single' or 'bulk'
 
         async function handleLogin() {
             const phone = document.getElementById('login-phone').value.trim();
             const store = document.getElementById('login-store').value.trim();
-            const { data } = await _spazaClient.from('profiles').select('*').eq('whatsapp_number', phone).eq('store_name', store).single();
-            if (data) { localStorage.setItem('spaza_user', JSON.stringify(data)); showHomePage(); }
-            else { alert("Details not found."); }
+            const { data } = await _client.from('profiles').select('*').eq('whatsapp_number', phone).ilike('store_name', store).single();
+            if (data) { localStorage.setItem('spaza_user', JSON.stringify(data)); location.reload(); }
+            else alert("Store not found!");
         }
 
-        async function showHomePage() {
-            const user = JSON.parse(localStorage.getItem('spaza_user'));
-            document.getElementById('login-section').classList.add('hidden');
-            document.getElementById('home-page').classList.remove('hidden');
-            document.getElementById('welcome-text').innerText = "Store: " + user.store_name;
-
-            const { data: products } = await _spazaClient.from('products').select('*');
-            const list = document.getElementById('direct-market-view');
-            list.innerHTML = products.map(item => `
-                <div class="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm">
-                    <div class="h-24 bg-gray-50 rounded-xl mb-3 flex items-center justify-center text-3xl">📦</div>
-                    <h3 class="font-bold text-gray-800 text-xs">${item.name}</h3>
-                    <p class="text-green-700 font-black text-lg">R ${item.price.toFixed(2)}</p>
-                    <button onclick="addToCart('${item.name}', ${item.price})" class="w-full bg-blue-600 text-white py-2 rounded-lg mt-2 text-xs font-bold">ADD</button>
-                </div>
-            `).join('');
-        }
-
-        function addToCart(name, price) {
-            cart.push({ name, price });
-            updateCartUI();
-        }
-
-        function updateCartUI() {
-            const cartDiv = document.getElementById('cart-items');
-            const totalEl = document.getElementById('total-cost');
-            const countEl = document.getElementById('cart-count');
-            countEl.innerText = cart.length;
-
-            if (cart.length === 0) {
-                cartDiv.innerHTML = `<p class="text-gray-400 text-xs italic text-center py-4">Cart is empty</p>`;
-                totalEl.innerText = "R 0.00";
-                return;
+        window.onload = async () => {
+            const savedUser = localStorage.getItem('spaza_user');
+            if (savedUser) {
+                document.getElementById('login-section').classList.add('hidden');
+                document.getElementById('home-page').classList.remove('hidden');
+                const { data } = await _client.from('products').select('*');
+                allProducts = data || [];
+                renderProducts();
             }
+        };
 
-            cartDiv.innerHTML = cart.map((item, i) => `
-                <div class="flex justify-between items-center text-xs bg-gray-50 p-2 rounded-lg">
-                    <span class="font-bold">${item.name}</span>
-                    <span class="text-green-700">R${item.price}</span>
-                </div>
-            `).join('');
+        function setMode(mode) {
+            currentMode = mode;
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('btn-' + mode).classList.add('active');
+            document.getElementById('mode-title').innerText = mode === 'single' ? "Single Units" : "Bulk Packs";
+            renderProducts();
+        }
 
-            const total = cart.reduce((sum, item) => sum + item.price, 0);
-            totalEl.innerText = "R " + (total + (total * 0.07)).toFixed(2);
+        function renderProducts() {
+            const term = document.getElementById('product-search').value.toLowerCase();
+            const list = document.getElementById('product-list');
+            
+            // Logic: Bulk mode filters items with "Case", "Shrink", "Box" or "Pack" in name
+            const filtered = allProducts.filter(p => {
+                const matchesSearch = p.name.toLowerCase().includes(term);
+                const isBulk = /case|shrink|box|pack|bulk/i.test(p.name);
+                return currentMode === 'bulk' ? (matchesSearch && isBulk) : (matchesSearch && !isBulk);
+            });
+
+            list.innerHTML = filtered.map(p => {
+                const finalPrice = p.price * 1.07;
+                return `
+                <div class="card">
+                    <div>
+                        <b style="text-transform: uppercase;">${p.name}</b><br>
+                        <span style="color: var(--blue); font-weight: 900;">R ${finalPrice.toFixed(2)}</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <input type="number" id="qty-${p.id}" value="1" min="1" class="qty-input">
+                        <button onclick="addToCart(${p.id}, '${p.name.replace(/'/g, "")}', ${finalPrice})" class="add-btn">ADD</button>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        function addToCart(id, name, price) {
+            const qtyInput = document.getElementById(`qty-${id}`);
+            const qty = parseInt(qtyInput.value);
+            
+            if (qty > 0) {
+                if (cart[name]) cart[name].qty += qty;
+                else cart[name] = { price: price, qty: qty };
+                
+                updateUI();
+                
+                // Reset input and give feedback
+                qtyInput.value = 1;
+                console.log("Added:", name, qty);
+            }
+        }
+
+        function updateUI() {
+            let total = 0, count = 0;
+            for (let key in cart) {
+                total += cart[key].price * cart[key].qty;
+                count += cart[key].qty;
+            }
+            document.getElementById('total-cost').innerText = "R " + total.toFixed(2);
+            document.getElementById('cart-count').innerText = count + " Items";
         }
 
         async function processOrder() {
-            if (cart.length === 0) return alert("Add items first!");
-            const btn = document.getElementById('checkout-btn');
-            btn.innerText = "PROCESSING...";
-            btn.disabled = true;
-
             const user = JSON.parse(localStorage.getItem('spaza_user'));
-            const subtotal = cart.reduce((sum, item) => sum + item.price, 0);
-            const total = subtotal + (subtotal * 0.07);
+            if (Object.keys(cart).length === 0) return alert("Cart is empty!");
 
-            // SAVE TO SUPABASE
-            const { data, error } = await _spazaClient.from('orders').insert([{
-                profile_id: user.id,
-                store_name: user.store_name,
-                total_amount: total,
-                payment_method: selectedPayment,
-                items: cart,
-                status: 'pending'
-            }]).select();
+            let itemText = `*ORDER: ${user.store_name}* (%2B7%25 Fee Incl.)%0A%0A`;
+            let grandTotal = 0;
+            const orderItems = [];
 
-            if (error) {
-                alert("Order Failed: " + error.message);
-                btn.innerText = "CONFIRM & PLACE ORDER";
-                btn.disabled = false;
-                return;
+            for (let name in cart) {
+                const sub = cart[name].price * cart[name].qty;
+                itemText += `• ${name} x${cart[name].qty} = R${sub.toFixed(2)}%0A`;
+                grandTotal += sub;
+                orderItems.push({ item: name, qty: cart[name].qty, subtotal: sub });
             }
 
-            // SUCCESS
-            alert(`✅ SUCCESS!\nOrder for ${user.store_name} placed.\nPayment: CASH ON DELIVERY`);
-            
-            // WHATSAPP RECEIPT
-            const waText = `*ORDER PLACED (CASH)*\nOrder ID: ${data[0].id}\nStore: ${user.store_name}\nTotal: R${total.toFixed(2)}`;
-            window.open(`https://wa.me/27764403803?text=${encodeURIComponent(waText)}`, '_blank');
-
-            cart = [];
-            updateCartUI();
-            btn.innerText = "CONFIRM & PLACE ORDER";
-            btn.disabled = false;
+            await _client.from('orders').insert([{ profile_id: user.id, store_name: user.store_name, total_amount: grandTotal, items: orderItems }]);
+            window.location.href = `https://wa.me/27764403803?text=${itemText}%0A*TOTAL: R${grandTotal.toFixed(2)}*`;
         }
-
-        function handleLogout() { localStorage.removeItem('spaza_user'); location.reload(); }
-        window.onload = () => { if(localStorage.getItem('spaza_user')) showHomePage(); };
     </script>
 </body>
 </html>
