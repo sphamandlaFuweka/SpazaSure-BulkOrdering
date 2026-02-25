@@ -1,177 +1,249 @@
-<script>
-    const _supabaseUrl = 'https://clbhfxqxcugxcqutngpo.supabase.co';
-    const _supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNsYmhmeHF4Y3VneGNxdXRuZ3BvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE4MzgxMDMsImV4cCI6MjA4NzQxNDEwM30.VWj5TGjAQhj77BZyoSUmynUPDPTVGL_pAKNyrlpQR1Y';
-    const _client = supabase.createClient(_supabaseUrl, _supabaseKey, { auth: { persistSession: false } });
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SpazaSure | Market & Groups</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        :root { --blue: #1E3A8A; --red: #E11D48; --bg: #F3F4F6; --green: #10B981; }
+        body { font-family: sans-serif; background: var(--bg); margin: 0; padding: 0; color: #333; }
+        .nav-menu { display: flex; background: var(--blue); padding: 10px; gap: 10px; position: sticky; top: 0; z-index: 1000; }
+        .nav-btn { flex: 1; padding: 12px; border: none; border-radius: 8px; font-weight: bold; color: white; background: rgba(255,255,255,0.1); cursor: pointer; }
+        .nav-btn.active { background: white; color: var(--blue); }
+        .card { background: white; border-radius: 15px; padding: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 12px; border-left: 5px solid var(--blue); }
+        .group-card { border-left-color: var(--green); }
+        .progress-container { background: #eee; height: 12px; border-radius: 6px; margin: 10px 0; overflow: hidden; }
+        .progress-fill { background: var(--green); height: 100%; width: 0%; transition: width 0.8s; }
+        input, textarea { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #ddd; box-sizing: border-box; font-size: 16px; }
+        .add-btn { background: var(--blue); color: white; border: none; padding: 10px 18px; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        .total-box { position: fixed; bottom: 0; width: 100%; background: white; padding: 20px; box-sizing: border-box; border-top: 3px solid var(--red); z-index: 100; }
+        .hidden { display: none; }
+        .product-grid { padding: 15px; max-width: 800px; margin: auto; padding-bottom: 250px; }
+    </style>
+</head>
+<body>
 
-    let cart = {}; 
-    let products = [];
-    let buyingGroups = [];
-    let currentMode = 'single';
+    <div id="login-section" style="max-width: 400px; margin: 60px auto; padding: 20px;">
+        <div class="card" style="border: none; text-align: center;">
+            <h1 style="color: var(--blue);">SPAZASURE</h1>
+            <input type="text" id="login-phone" placeholder="WhatsApp Number">
+            <input type="text" id="login-store" placeholder="Store Name">
+            <button onclick="handleLogin()" style="width:100%; padding:15px; background:var(--blue); color:white; border:none; border-radius:10px; font-weight:bold;">ENTER MARKET</button>
+        </div>
+    </div>
 
-    // --- AUTH ---
-    async function handleLogin() {
-        const phone = document.getElementById('login-phone').value.trim();
-        const store = document.getElementById('login-store').value.trim();
-        const { data } = await _client.from('profiles').select('*').eq('whatsapp_number', phone).ilike('store_name', store).single();
-        if (data) { 
-            localStorage.setItem('spaza_user', JSON.stringify(data)); 
-            location.reload(); 
-        } else { 
-            alert("Store not found!"); 
-        }
-    }
+    <div id="home-page" class="hidden">
+        <nav class="nav-menu">
+            <button class="nav-btn active" id="tab-single" onclick="setMode('single')">SINGLE BUY</button>
+            <button class="nav-btn" id="tab-bulk" onclick="setMode('bulk')">BUYING GROUPS</button>
+        </nav>
 
-    window.onload = async () => {
-        const user = localStorage.getItem('spaza_user');
-        if (user) {
-            document.getElementById('login-section').classList.add('hidden');
-            document.getElementById('home-page').classList.remove('hidden');
-            await loadData();
-        }
-    };
+        <div style="background:white; padding:15px; display:flex; justify-content:space-between; align-items:center;">
+            <h2 id="mode-title" style="margin:0; font-size:18px;">Single Units</h2>
+            <div id="cart-count" style="background:var(--red); color:white; padding:5px 12px; border-radius:20px; font-weight:bold;">0 Items</div>
+        </div>
 
-    async function loadData() {
-        const { data: pData } = await _client.from('products').select('*');
-        const { data: gData } = await _client.from('buying_groups').select('*');
-        products = pData || [];
-        buyingGroups = gData || [];
-        renderView();
-    }
+        <div class="product-grid">
+            <input type="text" id="product-search" placeholder="🔍 Search products..." onkeyup="renderView()">
+            <div id="main-list" style="margin-top:10px;"></div>
 
-    function setMode(mode) {
-        currentMode = mode;
-        document.getElementById('tab-single').classList.toggle('active', mode === 'single');
-        document.getElementById('tab-bulk').classList.toggle('active', mode === 'bulk');
-        document.getElementById('mode-title').innerText = mode === 'single' ? "Single Units" : "Active Buying Groups";
-        renderView();
-    }
-
-    // --- RENDER WITH SAFETY CHECKS ---
-    function renderView() {
-        const list = document.getElementById('main-list');
-        const term = document.getElementById('product-search').value.toLowerCase();
-
-        if (currentMode === 'single') {
-            const filtered = products.filter(p => (p.name || "").toLowerCase().includes(term));
-            list.innerHTML = filtered.map(p => {
-                // SAFETY: Convert price to number or use 0 if undefined
-                const rawPrice = Number(p.price) || 0;
-                const finalPrice = rawPrice * 1.07;
-                
-                return `
-                <div class="card" style="display:flex; justify-content:space-between; align-items:center;">
-                    <div>
-                        <b style="text-transform:uppercase;">${p.name || 'Unknown Item'}</b><br>
-                        <span style="color:var(--blue); font-weight:bold;">R ${finalPrice.toFixed(2)}</span>
+            <div style="text-align: center; margin-top: 30px;">
+                <button onclick="toggleAdmin()" style="background:none; border:1px solid #ccc; color:#999; padding:6px; border-radius:5px; font-size:11px;">Admin: Create Group</button>
+                <div id="admin-panel" class="hidden" style="background:#1f2937; color:white; padding:20px; margin:15px 0; border-radius:10px; text-align:left;">
+                    <h3 style="color:var(--green); margin-top:0;">Launch New Buying Group</h3>
+                    <input type="text" id="adm-name" placeholder="Group Name (e.g. 10kg Rice)">
+                    <textarea id="adm-desc" placeholder="Brief description of items included"></textarea>
+                    <div style="display:flex; gap:10px;">
+                        <input type="number" id="adm-target" placeholder="Goal Qty">
+                        <input type="number" id="adm-price" placeholder="Unit Price">
                     </div>
-                    <div style="display:flex; align-items:center; gap:8px;">
-                        <input type="number" id="qty-${p.id}" value="1" min="1" style="width:50px; margin:0; padding:5px; text-align:center;">
-                        <button class="add-btn" data-id="${p.id}" data-name="${p.name}" data-price="${finalPrice}">ADD</button>
+                    <div style="display:flex; gap:10px;">
+                        <input type="number" id="adm-min" placeholder="Min Spazas" value="10">
+                        <input type="number" id="adm-fee" placeholder="Joining Fee" value="50">
                     </div>
-                </div>`;
-            }).join('');
-        } else {
-            list.innerHTML = buyingGroups.map(g => {
-                // SAFETY: Convert price and quantities to numbers
-                const rawPrice = Number(g.unit_price) || 0;
-                const finalPrice = rawPrice * 1.07;
-                const currentQty = Number(g.current_quantity) || 0;
-                const targetQty = Number(g.target_quantity) || 1; // Avoid division by zero
-                const progress = Math.min((currentQty / targetQty) * 100, 100);
+                    <button onclick="createGroup()" style="width:100%; padding:15px; background:var(--green); border:none; color:white; border-radius:8px; font-weight:bold; cursor:pointer;">LAUNCH GROUP NOW</button>
+                </div>
+            </div>
+        </div>
 
-                return `
-                <div class="card group-card">
-                    <b style="text-transform:uppercase;">${g.name || 'Group Deal'}</b>
-                    <p style="font-size:12px; color:#666; margin:4px 0;">${g.description || ''}</p>
-                    <div style="font-size:18px; font-weight:900; color:var(--green);">R ${finalPrice.toFixed(2)}</div>
-                    
-                    <div class="progress-container">
-                        <div class="progress-fill" style="width:${progress}%"></div>
-                    </div>
-                    <div style="display:flex; justify-content:space-between; font-size:11px; font-weight:bold;">
-                        <span>${currentQty} JOINED</span>
-                        <span>GOAL: ${targetQty}</span>
-                    </div>
-                    
-                    <div style="display:flex; gap:10px; margin-top:12px;">
-                         <input type="number" id="qty-${g.id}" value="1" min="1" style="width:60px; margin:0; padding:5px; text-align:center;">
-                         <button class="add-btn group-btn" data-id="${g.id}" data-name="[GROUP] ${g.name}" data-price="${finalPrice}">JOIN GROUP</button>
-                    </div>
-                </div>`;
-            }).join('');
-        }
-    }
+        <div class="total-box">
+            <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+                <span style="font-weight:bold;">Total (Incl. 7% fee):</span>
+                <span id="total-cost" style="font-size:24px; font-weight:900; color:var(--red);">R 0.00</span>
+            </div>
+            <button onclick="processOrder()" style="width:100%; padding:18px; background:var(--red); color:white; border:none; border-radius:12px; font-weight:bold; cursor:pointer;">SEND WHATSAPP ORDER</button>
+        </div>
+    </div>
 
-    // --- BULLETPROOF MATH ---
-    document.body.addEventListener('click', function(e) {
-        if (e.target.classList.contains('add-btn')) {
-            const id = e.target.getAttribute('data-id');
-            const name = e.target.getAttribute('data-name') || "Item";
-            const price = Number(e.target.getAttribute('data-price')) || 0;
-            const qtyInput = document.getElementById(`qty-${id}`);
-            const qty = parseInt(qtyInput.value) || 0;
+    <script>
+        const _supabaseUrl = 'https://clbhfxqxcugxcqutngpo.supabase.co';
+        const _supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNsYmhmeHF4Y3VneGNxdXRuZ3BvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE4MzgxMDMsImV4cCI6MjA4NzQxNDEwM30.VWj5TGjAQhj77BZyoSUmynUPDPTVGL_pAKNyrlpQR1Y';
+        const _client = supabase.createClient(_supabaseUrl, _supabaseKey, { auth: { persistSession: false } });
 
-            if (qty > 0) {
-                if (cart[name]) {
-                    cart[name].qty += qty;
-                } else {
-                    cart[name] = { price: price, qty: qty };
-                }
-                updateUI();
-                qtyInput.value = 1;
-                e.target.innerText = "✓";
-                setTimeout(() => { 
-                    e.target.innerText = name.includes('[GROUP]') ? "JOIN GROUP" : "ADD"; 
-                }, 800);
+        let cart = {}; 
+        let products = [];
+        let buyingGroups = [];
+        let currentMode = 'single';
+
+        // --- AUTH ---
+        async function handleLogin() {
+            const phone = document.getElementById('login-phone').value.trim();
+            const store = document.getElementById('login-store').value.trim();
+            const { data } = await _client.from('profiles').select('*').eq('whatsapp_number', phone).ilike('store_name', store).single();
+            if (data) { 
+                localStorage.setItem('spaza_user', JSON.stringify(data)); 
+                location.reload(); 
+            } else { 
+                alert("Store not found!"); 
             }
         }
-    });
 
-    function updateUI() {
-        let total = 0, count = 0;
-        for (let k in cart) { 
-            const itemPrice = Number(cart[k].price) || 0;
-            const itemQty = Number(cart[k].qty) || 0;
-            total += itemPrice * itemQty; 
-            count += itemQty; 
+        window.onload = async () => {
+            if (localStorage.getItem('spaza_user')) {
+                document.getElementById('login-section').classList.add('hidden');
+                document.getElementById('home-page').classList.remove('hidden');
+                await loadData();
+            }
+        };
+
+        async function loadData() {
+            const { data: pData } = await _client.from('products').select('*');
+            const { data: gData } = await _client.from('buying_groups').select('*').eq('status', 'open');
+            products = pData || [];
+            buyingGroups = gData || [];
+            renderView();
         }
-        document.getElementById('total-cost').innerText = "R " + total.toFixed(2);
-        document.getElementById('cart-count').innerText = count + " Items";
-    }
 
-    function toggleAdmin() {
-        const panel = document.getElementById('admin-panel');
-        panel.style.display = (panel.style.display === 'block') ? 'none' : 'block';
-    }
-
-    async function createGroup() {
-        const name = document.getElementById('adm-name').value;
-        const desc = document.getElementById('adm-desc').value;
-        const target = Number(document.getElementById('adm-target').value);
-        const price = Number(document.getElementById('adm-price').value);
-
-        if(!name || target <= 0 || price <= 0) return alert("Please enter valid details");
-
-        const { error } = await _client.from('buying_groups').insert([{
-            name, description: desc, target_quantity: target, unit_price: price
-        }]);
-
-        if (error) alert(error.message);
-        else { alert("Group Launched!"); location.reload(); }
-    }
-
-    async function processOrder() {
-        const user = JSON.parse(localStorage.getItem('spaza_user')) || { store_name: "Guest" };
-        if (Object.keys(cart).length === 0) return alert("Cart is empty!");
-
-        let msg = `*ORDER FROM: ${user.store_name}*%0A%0A`;
-        let total = 0;
-        for (let k in cart) {
-            const sub = cart[k].price * cart[k].qty;
-            msg += `• ${k} x${cart[k].qty} = R${sub.toFixed(2)}%0A`;
-            total += sub;
+        function setMode(mode) {
+            currentMode = mode;
+            document.getElementById('tab-single').classList.toggle('active', mode === 'single');
+            document.getElementById('tab-bulk').classList.toggle('active', mode === 'bulk');
+            document.getElementById('mode-title').innerText = mode === 'single' ? "Single Units" : "Active Groups";
+            renderView();
         }
-        msg += `%0A*GRAND TOTAL: R${total.toFixed(2)}*`;
-        window.location.href = `https://wa.me/27764403803?text=${msg}`;
-    }
-</script>
+
+        function renderView() {
+            const list = document.getElementById('main-list');
+            const term = (document.getElementById('product-search').value || "").toLowerCase();
+
+            if (currentMode === 'single') {
+                const filtered = products.filter(p => (p.name || "").toLowerCase().includes(term));
+                list.innerHTML = filtered.map(p => {
+                    const price = (Number(p.price) || 0) * 1.07;
+                    return `
+                    <div class="card" style="display:flex; justify-content:space-between; align-items:center;">
+                        <div><b>${p.name}</b><br><span style="color:var(--blue); font-weight:bold;">R ${price.toFixed(2)}</span></div>
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <input type="number" id="qty-${p.id}" value="1" min="1" style="width:45px; text-align:center;">
+                            <button class="add-btn" data-id="${p.id}" data-name="${p.name}" data-price="${price}">ADD</button>
+                        </div>
+                    </div>`;
+                }).join('');
+            } else {
+                list.innerHTML = buyingGroups.map(g => {
+                    const price = (Number(g.contribution_per_spaza) || 0) * 1.07;
+                    const fee = Number(g.joining_fee) || 0;
+                    const progress = Math.min(((Number(g.current_quantity) || 0) / (Number(g.target_quantity) || 1)) * 100, 100);
+                    return `
+                    <div class="card group-card">
+                        <b style="text-transform:uppercase;">${g.group_name}</b>
+                        <p style="font-size:12px; color:#666;">${g.items_description || ''}</p>
+                        <div style="font-size:18px; font-weight:900; color:var(--green);">R ${price.toFixed(2)}</div>
+                        <div style="font-size:11px; color:var(--red);">+ R${fee.toFixed(2)} Joining Fee</div>
+                        <div class="progress-container"><div class="progress-fill" style="width:${progress}%"></div></div>
+                        <div style="display:flex; justify-content:space-between; font-size:11px; font-weight:bold;">
+                            <span>${g.current_quantity || 0} / ${g.target_quantity} JOINED</span>
+                            <span style="color:var(--blue)">GOAL: ${g.min_spazas} STORES</span>
+                        </div>
+                        <div style="display:flex; gap:10px; margin-top:12px;">
+                             <input type="number" id="qty-${g.id}" value="1" min="1" style="width:55px; text-align:center;">
+                             <button class="add-btn" data-id="${g.id}" data-name="[GROUP] ${g.group_name}" data-price="${price}" data-fee="${fee}" style="background:var(--green); flex:1;">JOIN GROUP</button>
+                        </div>
+                    </div>`;
+                }).join('');
+            }
+        }
+
+        // --- CART LOGIC ---
+        document.body.addEventListener('click', function(e) {
+            if (e.target.classList.contains('add-btn')) {
+                const id = e.target.getAttribute('data-id');
+                const name = e.target.getAttribute('data-name');
+                const price = Number(e.target.getAttribute('data-price')) || 0;
+                const fee = Number(e.target.getAttribute('data-fee')) || 0;
+                const qty = parseInt(document.getElementById(`qty-${id}`).value) || 0;
+
+                if (qty > 0) {
+                    if (cart[name]) {
+                        cart[name].qty += qty;
+                    } else {
+                        // We add the fee once to the total for groups
+                        cart[name] = { price: price, qty: qty, fee: fee };
+                    }
+                    updateUI();
+                    e.target.innerText = "✓";
+                    setTimeout(() => { e.target.innerText = name.includes('[GROUP]') ? "JOIN GROUP" : "ADD"; }, 800);
+                }
+            }
+        });
+
+        function updateUI() {
+            let total = 0, count = 0;
+            for (let k in cart) { 
+                total += (cart[k].price * cart[k].qty) + (cart[k].fee || 0); 
+                count += cart[k].qty; 
+            }
+            document.getElementById('total-cost').innerText = "R " + total.toFixed(2);
+            document.getElementById('cart-count').innerText = count + " Items";
+        }
+
+        // --- ADMIN: LAUNCH GROUP ---
+        function toggleAdmin() { document.getElementById('admin-panel').classList.toggle('hidden'); }
+
+        async function createGroup() {
+            const user = JSON.parse(localStorage.getItem('spaza_user'));
+            const name = document.getElementById('adm-name').value.trim();
+            const desc = document.getElementById('adm-desc').value.trim();
+            const target = Number(document.getElementById('adm-target').value);
+            const price = Number(document.getElementById('adm-price').value);
+            const minS = Number(document.getElementById('adm-min').value) || 10;
+            const fee = Number(document.getElementById('adm-fee').value) || 0;
+
+            if(!name || target <= 0 || price <= 0) return alert("Please fill in Group Name, Target, and Price!");
+
+            const { error } = await _client.from('buying_groups').insert([{ 
+                group_name: name, 
+                items_description: desc, 
+                target_quantity: target, 
+                contribution_per_spaza: price,
+                min_spazas: minS,
+                joining_fee: fee,
+                creator_id: user.id,
+                status: 'open',
+                current_quantity: 0
+            }]);
+
+            if (error) {
+                alert("Error launching group: " + error.message);
+            } else {
+                alert(`🚀 Group "${name}" successfully created!`);
+                location.reload(); // Refresh to show new group
+            }
+        }
+
+        function processOrder() {
+            const user = JSON.parse(localStorage.getItem('spaza_user')) || { store_name: "Guest" };
+            if (Object.keys(cart).length === 0) return alert("Cart is empty!");
+            let msg = `*ORDER FROM: ${user.store_name}*%0A%0A`;
+            let total = 0;
+            for (let k in cart) {
+                const sub = (cart[k].price * cart[k].qty) + (cart[k].fee || 0);
+                msg += `• ${k} x${cart[k].qty} = R${sub.toFixed(2)}%0A`;
+                total += sub;
+            }
+            window.location.href = `https://wa.me/27764403803?text=${msg}%0A*TOTAL: R${total.toFixed(2)}*`;
+        }
+    </script>
+</body>
+</html>
