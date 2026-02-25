@@ -2,14 +2,13 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>SpazaSure | Market</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root { --blue: #1E3A8A; --red: #E11D48; --bg: #F3F4F6; }
         body { font-family: sans-serif; background: var(--bg); margin: 0; padding: 0; }
         
-        /* Navigation Menu */
         .nav-menu { display: flex; background: var(--blue); padding: 10px; gap: 10px; position: sticky; top: 0; z-index: 1000; }
         .nav-btn { flex: 1; padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; background: rgba(255,255,255,0.1); color: white; transition: 0.3s; }
         .nav-btn.active { background: white; color: var(--blue); }
@@ -18,9 +17,11 @@
         .product-grid { padding: 15px; max-width: 800px; margin: auto; padding-bottom: 180px; }
         
         .card { background: white; border-radius: 15px; padding: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 12px; border-left: 5px solid var(--blue); display: flex; justify-content: space-between; align-items: center; }
+        .bulk-card { background: white; border-radius: 15px; padding: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 12px; border-left: 5px solid #10B981; }
         
         .btn-blue { background: var(--blue); color: white; border: none; padding: 15px; border-radius: 12px; font-weight: bold; width: 100%; cursor: pointer; }
         .btn-red { background: var(--red); color: white; border: none; padding: 18px; border-radius: 12px; font-weight: bold; width: 100%; cursor: pointer; font-size: 16px; }
+        .btn-green { background: #10B981; color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold; width: 100%; cursor: pointer; }
         
         .qty-input { width: 60px; padding: 8px; border: 2px solid #ddd; border-radius: 8px; text-align: center; font-weight: bold; font-size: 16px; }
         .add-btn { background: var(--blue); color: white; border: none; padding: 10px 15px; border-radius: 8px; cursor: pointer; font-weight: bold; }
@@ -28,8 +29,12 @@
 
         .total-box { position: fixed; bottom: 0; width: 100%; background: white; padding: 20px; box-sizing: border-box; border-top: 3px solid var(--red); box-shadow: 0 -5px 15px rgba(0,0,0,0.1); }
         .hidden { display: none; }
-        input[type="text"] { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
+        input[type="text"], input[type="number"] { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
         .markup-tag { font-size: 10px; color: #666; font-style: italic; }
+        .progress-bar { height: 8px; background: #E5E7EB; border-radius: 4px; margin: 10px 0; overflow: hidden; }
+        .progress-fill { height: 100%; background: #10B981; transition: width 0.3s; }
+        .modal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 2000; }
+        .modal-content { background: white; padding: 20px; border-radius: 15px; max-width: 400px; width: 90%; }
     </style>
 </head>
 <body>
@@ -61,12 +66,30 @@
 
         <div class="product-grid" id="product-list"></div>
 
+        <div id="bulk-section" class="hidden" style="max-width: 800px; margin: auto; padding: 15px; padding-bottom: 180px;">
+            <div id="bulk-groups-list"></div>
+            <button onclick="showCreateGroupModal()" class="btn-blue" style="margin-top: 20px; background: #10B981;">+ START NEW BULK GROUP</button>
+        </div>
+
         <div class="total-box">
             <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
                 <span style="font-weight: bold; color: #444;">Total (Incl. 7% markup):</span>
                 <span id="total-cost" style="font-size: 22px; font-weight: 900; color: var(--red);">R 0.00</span>
             </div>
             <button onclick="processOrder()" class="btn-red">SEND ORDER VIA WHATSAPP</button>
+        </div>
+    </div>
+
+    <div id="group-modal" class="modal hidden">
+        <div class="modal-content">
+            <h3 style="margin-top: 0; color: var(--blue);">Start Bulk Group</h3>
+            <input type="text" id="group-item" placeholder="Item name (e.g., Maize 50kg)">
+            <input type="number" id="group-price" placeholder="Total price">
+            <input type="number" id="group-target" placeholder="Target participants" value="10">
+            <div style="display: flex; gap: 10px; margin-top: 15px;">
+                <button onclick="hideCreateGroupModal()" style="flex: 1; padding: 12px; background: #ddd; border: none; border-radius: 8px; font-weight: bold;">CANCEL</button>
+                <button onclick="createBulkGroup()" style="flex: 1; padding: 12px; background: var(--blue); color: white; border: none; border-radius: 8px; font-weight: bold;">CREATE</button>
+            </div>
         </div>
     </div>
 
@@ -77,37 +100,67 @@
 
         let cart = {}; 
         let allProducts = [];
+        let allBulkGroups = [];
         let currentMode = 'single'; 
+        let currentUser = null;
 
         async function handleLogin() {
             const phone = document.getElementById('login-phone').value.trim();
             const store = document.getElementById('login-store').value.trim();
-            const { data } = await _client.from('profiles').select('*').eq('whatsapp_number', phone).ilike('store_name', store).single();
+            
+            if (!phone || !store) {
+                alert("Please enter both phone and store name");
+                return;
+            }
+            
+            const { data, error } = await _client
+                .from('profiles')
+                .select('*')
+                .eq('whatsapp_number', phone)
+                .ilike('store_name', store)
+                .single();
+                
             if (data) { 
+                currentUser = data;
                 localStorage.setItem('spaza_user', JSON.stringify(data)); 
-                location.reload(); 
+                document.getElementById('login-section').classList.add('hidden');
+                document.getElementById('home-page').classList.remove('hidden');
+                await loadData();
             } else { 
-                alert("Store not found!"); 
+                alert("Store not found! Please check your details."); 
             }
         }
 
-        window.onload = async () => {
-            const savedUser = localStorage.getItem('spaza_user');
-            if (savedUser) {
-                document.getElementById('login-section').classList.add('hidden');
-                document.getElementById('home-page').classList.remove('hidden');
-                const { data } = await _client.from('products').select('*');
-                allProducts = data || [];
-                renderProducts();
-            }
-        };
+        async function loadData() {
+            const { data: products } = await _client.from('products').select('*');
+            allProducts = products || [];
+            
+            const { data: groups } = await _client
+                .from('bulk_groups')
+                .select('*')
+                .eq('status', 'open')
+                .order('created_at', { ascending: false });
+            allBulkGroups = groups || [];
+            
+            renderProducts();
+            renderBulkGroups();
+        }
 
         function setMode(mode) {
             currentMode = mode;
-            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById('btn-' + mode).classList.add('active');
-            document.getElementById('mode-title').innerText = mode === 'single' ? "Single Units" : "Bulk Packs";
-            renderProducts();
+            document.getElementById('btn-single').className = mode === 'single' ? 'nav-btn active' : 'nav-btn';
+            document.getElementById('btn-bulk').className = mode === 'bulk' ? 'nav-btn active' : 'nav-btn';
+            document.getElementById('mode-title').innerText = mode === 'single' ? 'Single Units' : 'Bulk Deals';
+            
+            if (mode === 'single') {
+                document.getElementById('product-list').classList.remove('hidden');
+                document.getElementById('bulk-section').classList.add('hidden');
+                renderProducts();
+            } else {
+                document.getElementById('product-list').classList.add('hidden');
+                document.getElementById('bulk-section').classList.remove('hidden');
+                renderBulkGroups();
+            }
         }
 
         function renderProducts() {
@@ -119,6 +172,11 @@
                 const isBulk = /case|shrink|box|pack|bulk/i.test(p.name);
                 return currentMode === 'bulk' ? (matchesSearch && isBulk) : (matchesSearch && !isBulk);
             });
+
+            if (filtered.length === 0) {
+                list.innerHTML = '<div style="text-align: center; padding: 40px; color: #999;">No products found</div>';
+                return;
+            }
 
             list.innerHTML = filtered.map(p => {
                 const basePrice = Number(p.price);
@@ -133,8 +191,48 @@
                     </div>
                     <div style="display: flex; align-items: center; gap: 8px;">
                         <input type="number" id="qty-${p.id}" value="1" min="1" class="qty-input">
-                        <button onclick="addToCart(${p.id}, '${p.name.replace(/'/g, "")}', ${finalPrice})" class="add-btn">ADD</button>
+                        <button onclick="addToCart('${p.id}', '${p.name.replace(/'/g, "\\'")}', ${finalPrice})" class="add-btn">ADD</button>
                     </div>
+                </div>`;
+            }).join('');
+        }
+
+        function renderBulkGroups() {
+            const list = document.getElementById('bulk-groups-list');
+            
+            if (allBulkGroups.length === 0) {
+                list.innerHTML = '<div style="text-align: center; padding: 40px; color: #999;">No active bulk groups. Start one!</div>';
+                return;
+            }
+
+            list.innerHTML = allBulkGroups.map(group => {
+                const progress = (group.current_participants / group.target_participants) * 100;
+                const pricePerPerson = (group.total_price / group.target_participants) * 1.07;
+                
+                return `
+                <div class="bulk-card">
+                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px;">
+                        <div>
+                            <b style="text-transform: uppercase; font-size: 16px;">${group.item_name}</b>
+                            <p style="margin: 5px 0 0; font-size: 12px; color: #666;">Started by: ${group.creator_name || 'Unknown'}</p>
+                        </div>
+                        <span style="background: #10B981; color: white; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: bold;">
+                            ${group.current_participants}/${group.target_participants}
+                        </span>
+                    </div>
+                    
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: ${progress}%"></div>
+                    </div>
+                    
+                    <div style="display: flex; justify-content: space-between; margin: 10px 0;">
+                        <span style="font-size: 14px;">Price per person:</span>
+                        <span style="font-weight: 900; color: var(--blue);">R ${pricePerPerson.toFixed(2)}</span>
+                    </div>
+                    
+                    <button onclick="joinBulkGroup('${group.id}', '${group.item_name.replace(/'/g, "\\'")}', ${pricePerPerson})" class="btn-green">
+                        JOIN GROUP
+                    </button>
                 </div>`;
             }).join('');
         }
@@ -142,59 +240,175 @@
         function addToCart(id, name, price) {
             const qtyInput = document.getElementById(`qty-${id}`);
             const qty = parseInt(qtyInput.value);
-            const numPrice = parseFloat(price);
             
-            if (qty > 0 && !isNaN(numPrice)) {
-                if (cart[name]) {
-                    cart[name].qty += qty;
+            if (qty > 0) {
+                const cartKey = `single_${id}`;
+                if (cart[cartKey]) {
+                    cart[cartKey].qty += qty;
                 } else {
-                    cart[name] = { price: numPrice, qty: qty };
+                    cart[cartKey] = { name, price, qty };
                 }
                 
-                updateUI();
-                qtyInput.value = 1; // Reset input field
-            } else {
-                alert("Please enter a valid quantity.");
+                updateCartUI();
+                qtyInput.value = 1;
             }
         }
 
-        function updateUI() {
+        async function joinBulkGroup(groupId, itemName, pricePerPerson) {
+            const cartKey = `bulk_${groupId}`;
+            
+            if (cart[cartKey]) {
+                cart[cartKey].qty += 1;
+            } else {
+                cart[cartKey] = { 
+                    name: `BULK: ${itemName}`, 
+                    price: pricePerPerson, 
+                    qty: 1,
+                    groupId: groupId 
+                };
+            }
+            
+            // Update participant count
+            const group = allBulkGroups.find(g => g.id === groupId);
+            if (group) {
+                const newCount = (group.current_participants || 0) + 1;
+                await _client
+                    .from('bulk_groups')
+                    .update({ current_participants: newCount })
+                    .eq('id', groupId);
+                
+                group.current_participants = newCount;
+                renderBulkGroups();
+            }
+            
+            updateCartUI();
+        }
+
+        function updateCartUI() {
             let total = 0;
             let count = 0;
+            
             for (let key in cart) {
                 total += cart[key].price * cart[key].qty;
                 count += cart[key].qty;
             }
+            
             document.getElementById('total-cost').innerText = "R " + total.toFixed(2);
             document.getElementById('cart-count').innerText = count + " Items";
         }
 
-        async function processOrder() {
-            const user = JSON.parse(localStorage.getItem('spaza_user'));
-            if (!user || Object.keys(cart).length === 0) return alert("Cart is empty!");
+        function showCreateGroupModal() {
+            document.getElementById('group-modal').classList.remove('hidden');
+        }
 
-            let itemText = `*ORDER: ${user.store_name}* (7% Fee Incl.)%0A%0A`;
+        function hideCreateGroupModal() {
+            document.getElementById('group-modal').classList.add('hidden');
+            document.getElementById('group-item').value = '';
+            document.getElementById('group-price').value = '';
+            document.getElementById('group-target').value = '10';
+        }
+
+        async function createBulkGroup() {
+            const itemName = document.getElementById('group-item').value.trim();
+            const totalPrice = parseFloat(document.getElementById('group-price').value);
+            const targetParticipants = parseInt(document.getElementById('group-target').value);
+
+            if (!itemName || !totalPrice || !targetParticipants) {
+                alert('Please fill all fields');
+                return;
+            }
+
+            const newGroup = {
+                item_name: itemName,
+                total_price: totalPrice,
+                target_participants: targetParticipants,
+                current_participants: 1,
+                creator_name: currentUser?.store_name || 'Unknown',
+                creator_phone: currentUser?.whatsapp_number,
+                status: 'open',
+                created_at: new Date().toISOString()
+            };
+
+            const { data, error } = await _client
+                .from('bulk_groups')
+                .insert([newGroup])
+                .select();
+
+            if (!error && data) {
+                // Auto-join creator
+                const pricePerPerson = (totalPrice / targetParticipants) * 1.07;
+                const cartKey = `bulk_${data[0].id}`;
+                cart[cartKey] = {
+                    name: `BULK: ${itemName}`,
+                    price: pricePerPerson,
+                    qty: 1,
+                    groupId: data[0].id
+                };
+                
+                allBulkGroups.unshift(data[0]);
+                renderBulkGroups();
+                updateCartUI();
+                hideCreateGroupModal();
+                alert('Bulk group created! You have been added automatically.');
+            } else {
+                alert('Error creating group');
+            }
+        }
+
+        async function processOrder() {
+            if (!currentUser || Object.keys(cart).length === 0) {
+                alert("Cart is empty!");
+                return;
+            }
+
+            let itemText = `*ORDER: ${currentUser.store_name}* (7% Fee Incl.)%0A%0A`;
             let grandTotal = 0;
             const orderItems = [];
 
-            for (let name in cart) {
-                const sub = cart[name].price * cart[name].qty;
-                itemText += `• ${name} x${cart[name].qty} = R${sub.toFixed(2)}%0A`;
-                grandTotal += sub;
-                orderItems.push({ item: name, qty: cart[name].qty, subtotal: sub });
+            for (let key in cart) {
+                const item = cart[key];
+                const subtotal = item.price * item.qty;
+                itemText += `• ${item.name} x${item.qty} = R${subtotal.toFixed(2)}%0A`;
+                grandTotal += subtotal;
+                orderItems.push({ item: item.name, qty: item.qty, subtotal: subtotal });
+
+                // Update bulk group participants if needed
+                if (item.groupId) {
+                    const group = allBulkGroups.find(g => g.id === item.groupId);
+                    if (group && group.current_participants < group.target_participants) {
+                        await _client
+                            .from('bulk_groups')
+                            .update({ current_participants: group.current_participants + 1 })
+                            .eq('id', item.groupId);
+                    }
+                }
             }
 
             // Save to Database
             await _client.from('orders').insert([{ 
-                profile_id: user.id, 
-                store_name: user.store_name, 
+                profile_id: currentUser.id, 
+                store_name: currentUser.store_name, 
                 total_amount: grandTotal, 
                 items: orderItems 
             }]);
             
+            // Clear cart
+            cart = {};
+            updateCartUI();
+            
             // Redirect to WhatsApp
             window.location.href = `https://wa.me/27764403803?text=${itemText}%0A*TOTAL: R${grandTotal.toFixed(2)}*`;
         }
+
+        window.onload = async () => {
+            const savedUser = localStorage.getItem('spaza_user');
+            if (savedUser) {
+                currentUser = JSON.parse(savedUser);
+                document.getElementById('login-section').classList.add('hidden');
+                document.getElementById('home-page').classList.remove('hidden');
+                await loadData();
+            }
+        };
     </script>
 </body>
 </html>
