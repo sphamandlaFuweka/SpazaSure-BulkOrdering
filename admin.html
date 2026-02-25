@@ -3,68 +3,194 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SpazaSure | Admin</title>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>SpazaSure | Master Admin Hub</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <style>body { font-family: 'Plus Jakarta Sans', sans-serif; }</style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root { --blue: #1E3A8A; --green: #10B981; --red: #E11D48; --dark: #0F172A; --gray: #64748B; --light: #F1F5F9; }
+        body { font-family: 'Inter', sans-serif; background: var(--light); margin: 0; color: #1E293B; }
+        
+        /* Navigation Sidebar */
+        .sidebar { width: 240px; background: var(--dark); color: white; height: 100vh; position: fixed; padding: 20px; box-sizing: border-box; }
+        .sidebar h2 { font-size: 18px; letter-spacing: 1px; margin-bottom: 30px; color: var(--green); }
+        .nav-link { padding: 12px; display: block; color: #94A3B8; text-decoration: none; border-radius: 8px; margin-bottom: 5px; cursor: pointer; transition: 0.3s; }
+        .nav-link:hover, .nav-link.active { background: rgba(255,255,255,0.1); color: white; }
+        
+        /* Main Content */
+        .main { margin-left: 240px; padding: 30px; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        
+        /* Dashboard Stats */
+        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 30px; }
+        .stat-card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+        .stat-card h4 { margin: 0; font-size: 12px; color: var(--gray); text-transform: uppercase; }
+        .stat-card .val { font-size: 24px; font-weight: 800; margin: 10px 0; }
+
+        /* Order Cards */
+        .order-card { background: white; border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border-left: 6px solid #CBD5E1; }
+        .order-card.pending { border-left-color: orange; }
+        .order-card.completed { border-left-color: var(--green); opacity: 0.8; }
+        
+        .badge { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 800; text-transform: uppercase; }
+        .badge-pending { background: #FEF3C7; color: #92400E; }
+        .badge-completed { background: #DCFCE7; color: #166534; }
+
+        .items-box { background: #F8FAFC; padding: 15px; border-radius: 8px; margin: 15px 0; }
+        .btn-group { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+        .btn { padding: 10px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 12px; color: white; }
+        
+        /* Fleet & Modals */
+        .driver-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .input-box { background: white; padding: 20px; border-radius: 12px; margin-bottom: 20px; }
+        input, select { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #DDD; border-radius: 8px; box-sizing: border-box; }
+        
+        .hidden { display: none; }
+    </style>
 </head>
-<body class="bg-gray-50 min-h-screen">
-    <header class="bg-blue-900 text-white p-6 shadow-xl">
-        <div class="max-w-7xl mx-auto flex justify-between items-center">
-            <h1 class="text-2xl font-black italic uppercase">SpazaSure Admin</h1>
-            <span class="bg-red-600 text-[10px] font-black px-3 py-1 rounded-full uppercase">Live Dashboard</span>
-        </div>
-    </header>
+<body>
 
-    <main class="max-w-7xl mx-auto p-6">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
-            <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
-                <p class="text-[10px] font-bold text-gray-400 uppercase">Total Revenue</p>
-                <p id="total-revenue" class="text-4xl font-black text-blue-900">R 0.00</p>
+    <div class="sidebar">
+        <h2>SPAZASURE</h2>
+        <div class="nav-link active" onclick="showTab('dashboard', this)"><i class="fa fa-chart-line"></i> Dashboard</div>
+        <div class="nav-link" onclick="showTab('orders', this)"><i class="fa fa-shopping-cart"></i> Orders</div>
+        <div class="nav-link" onclick="showTab('fleet', this)"><i class="fa fa-truck"></i> Fleet (Drivers)</div>
+        <div class="nav-link" onclick="location.reload()"><i class="fa fa-sync"></i> Refresh Data</div>
+    </div>
+
+    <div class="main">
+        <div id="tab-dashboard">
+            <div class="header"><h1>Analytics Overview</h1></div>
+            <div class="stats-grid">
+                <div class="stat-card"><h4>Revenue</h4><div class="val" id="stat-rev">R 0</div></div>
+                <div class="stat-card"><h4>Active Orders</h4><div class="val" id="stat-active">0</div></div>
+                <div class="stat-card"><h4>Most Popular</h4><div class="val" id="stat-top" style="font-size:16px;">...</div></div>
+                <div class="stat-card"><h4>Total Stores</h4><div class="val" id="stat-stores">0</div></div>
             </div>
-            <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
-                <p class="text-[10px] font-bold text-gray-400 uppercase">Total Orders</p>
-                <p id="order-count" class="text-4xl font-black text-blue-900">0</p>
+            <div class="driver-grid">
+                <div class="stat-card"><h3>Top Areas</h3><div id="area-list"></div></div>
+                <div class="stat-card"><h3>Top Selling Items</h3><div id="item-rank"></div></div>
             </div>
         </div>
 
-        <div class="bg-white rounded-[2rem] shadow-sm border border-gray-100 overflow-hidden">
-            <table class="w-full text-left">
-                <thead class="bg-gray-50 border-b border-gray-100">
-                    <tr>
-                        <th class="p-5 text-[10px] font-black text-gray-400 uppercase">Store</th>
-                        <th class="p-5 text-[10px] font-black text-gray-400 uppercase">Items</th>
-                        <th class="p-5 text-[10px] font-black text-gray-400 uppercase">Total Amount</th>
-                    </tr>
-                </thead>
-                <tbody id="admin-orders-table" class="divide-y divide-gray-50"></tbody>
-            </table>
+        <div id="tab-orders" class="hidden">
+            <div class="header"><h1>Order Management</h1></div>
+            <div id="master-order-list">Loading orders...</div>
         </div>
-    </main>
+
+        <div id="tab-fleet" class="hidden">
+            <div class="header"><h1>Fleet Management</h1></div>
+            <div class="input-box">
+                <h3>Register New Driver</h3>
+                <div style="display:grid; grid-template-columns:1fr 1fr 1fr auto; gap:10px;">
+                    <input type="text" id="d-name" placeholder="Name">
+                    <input type="text" id="d-phone" placeholder="WhatsApp Number">
+                    <input type="text" id="d-vehicle" placeholder="Vehicle Details">
+                    <button class="btn" style="background:var(--blue); padding:0 20px;" onclick="addDriver()">ADD</button>
+                </div>
+            </div>
+            <div id="fleet-list" class="driver-grid"></div>
+        </div>
+    </div>
 
     <script>
         const _supabaseUrl = 'https://clbhfxqxcugxcqutngpo.supabase.co';
         const _supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNsYmhmeHF4Y3VneGNxdXRuZ3BvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE4MzgxMDMsImV4cCI6MjA4NzQxNDEwM30.VWj5TGjAQhj77BZyoSUmynUPDPTVGL_pAKNyrlpQR1Y';
-        const _spazaClient = supabase.createClient(_supabaseUrl, _supabaseKey);
+        const _client = supabase.createClient(_supabaseUrl, _supabaseKey);
 
-        async function loadAdminData() {
-            const { data: orders } = await _spazaClient.from('orders').select('*').order('created_at', { ascending: false });
-            const table = document.getElementById('admin-orders-table');
-            let rev = 0;
-            table.innerHTML = orders.map(o => {
-                rev += o.total_amount;
-                return `<tr class="hover:bg-gray-50">
-                    <td class="p-5 font-bold text-blue-900">${o.store_name}</td>
-                    <td class="p-5 text-xs text-gray-500">${o.items.length} Pallets</td>
-                    <td class="p-5 font-black">R ${o.total_amount.toFixed(2)}</td>
-                </tr>`;
-            }).join('');
-            document.getElementById('total-revenue').innerText = "R " + rev.toFixed(2);
-            document.getElementById('order-count').innerText = orders.length;
+        let driversList = [];
+
+        window.onload = async () => {
+            await fetchDrivers();
+            await fetchOrders();
+        };
+
+        async function fetchDrivers() {
+            const { data } = await _client.from('drivers').select('*');
+            driversList = data || [];
+            document.getElementById('fleet-list').innerHTML = driversList.map(d => `
+                <div class="stat-card">
+                    <b>${d.driver_name}</b><br>
+                    <small>${d.vehicle_info}</small><br>
+                    <span style="color:var(--green)">${d.phone_number}</span>
+                </div>
+            `).join('');
         }
-        loadAdminData();
-        setInterval(loadAdminData, 5000); // Live update every 5 seconds
+
+        async function fetchOrders() {
+            const { data: orders } = await _client.from('orders').select('*, drivers(driver_name), profiles(whatsapp_number)').order('created_at', {ascending:false});
+            if(!orders) return;
+
+            // Stats Logic
+            let rev = 0; let activeCount = 0; let prodMap = {}; let areaMap = {};
+            orders.forEach(o => {
+                rev += Number(o.total_amount);
+                if(o.status === 'pending') activeCount++;
+                o.items.forEach(i => prodMap[i.name] = (prodMap[i.name] || 0) + i.qty);
+                const area = o.store_name.split(' ').pop(); areaMap[area] = (areaMap[area] || 0) + 1;
+            });
+
+            document.getElementById('stat-rev').innerText = "R " + rev.toFixed(2);
+            document.getElementById('stat-active').innerText = activeCount;
+            document.getElementById('stat-stores').innerText = [...new Set(orders.map(o => o.store_name))].length;
+
+            // Render Orders Tab
+            document.getElementById('master-order-list').innerHTML = orders.map(o => `
+                <div class="order-card ${o.status}">
+                    <div style="display:flex; justify-content:space-between">
+                        <div>
+                            <span class="badge badge-${o.status}">${o.status}</span>
+                            <h2 style="margin:10px 0 2px 0;">${o.store_name}</h2>
+                            <small>${new Date(o.created_at).toLocaleString()}</small>
+                        </div>
+                        <div style="text-align:right">
+                            <div style="font-size:22px; font-weight:900; color:var(--red);">R${Number(o.total_amount).toFixed(2)}</div>
+                            <small class="badge">${o.payment_method}</small>
+                        </div>
+                    </div>
+                    <div class="items-box">${o.items.map(i => `• ${i.name} x${i.qty}`).join('<br>')}</div>
+                    <div style="margin-bottom:10px;"><strong>Driver:</strong> ${o.drivers?.driver_name || "NOT ASSIGNED"}</div>
+                    <div class="btn-group">
+                        <button class="btn" style="background:var(--blue)" onclick="assignDriver('${o.id}')"><i class="fa fa-truck"></i> DISPATCH</button>
+                        <button class="btn" style="background:#25D366" onclick="chat('${o.profiles.whatsapp_number}', '${o.store_name}')"><i class="fa fa-comments"></i> CHAT</button>
+                        <button class="btn" style="background:var(--green)" onclick="updateStatus('${o.id}', 'completed')"><i class="fa fa-check"></i> COMPLETE</button>
+                        <select id="driver-sel-${o.id}" style="margin:0; height:36px; font-size:11px;">
+                            <option value="">Select Driver...</option>
+                            ${driversList.map(d => `<option value="${d.id}">${d.driver_name}</option>`).join('')}
+                        </select>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function updateStatus(id, status) {
+            await _client.from('orders').update({ status }).eq('id', id);
+            location.reload();
+        }
+
+        async function assignDriver(orderId) {
+            const dId = document.getElementById(`driver-sel-${orderId}`).value;
+            if(!dId) return alert("Select driver first");
+            await _client.from('orders').update({ driver_id: dId }).eq('id', orderId);
+            alert("Driver Assigned & Notified!");
+            location.reload();
+        }
+
+        async function addDriver() {
+            const n = document.getElementById('d-name').value;
+            const p = document.getElementById('d-phone').value;
+            const v = document.getElementById('d-vehicle').value;
+            await _client.from('drivers').insert([{ driver_name: n, phone_number: p, vehicle_info: v }]);
+            location.reload();
+        }
+
+        function chat(p, s) { window.open(`https://wa.me/${p}?text=Hi ${s}, regarding your SpazaSure order...`); }
+
+        function showTab(tab, btn) {
+            document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+            btn.classList.add('active');
+            ['dashboard', 'orders', 'fleet'].forEach(t => document.getElementById('tab-'+t).classList.add('hidden'));
+            document.getElementById('tab-'+tab).classList.remove('hidden');
+        }
     </script>
 </body>
 </html>
