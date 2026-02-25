@@ -26,9 +26,10 @@
         .add-btn { background: var(--blue); color: white; border: none; padding: 10px 15px; border-radius: 8px; cursor: pointer; font-weight: bold; }
         .add-btn:active { transform: scale(0.9); background: #10B981; }
 
-        .total-box { position: fixed; bottom: 0; width: 100%; background: white; padding: 20px; box-sizing: border-box; border-top: 3px solid var(--red); }
+        .total-box { position: fixed; bottom: 0; width: 100%; background: white; padding: 20px; box-sizing: border-box; border-top: 3px solid var(--red); box-shadow: 0 -5px 15px rgba(0,0,0,0.1); }
         .hidden { display: none; }
         input[type="text"] { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
+        .markup-tag { font-size: 10px; color: #666; font-style: italic; }
     </style>
 </head>
 <body>
@@ -36,10 +37,10 @@
     <div id="login-section" style="max-width: 400px; margin: 80px auto; padding: 20px;">
         <div class="card" style="border-left: none; flex-direction: column;">
             <h1 style="color: var(--blue); margin: 0;">SPAZASURE</h1>
-            <p>Enter Store Details</p>
+            <p style="color: #666; font-size: 12px; margin-bottom: 20px;">MARKETPLACE (+7% FEE)</p>
             <input type="text" id="login-phone" placeholder="WhatsApp Number">
             <input type="text" id="login-store" placeholder="Store Name">
-            <button onclick="handleLogin()" class="btn-blue">LOGIN</button>
+            <button onclick="handleLogin()" class="btn-blue">ENTER MARKET</button>
         </div>
     </div>
 
@@ -54,13 +55,15 @@
             <div id="cart-count" style="background: var(--red); color: white; padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: bold;">0 Items</div>
         </div>
 
-        <div style="padding: 0 15px;"><input type="text" id="product-search" placeholder="🔍 Search products..." onkeyup="renderProducts()"></div>
+        <div style="padding: 0 15px;">
+            <input type="text" id="product-search" placeholder="🔍 Search products..." onkeyup="renderProducts()">
+        </div>
 
         <div class="product-grid" id="product-list"></div>
 
         <div class="total-box">
             <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
-                <span style="font-weight: bold;">Total (7% Incl.):</span>
+                <span style="font-weight: bold; color: #444;">Total (Incl. 7% markup):</span>
                 <span id="total-cost" style="font-size: 22px; font-weight: 900; color: var(--red);">R 0.00</span>
             </div>
             <button onclick="processOrder()" class="btn-red">SEND ORDER VIA WHATSAPP</button>
@@ -74,14 +77,18 @@
 
         let cart = {}; 
         let allProducts = [];
-        let currentMode = 'single'; // 'single' or 'bulk'
+        let currentMode = 'single'; 
 
         async function handleLogin() {
             const phone = document.getElementById('login-phone').value.trim();
             const store = document.getElementById('login-store').value.trim();
             const { data } = await _client.from('profiles').select('*').eq('whatsapp_number', phone).ilike('store_name', store).single();
-            if (data) { localStorage.setItem('spaza_user', JSON.stringify(data)); location.reload(); }
-            else alert("Store not found!");
+            if (data) { 
+                localStorage.setItem('spaza_user', JSON.stringify(data)); 
+                location.reload(); 
+            } else { 
+                alert("Store not found!"); 
+            }
         }
 
         window.onload = async () => {
@@ -107,7 +114,6 @@
             const term = document.getElementById('product-search').value.toLowerCase();
             const list = document.getElementById('product-list');
             
-            // Logic: Bulk mode filters items with "Case", "Shrink", "Box" or "Pack" in name
             const filtered = allProducts.filter(p => {
                 const matchesSearch = p.name.toLowerCase().includes(term);
                 const isBulk = /case|shrink|box|pack|bulk/i.test(p.name);
@@ -115,12 +121,15 @@
             });
 
             list.innerHTML = filtered.map(p => {
-                const finalPrice = p.price * 1.07;
+                const basePrice = Number(p.price);
+                const finalPrice = basePrice * 1.07;
+                
                 return `
                 <div class="card">
                     <div>
                         <b style="text-transform: uppercase;">${p.name}</b><br>
                         <span style="color: var(--blue); font-weight: 900;">R ${finalPrice.toFixed(2)}</span>
+                        <br><span class="markup-tag">(7% fee incl.)</span>
                     </div>
                     <div style="display: flex; align-items: center; gap: 8px;">
                         <input type="number" id="qty-${p.id}" value="1" min="1" class="qty-input">
@@ -133,21 +142,25 @@
         function addToCart(id, name, price) {
             const qtyInput = document.getElementById(`qty-${id}`);
             const qty = parseInt(qtyInput.value);
+            const numPrice = parseFloat(price);
             
-            if (qty > 0) {
-                if (cart[name]) cart[name].qty += qty;
-                else cart[name] = { price: price, qty: qty };
+            if (qty > 0 && !isNaN(numPrice)) {
+                if (cart[name]) {
+                    cart[name].qty += qty;
+                } else {
+                    cart[name] = { price: numPrice, qty: qty };
+                }
                 
                 updateUI();
-                
-                // Reset input and give feedback
-                qtyInput.value = 1;
-                console.log("Added:", name, qty);
+                qtyInput.value = 1; // Reset input field
+            } else {
+                alert("Please enter a valid quantity.");
             }
         }
 
         function updateUI() {
-            let total = 0, count = 0;
+            let total = 0;
+            let count = 0;
             for (let key in cart) {
                 total += cart[key].price * cart[key].qty;
                 count += cart[key].qty;
@@ -158,9 +171,9 @@
 
         async function processOrder() {
             const user = JSON.parse(localStorage.getItem('spaza_user'));
-            if (Object.keys(cart).length === 0) return alert("Cart is empty!");
+            if (!user || Object.keys(cart).length === 0) return alert("Cart is empty!");
 
-            let itemText = `*ORDER: ${user.store_name}* (%2B7%25 Fee Incl.)%0A%0A`;
+            let itemText = `*ORDER: ${user.store_name}* (7% Fee Incl.)%0A%0A`;
             let grandTotal = 0;
             const orderItems = [];
 
@@ -171,7 +184,15 @@
                 orderItems.push({ item: name, qty: cart[name].qty, subtotal: sub });
             }
 
-            await _client.from('orders').insert([{ profile_id: user.id, store_name: user.store_name, total_amount: grandTotal, items: orderItems }]);
+            // Save to Database
+            await _client.from('orders').insert([{ 
+                profile_id: user.id, 
+                store_name: user.store_name, 
+                total_amount: grandTotal, 
+                items: orderItems 
+            }]);
+            
+            // Redirect to WhatsApp
             window.location.href = `https://wa.me/27764403803?text=${itemText}%0A*TOTAL: R${grandTotal.toFixed(2)}*`;
         }
     </script>
