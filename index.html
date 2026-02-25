@@ -3,49 +3,107 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SpazaSure | Shop Market</title>
+    <title>SpazaSure | Market</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root { --blue: #1E3A8A; --red: #E11D48; --bg: #F3F4F6; --green: #10B981; --gray: #64748B; }
-        body { font-family: system-ui, -apple-system, sans-serif; background: var(--bg); margin: 0; padding-bottom: 250px; }
+        body { font-family: system-ui, sans-serif; background: var(--bg); margin: 0; padding-bottom: 220px; }
         
+        /* Auth UI */
+        #auth-container { max-width: 450px; margin: 40px auto; padding: 25px; background: white; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        .auth-toggle { display: flex; margin-bottom: 20px; background: #F1F5F9; border-radius: 10px; padding: 5px; }
+        .auth-toggle button { flex: 1; padding: 10px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; background: transparent; color: var(--gray); }
+        .auth-toggle button.active { background: white; color: var(--blue); box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+
+        /* Main App UI */
         .profile-header { background: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #E2E8F0; }
-        .store-name { font-weight: 900; color: var(--blue); margin: 0; font-size: 1.1rem; }
-        
-        .nav-menu { display: flex; background: var(--blue); padding: 10px; gap: 10px; position: sticky; top: 0; z-index: 1000; }
-        .nav-btn { flex: 1; padding: 12px; border: none; border-radius: 8px; font-weight: bold; color: white; background: rgba(255,255,255,0.1); cursor: pointer; }
+        .nav-menu { display: flex; background: var(--blue); padding: 10px; gap: 10px; position: sticky; top: 0; z-index: 100; }
+        .nav-btn { flex: 1; padding: 12px; border: none; border-radius: 8px; font-weight: bold; color: white; background: rgba(255,255,255,0.1); }
         .nav-btn.active { background: white; color: var(--blue); }
+        .card { background: white; border-radius: 15px; padding: 15px; margin: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; }
         
-        .card { background: white; border-radius: 15px; padding: 15px; margin: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; border-left: 5px solid var(--blue); }
-        .group-card { border-left-color: var(--green); flex-direction: column; align-items: flex-start; }
-        
-        .counter { display: flex; align-items: center; gap: 12px; background: #F1F5F9; border-radius: 10px; padding: 6px 12px; }
-        .cnt-btn { background: white; border: 1px solid #CBD5E1; width: 32px; height: 32px; border-radius: 6px; font-weight: bold; cursor: pointer; }
-        
-        .progress-bar { width: 100%; background: #E2E8F0; height: 8px; border-radius: 4px; margin: 10px 0; overflow: hidden; }
-        .progress-fill { height: 100%; background: var(--green); transition: 0.5s; }
-        
-        .creator-box { background: white; margin: 12px; padding: 20px; border-radius: 15px; border: 2px dashed var(--green); }
-        input, select { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #DDD; box-sizing: border-box; }
-        
+        /* Form Elements */
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        input, select { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #DDD; box-sizing: border-box; font-size: 14px; }
+        .btn-main { width: 100%; padding: 15px; background: var(--blue); color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 10px; }
         .footer { position: fixed; bottom: 0; width: 100%; background: white; padding: 20px; border-top: 4px solid var(--red); box-sizing: border-box; }
         .hidden { display: none; }
+        
+        /* Modal for Checkout */
+        .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: flex; align-items: flex-end; z-index: 1000; }
+        .modal-content { background: white; width: 100%; border-radius: 20px 20px 0 0; padding: 25px; box-sizing: border-box; }
     </style>
 </head>
 <body>
 
-    <div id="login-screen" style="max-width: 400px; margin: 100px auto; padding: 20px; text-align: center;">
-        <h1 style="color:var(--blue); font-size: 2.5rem; margin-bottom: 0;">SPAZASURE</h1>
-        <p style="color:var(--gray);">Log in to your Spaza Profile</p>
-        <input type="text" id="l-phone" placeholder="WhatsApp Number">
-        <input type="text" id="l-store" placeholder="Store Name">
-        <button onclick="handleLogin()" style="width:100%; padding:15px; background:var(--blue); color:white; border:none; border-radius:10px; font-weight:bold; margin-top:10px;">SIGN IN</button>
+    <div id="auth-screen">
+        <div id="auth-container">
+            <h1 style="color:var(--blue); text-align:center; margin-bottom:5px;">SPAZASURE</h1>
+            <p style="color:var(--gray); text-align:center; margin-bottom:20px;">Direct Wholesale for Local Retailers</p>
+            
+            <div class="auth-toggle">
+                <button id="btn-login-tab" class="active" onclick="toggleAuth('login')">Sign In</button>
+                <button id="btn-reg-tab" onclick="toggleAuth('reg')">Register Store</button>
+            </div>
+
+            <div id="form-login">
+                <input type="text" id="l-whatsapp" placeholder="WhatsApp Number">
+                <button class="btn-main" onclick="handleLogin()">ENTER MARKET</button>
+            </div>
+
+            <div id="form-reg" class="hidden">
+                <div class="grid-2">
+                    <input type="text" id="r-first" placeholder="First Name">
+                    <input type="text" id="r-last" placeholder="Last Name">
+                </div>
+                <input type="text" id="r-store" placeholder="Store Name">
+                <input type="text" id="r-whatsapp" placeholder="WhatsApp Number">
+                <input type="text" id="r-address" placeholder="Physical Address">
+                
+                <div class="grid-2">
+                    <select id="r-township">
+                        <option value="">Township</option>
+                        <option value="Umlazi">Umlazi</option>
+                        <option value="Soweto">Soweto</option>
+                        <option value="Khayelitsha">Khayelitsha</option>
+                        <option value="Tembisa">Tembisa</option>
+                    </select>
+                    <select id="r-gender">
+                        <option value="">Gender</option>
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                        <option value="Other">Other</option>
+                        <option value="Prefer not to say">Prefer not to say</option>
+                    </select>
+                </div>
+
+                <div class="grid-2">
+                    <select id="r-biz-type">
+                        <option value="">Business Type</option>
+                        <option value="Spaza Shop">Spaza Shop</option>
+                        <option value="Tuck Shop">Tuck Shop</option>
+                        <option value="Street Vendor">Street Vendor</option>
+                        <option value="Home-based Retail">Home-based Retail</option>
+                    </select>
+                    <select id="r-store-size">
+                        <option value="">Store Size</option>
+                        <option value="Small/Counter">Small/Counter</option>
+                        <option value="Medium/Walk-in">Medium/Walk-in</option>
+                        <option value="Large/Superette">Large/Superette</option>
+                    </select>
+                </div>
+                <button class="btn-main" style="background:var(--green);" onclick="handleRegister()">CREATE MY PROFILE</button>
+            </div>
+        </div>
     </div>
 
     <div id="app-screen" class="hidden">
         <div class="profile-header">
-            <div><p class="store-name" id="user-store-display">Store Name</p><small id="user-phone-display" style="color:var(--gray)"></small></div>
-            <button onclick="logout()" style="background:#FEE2E2; color:var(--red); border:none; padding:8px 12px; border-radius:8px; font-weight:bold; font-size:11px;">LOGOUT</button>
+            <div>
+                <b id="user-store-display" style="color:var(--blue)">Store Name</b><br>
+                <small id="user-info-display" style="color:var(--gray)"></small>
+            </div>
+            <button onclick="logout()" style="color:var(--red); border:none; background:none; font-weight:bold; cursor:pointer;">Logout</button>
         </div>
 
         <nav class="nav-menu">
@@ -53,22 +111,29 @@
             <button class="nav-btn" id="tab-b" onclick="setMode('bulk')">GROUPS</button>
         </nav>
 
-        <div id="group-creator" class="creator-box hidden">
-            <h4 style="margin-top:0; color:var(--green)">Request Bulk Price</h4>
-            <select id="nc-prod"></select>
-            <input type="number" id="nc-target" placeholder="Target Quantity (e.g. 50)">
-            <input type="number" id="nc-price" placeholder="Target Price Each (e.g. 150)">
-            <button onclick="submitGroup()" style="width:100%; background:var(--green); color:white; border:none; padding:12px; border-radius:8px; font-weight:bold;">LAUNCH GROUP</button>
-        </div>
-
         <div id="list-container"></div>
 
         <div class="footer">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-                <span style="font-size:12px; font-weight:bold; color:var(--gray)">TOTAL DUE:</span>
+                <span style="font-weight:bold; color:var(--gray)">TOTAL:</span>
                 <span id="total-display" style="font-size:24px; font-weight:900; color:var(--red);">R 0.00</span>
             </div>
-            <button onclick="placeOrder()" style="width:100%; padding:15px; background:var(--red); color:white; border:none; border-radius:10px; font-weight:bold; font-size:16px;">CONFIRM & SEND</button>
+            <button onclick="openPreview()" style="width:100%; padding:15px; background:var(--red); color:white; border:none; border-radius:10px; font-weight:bold; font-size:1.1rem;">REVIEW & CHECKOUT</button>
+        </div>
+    </div>
+
+    <div id="preview-modal" class="modal hidden">
+        <div class="modal-content">
+            <h2 style="margin-top:0;">Order Summary</h2>
+            <div id="preview-list"></div>
+            <select id="pay-method" style="margin-top:15px;">
+                <option value="Cash on Delivery">Cash on Delivery</option>
+                <option value="Instant EFT">Instant EFT</option>
+            </select>
+            <div class="grid-2" style="margin-top:15px;">
+                <button onclick="closePreview()" style="padding:15px; border-radius:10px; border:1px solid #DDD;">Back</button>
+                <button onclick="confirmOrder()" style="padding:15px; border-radius:10px; border:none; background:var(--green); color:white; font-weight:bold;">CONFIRM</button>
+            </div>
         </div>
     </div>
 
@@ -77,65 +142,73 @@
         const _supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNsYmhmeHF4Y3VneGNxdXRuZ3BvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE4MzgxMDMsImV4cCI6MjA4NzQxNDEwM30.VWj5TGjAQhj77BZyoSUmynUPDPTVGL_pAKNyrlpQR1Y';
         const _client = supabase.createClient(_supabaseUrl, _supabaseKey);
 
-        let cart = {}; let products = []; let groups = []; let currentMode = 'single';
+        let cart = {}; let products = []; let groups = []; let currentMode = 'single'; let totalVal = 0;
 
-        window.onload = checkAuth;
+        window.onload = () => { if(localStorage.getItem('spaza_user')) showApp(); };
 
-        function checkAuth() {
-            const user = JSON.parse(localStorage.getItem('spaza_user'));
-            if(user) {
-                document.getElementById('login-screen').classList.add('hidden');
-                document.getElementById('app-screen').classList.remove('hidden');
-                document.getElementById('user-store-display').innerText = user.store_name;
-                document.getElementById('user-phone-display').innerText = user.whatsapp_number;
-                loadData();
-            }
+        function toggleAuth(m) {
+            document.getElementById('form-login').classList.toggle('hidden', m !== 'login');
+            document.getElementById('form-reg').classList.toggle('hidden', m !== 'reg');
+            document.getElementById('btn-login-tab').classList.toggle('active', m === 'login');
+            document.getElementById('btn-reg-tab').classList.toggle('active', m === 'reg');
+        }
+
+        async function handleRegister() {
+            const profile = {
+                first_name: document.getElementById('r-first').value,
+                last_name: document.getElementById('r-last').value,
+                store_name: document.getElementById('r-store').value,
+                whatsapp_number: document.getElementById('r-whatsapp').value,
+                address: document.getElementById('r-address').value,
+                township: document.getElementById('r-township').value,
+                gender: document.getElementById('r-gender').value,
+                business_type: document.getElementById('r-biz-type').value,
+                store_size: document.getElementById('r-store-size').value
+            };
+
+            const { data, error } = await _client.from('profiles').insert([profile]).select().single();
+            if(error) return alert("Error: " + error.message);
+            localStorage.setItem('spaza_user', JSON.stringify(data));
+            location.reload();
         }
 
         async function handleLogin() {
-            const p = document.getElementById('l-phone').value;
-            const s = document.getElementById('l-store').value;
-            const { data } = await _client.from('profiles').select('*').eq('whatsapp_number', p).ilike('store_name', s).single();
-            if(data) { localStorage.setItem('spaza_user', JSON.stringify(data)); checkAuth(); }
-            else alert("Store not found. Check details.");
+            const w = document.getElementById('l-whatsapp').value;
+            const { data } = await _client.from('profiles').select('*').eq('whatsapp_number', w).single();
+            if(data) { localStorage.setItem('spaza_user', JSON.stringify(data)); location.reload(); }
+            else alert("Account not found.");
         }
 
-        function logout() { localStorage.removeItem('spaza_user'); location.reload(); }
+        function showApp() {
+            const u = JSON.parse(localStorage.getItem('spaza_user'));
+            document.getElementById('auth-screen').classList.add('hidden');
+            document.getElementById('app-screen').classList.remove('hidden');
+            document.getElementById('user-store-display').innerText = u.store_name;
+            document.getElementById('user-info-display').innerText = `${u.township} | ${u.business_type}`;
+            loadData();
+        }
 
         async function loadData() {
             const { data: p } = await _client.from('products').select('*');
             const { data: g } = await _client.from('buying_groups').select('*').eq('status', 'open');
             products = p || []; groups = g || [];
             render();
-            document.getElementById('nc-prod').innerHTML = products.map(x => `<option value="${x.name}">${x.name}</option>`).join('');
         }
 
-        function setMode(m) {
-            currentMode = m;
-            document.getElementById('tab-s').classList.toggle('active', m==='single');
-            document.getElementById('tab-b').classList.toggle('active', m==='bulk');
-            document.getElementById('group-creator').classList.toggle('hidden', m!=='bulk');
-            render();
-        }
+        function setMode(m) { currentMode = m; render(); }
 
         function render() {
-            const container = document.getElementById('list-container');
             const items = currentMode === 'single' ? products : groups;
-            container.innerHTML = items.map(i => {
+            document.getElementById('list-container').innerHTML = items.map(i => {
                 const name = i.name || i.group_name;
                 const price = (i.price || i.contribution_per_spaza) * 1.07;
                 const qty = cart[name]?.qty || 0;
-                let progress = "";
-                if(currentMode === 'bulk') {
-                    const pct = (i.current_quantity / i.target_quantity) * 100;
-                    progress = `<div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div><small>${i.current_quantity}/${i.target_quantity} units joined</small>`;
-                }
-                return `<div class="card ${currentMode==='bulk'?'group-card':''}">
-                    <div style="flex:1"><b>${name}</b><br><small>R${price.toFixed(2)}</small>${progress}</div>
-                    <div class="counter">
-                        <button class="cnt-btn" onclick="updateQty('${name}', ${price}, -1)">-</button>
-                        <b style="width:20px; text-align:center;">${qty}</b>
-                        <button class="cnt-btn" onclick="updateQty('${name}', ${price}, 1)">+</button>
+                return `<div class="card">
+                    <div><b>${name}</b><br><small>R${price.toFixed(2)}</small></div>
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <button onclick="updateQty('${name}', ${price}, -1)" class="cnt-btn">-</button>
+                        <b>${qty}</b>
+                        <button onclick="updateQty('${name}', ${price}, 1)" class="cnt-btn">+</button>
                     </div>
                 </div>`;
             }).join('');
@@ -145,38 +218,27 @@
             if(!cart[n]) cart[n] = { price: p, qty: 0 };
             cart[n].qty += c;
             if(cart[n].qty <= 0) delete cart[n];
-            let total = 0; for(let k in cart) total += (cart[k].price * cart[k].qty);
-            document.getElementById('total-display').innerText = "R " + total.toFixed(2);
+            totalVal = 0; Object.values(cart).forEach(o => totalVal += o.price * o.qty);
+            document.getElementById('total-display').innerText = "R " + totalVal.toFixed(2);
             render();
         }
 
-        async function submitGroup() {
-            const user = JSON.parse(localStorage.getItem('spaza_user'));
-            const pName = document.getElementById('nc-prod').value;
-            const target = document.getElementById('nc-target').value;
-            const price = document.getElementById('nc-price').value;
-            await _client.from('buying_groups').insert([{
-                group_name: "BULK: "+pName, item_name: pName, target_quantity: target, 
-                contribution_per_spaza: price, current_quantity: 0, status: 'open', created_by: user.store_name
-            }]);
-            loadData();
+        function openPreview() {
+            if(totalVal === 0) return alert("Cart is empty");
+            document.getElementById('preview-list').innerHTML = Object.entries(cart).map(([n, o]) => `<div style="display:flex; justify-content:space-between; margin-bottom:5px;"><span>${n} x${o.qty}</span><b>R${(o.price*o.qty).toFixed(2)}</b></div>`).join('');
+            document.getElementById('preview-modal').classList.remove('hidden');
         }
 
-        async function placeOrder() {
-            const user = JSON.parse(localStorage.getItem('spaza_user'));
-            if(Object.keys(cart).length === 0) return alert("Cart is empty");
-            let itemsArr = []; let total = 0;
-            for(let k in cart) {
-                total += (cart[k].price * cart[k].qty);
-                itemsArr.push({ name: k, qty: cart[k].qty });
-                if(currentMode === 'bulk') {
-                    const { data } = await _client.from('buying_groups').select('current_quantity').eq('group_name', k).single();
-                    await _client.from('buying_groups').update({ current_quantity: data.current_quantity + cart[k].qty }).eq('group_name', k);
-                }
-            }
-            await _client.from('orders').insert([{ profile_id: user.id, store_name: user.store_name, total_amount: total, items: itemsArr, status: 'pending', payment_method: 'cash' }]);
+        function closePreview() { document.getElementById('preview-modal').classList.add('hidden'); }
+
+        async function confirmOrder() {
+            const u = JSON.parse(localStorage.getItem('spaza_user'));
+            const items = Object.entries(cart).map(([n, o]) => ({ name: n, qty: o.qty }));
+            await _client.from('orders').insert([{ profile_id: u.id, store_name: u.store_name, total_amount: totalVal, items, payment_method: document.getElementById('pay-method').value }]);
             alert("Order Confirmed!"); location.reload();
         }
+
+        function logout() { localStorage.clear(); location.reload(); }
     </script>
 </body>
 </html>
