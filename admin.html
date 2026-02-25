@@ -11,9 +11,8 @@
         body { font-family: 'Inter', sans-serif; background: var(--light); margin: 0; color: #1E293B; display: flex; }
         
         /* Security Barrier */
-        #auth-barrier { position: fixed; inset: 0; background: white; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10000; }
-        .spinner { width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid var(--blue); border-radius: 50%; animation: spin 1s linear infinite; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        #auth-barrier { position: fixed; inset: 0; background: var(--dark); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10000; color: white; }
+        .admin-input { padding: 15px; border-radius: 12px; border: none; width: 250px; text-align: center; font-size: 18px; margin-bottom: 20px; }
 
         /* Sidebar */
         .sidebar { width: 240px; background: var(--dark); color: white; height: 100vh; position: fixed; padding: 20px; box-sizing: border-box; display: flex; flex-direction: column; }
@@ -26,7 +25,7 @@
         .main { margin-left: 240px; padding: 30px; width: calc(100% - 240px); min-height: 100vh; }
         .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
         
-        /* Cards & Stats */
+        /* Stats */
         .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 30px; }
         .stat-card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
         .stat-card h4 { margin: 0; font-size: 11px; color: var(--gray); text-transform: uppercase; }
@@ -34,15 +33,14 @@
 
         .card-ui { background: white; border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border-left: 6px solid #CBD5E1; }
         .card-ui.pending { border-left-color: orange; }
+        .card-ui.processing { border-left-color: var(--blue); }
         .card-ui.completed { border-left-color: var(--green); }
         
-        /* Table Styles */
         .table-container { background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
         table { width: 100%; border-collapse: collapse; text-align: left; }
         th { background: #F8FAFC; padding: 15px; color: var(--gray); font-size: 12px; text-transform: uppercase; }
         td { padding: 15px; border-top: 1px solid #F1F5F9; }
 
-        /* Utilities */
         .badge { padding: 4px 10px; border-radius: 20px; font-size: 10px; font-weight: 800; text-transform: uppercase; }
         .btn { padding: 10px 15px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 12px; color: white; display: flex; align-items: center; justify-content: center; gap: 5px; }
         .hidden { display: none !important; }
@@ -52,8 +50,10 @@
 <body>
 
     <div id="auth-barrier">
-        <div class="spinner"></div>
-        <p id="auth-status" style="margin-top:20px; color:var(--gray);">Verifying Admin Access...</p>
+        <h1 style="color:var(--green)">ADMIN ACCESS</h1>
+        <p>Enter Master Password to Unlock</p>
+        <input type="password" id="admin-pass-input" class="admin-input" placeholder="••••••••">
+        <button onclick="unlockAdmin()" class="btn" style="background:var(--blue); width:250px; padding:15px;">UNLOCK DASHBOARD</button>
     </div>
 
     <div id="admin-ui" class="hidden">
@@ -63,7 +63,6 @@
             <div class="nav-link" onclick="showTab('vetting', this)"><i class="fa fa-user-check"></i> Vetting</div>
             <div class="nav-link" onclick="showTab('orders', this)"><i class="fa fa-shopping-basket"></i> Orders</div>
             <div class="nav-link" onclick="showTab('groups', this)"><i class="fa fa-users"></i> Buying Groups</div>
-            <div class="nav-link" onclick="showTab('fleet', this)"><i class="fa fa-truck"></i> Fleet</div>
             <div class="logout-btn" onclick="doLogout()">LOGOUT</div>
         </div>
 
@@ -72,9 +71,9 @@
                 <div class="header"><h1>Analytics Overview</h1></div>
                 <div class="stats-grid">
                     <div class="stat-card"><h4>Total Revenue</h4><div class="val" id="stat-rev">R 0</div></div>
-                    <div class="stat-card"><h4>Pending Orders</h4><div class="val" id="stat-active" style="color:orange">0</div></div>
+                    <div class="stat-card"><h4>Active Orders</h4><div class="val" id="stat-active" style="color:orange">0</div></div>
                     <div class="stat-card"><h4>Total Stores</h4><div class="val" id="stat-stores">0</div></div>
-                    <div class="stat-card"><h4>Vetting Required</h4><div class="val" id="stat-vet" style="color:var(--red)">0</div></div>
+                    <div class="stat-card"><h4>Vetting Needed</h4><div class="val" id="stat-vet" style="color:var(--red)">0</div></div>
                 </div>
             </div>
 
@@ -82,7 +81,7 @@
                 <div class="header"><h1>Store Approvals</h1></div>
                 <div class="table-container">
                     <table>
-                        <thead><tr><th>Store Details</th><th>Township & Size</th><th>Contact</th><th>Action</th></tr></thead>
+                        <thead><tr><th>Store Details</th><th>Township</th><th>Contact</th><th>Action</th></tr></thead>
                         <tbody id="vetting-list"></tbody>
                     </table>
                 </div>
@@ -94,22 +93,8 @@
             </div>
 
             <div id="tab-groups" class="hidden">
-                <div class="header"><h1>Active Deals</h1></div>
-                <div class="stat-card" style="margin-bottom:20px;">
-                    <h3>Launch Group Buy</h3>
-                    <div style="display:grid; grid-template-columns: 2fr 1fr 1fr auto; gap:10px;">
-                        <input type="text" id="g-name" placeholder="Item Name">
-                        <input type="number" id="g-target" placeholder="Target">
-                        <input type="number" id="g-price" placeholder="Price">
-                        <button class="btn" style="background:var(--blue); padding:0 25px;" onclick="createGroup()">LAUNCH</button>
-                    </div>
-                </div>
-                <div id="active-groups-list"></div>
-            </div>
-
-            <div id="tab-fleet" class="hidden">
-                <div class="header"><h1>Fleet Management</h1></div>
-                <div id="fleet-list" style="display:grid; grid-template-columns: 1fr 1fr; gap:20px;"></div>
+                <div class="header"><h1>Bulk Buying & Contributions</h1></div>
+                <div id="group-contributions-list"></div>
             </div>
         </div>
     </div>
@@ -119,94 +104,129 @@
         const _supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNsYmhmeHF4Y3VneGNxdXRuZ3BvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE4MzgxMDMsImV4cCI6MjA4NzQxNDEwM30.VWj5TGjAQhj77BZyoSUmynUPDPTVGL_pAKNyrlpQR1Y';
         const _client = supabase.createClient(_supabaseUrl, _supabaseKey);
 
-        // --- SECURITY LAYER ---
-        async function checkSecurity() {
-            const userPhone = localStorage.getItem('user_phone');
-            if (!userPhone) return redirectToLogin();
+        const ADMIN_PASSWORD = "Spaza2024!"; // Hardcoded Password
 
-            const { data } = await _client.from('profiles').select('role').eq('whatsapp_number', userPhone).single();
-            if (data && data.role === 'admin') {
+        // --- AUTH LOGIC ---
+        function unlockAdmin() {
+            const pass = document.getElementById('admin-pass-input').value;
+            if(pass === ADMIN_PASSWORD) {
                 document.getElementById('auth-barrier').classList.add('hidden');
                 document.getElementById('admin-ui').classList.remove('hidden');
                 loadAllData();
-            } else { redirectToLogin("🚫 Unauthorized"); }
+            } else {
+                alert("Access Denied: Incorrect Password");
+            }
         }
 
-        function redirectToLogin(msg = "Access Denied") {
-            document.getElementById('auth-status').innerText = msg;
-            setTimeout(() => window.location.href = "index.html", 2000);
-        }
-
-        // --- DATA LOADERS ---
         async function loadAllData() {
             fetchDashboardStats();
             fetchVetting();
             fetchOrders();
-            fetchGroups();
-            fetchDrivers();
+            fetchGroupContributions();
         }
 
+        // --- DASHBOARD STATS ---
         async function fetchDashboardStats() {
             const { data: orders } = await _client.from('orders').select('total_amount, status');
             const { count: storeCount } = await _client.from('profiles').select('*', { count: 'exact', head: true });
             
             let revenue = orders?.reduce((sum, o) => sum + Number(o.total_amount), 0) || 0;
-            let pending = orders?.filter(o => o.status === 'pending').length || 0;
+            let pending = orders?.filter(o => o.status === 'pending' || o.status === 'processing').length || 0;
 
-            document.getElementById('stat-rev').innerText = "R " + revenue.toFixed(2);
+            document.getElementById('stat-rev').innerText = "R " + revenue.toLocaleString();
             document.getElementById('stat-stores').innerText = storeCount || 0;
             document.getElementById('stat-active').innerText = pending;
         }
 
+        // --- STORE VETTING ---
         async function fetchVetting() {
             const { data } = await _client.from('profiles').select('*').eq('is_verified', false);
             document.getElementById('stat-vet').innerText = data?.length || 0;
             document.getElementById('vetting-list').innerHTML = (data || []).map(p => `
                 <tr>
-                    <td><b>${p.store_name}</b><br><small>${p.first_name}</small></td>
-                    <td>${p.township}<br><small>${p.store_size}</small></td>
-                    <td><a href="https://wa.me/${p.whatsapp_number}" target="_blank" style="color:var(--green); text-decoration:none;"><i class="fab fa-whatsapp"></i> Chat</a></td>
-                    <td><button class="btn" style="background:var(--green)" onclick="verifyStore('${p.id}', '${p.store_name}')">APPROVE</button></td>
+                    <td><b>${p.store_name}</b><br><small>${p.first_name} ${p.last_name}</small></td>
+                    <td>${p.township}</td>
+                    <td><a href="https://wa.me/${p.whatsapp_number}" target="_blank" style="color:var(--green)"><i class="fab fa-whatsapp"></i> Chat</a></td>
+                    <td><button class="btn" style="background:var(--green)" onclick="verifyStore('${p.id}')">APPROVE</button></td>
                 </tr>`).join('');
         }
 
-        async function verifyStore(id, name) {
-            if (!confirm(`Approve ${name}?`)) return;
+        async function verifyStore(id) {
             await _client.from('profiles').update({ is_verified: true, status: 'verified' }).eq('id', id);
             loadAllData();
         }
 
+        // --- ORDER MANAGEMENT ---
         async function fetchOrders() {
-            const { data: orders } = await _client.from('orders').select('*, profiles(whatsapp_number)').order('created_at', {ascending:false});
+            const { data: orders } = await _client.from('orders').select('*').order('created_at', {ascending:false});
             document.getElementById('master-order-list').innerHTML = (orders || []).map(o => `
                 <div class="card-ui ${o.status}">
                     <div style="display:flex; justify-content:space-between">
                         <div><span class="badge" style="background:#EEE">${o.status}</span><h3>${o.store_name}</h3></div>
-                        <div style="text-align:right"><b>R${Number(o.total_amount).toFixed(2)}</b></div>
+                        <div style="text-align:right"><b>R${Number(o.total_amount).toFixed(2)}</b><br><small>${o.payment_method}</small></div>
                     </div>
-                    <div style="font-size:13px; margin:10px 0;">${o.items.map(i => `• ${i.name} (x${i.qty})`).join('<br>')}</div>
-                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
-                        <button class="btn" style="background:var(--blue)" onclick="updateStatus('orders', '${o.id}', 'completed')">Mark Done</button>
-                        <a href="https://wa.me/${o.profiles?.whatsapp_number}" class="btn" style="background:#25D366; text-decoration:none;">Contact</a>
+                    <div style="font-size:13px; margin:10px 0;">
+                        ${Object.entries(o.items).map(([name, detail]) => `• ${name} (x${detail.qty})`).join('<br>')}
+                    </div>
+                    <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px;">
+                        <select onchange="updateOrderStatus('${o.id}', this.value)" style="margin:0; padding:5px;">
+                            <option value="pending" ${o.status === 'pending'?'selected':''}>Pending</option>
+                            <option value="processing" ${o.status === 'processing'?'selected':''}>Processing</option>
+                            <option value="completed" ${o.status === 'completed'?'selected':''}>Completed</option>
+                        </select>
+                        <button class="btn" style="background:var(--red)" onclick="deleteOrder('${o.id}')">Delete</button>
+                        <button class="btn" style="background:var(--blue)" onclick="window.print()">Print</button>
                     </div>
                 </div>`).join('');
         }
 
-        // --- UTILS ---
-        async function updateStatus(tbl, id, val) {
-            await _client.from(tbl).update({ status: val }).eq('id', id);
+        async function updateOrderStatus(id, val) {
+            await _client.from('orders').update({ status: val }).eq('id', id);
             loadAllData();
         }
 
+        async function deleteOrder(id) {
+            if(confirm("Permanently delete this order?")) {
+                await _client.from('orders').delete().eq('id', id);
+                loadAllData();
+            }
+        }
+
+        // --- GROUP CONTRIBUTIONS ---
+        async function fetchGroupContributions() {
+            // This fetches all members and their individual payments for bulk deals
+            const { data } = await _client.from('group_contributions').select('*, profiles(store_name, township), buying_groups(group_name)');
+            
+            document.getElementById('group-contributions-list').innerHTML = `
+                <div class="table-container">
+                    <table>
+                        <thead><tr><th>Store</th><th>Item</th><th>Contribution</th><th>Date</th></tr></thead>
+                        <tbody>
+                            ${(data || []).map(c => `
+                                <tr>
+                                    <td><b>${c.profiles?.store_name}</b><br><small>${c.profiles?.township}</small></td>
+                                    <td>${c.buying_groups?.group_name}</td>
+                                    <td style="color:var(--green); font-weight:bold;">R${Number(c.contribution_amount).toFixed(2)}</td>
+                                    <td>${new Date(c.joined_at).toLocaleDateString()}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>`;
+        }
+
+        // --- UI UTILS ---
         function showTab(tab, btn) {
             document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
             btn.classList.add('active');
-            ['dashboard', 'vetting', 'orders', 'groups', 'fleet'].forEach(t => document.getElementById('tab-'+t).classList.add('hidden'));
+            ['dashboard', 'vetting', 'orders', 'groups'].forEach(t => {
+                const el = document.getElementById('tab-'+t);
+                if(el) el.classList.add('hidden');
+            });
             document.getElementById('tab-'+tab).classList.remove('hidden');
         }
 
-        function doLogout() { localStorage.clear(); location.reload(); }
-        window.onload = checkSecurity;
+        function doLogout() { location.reload(); }
     </script>
 </body>
 </html>
