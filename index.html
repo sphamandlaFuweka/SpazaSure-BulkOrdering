@@ -2,107 +2,119 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SpazaSure | The Future of Spaza Wholesale</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SpazaSure | Complete Wholesale System</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root { --blue: #1E3A8A; --red: #E11D48; --bg: #F8FAFC; --green: #10B981; --dark: #0F172A; --gray: #64748B; }
-        body { font-family: 'Inter', system-ui, -apple-system, sans-serif; background: var(--bg); margin: 0; padding-bottom: 220px; color: var(--dark); }
-        .container { max-width: 500px; margin: 0 auto; }
+        :root { 
+            --blue: #1E3A8A; --red: #E11D48; --bg: #F1F5F9; 
+            --green: #10B981; --dark: #0F172A; --gray: #64748B;
+            --yellow: #FBBF24;
+            --safe-bottom: env(safe-area-inset-bottom);
+        }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); margin: 0; color: var(--dark); }
+        .container { width: 100%; max-width: 500px; margin: 0 auto; min-height: 100vh; padding-bottom: 160px; }
         .hidden { display: none !important; }
 
-        /* Branding & Navigation */
-        .hero { background: linear-gradient(135deg, var(--blue), #3b82f6); color: white; padding: 40px 20px; text-align: center; border-radius: 0 0 30px 30px; }
-        .hero h1 { margin: 0; font-size: 2.2rem; letter-spacing: -1px; }
+        /* Header & Navigation */
         .sticky-header { position: sticky; top: 0; background: white; z-index: 100; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
-        .profile-bar { padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; }
-        .nav-tabs { display: flex; padding: 10px; gap: 10px; background: var(--blue); }
-        .nav-tabs button { flex: 1; padding: 12px; border: none; border-radius: 10px; font-weight: bold; color: white; background: rgba(255,255,255,0.1); cursor: pointer; }
+        .profile-bar { padding: 1rem; display: flex; justify-content: space-between; align-items: center; }
+        .nav-tabs { display: flex; padding: 8px; gap: 8px; background: var(--blue); }
+        .nav-tabs button { flex: 1; padding: 12px; border: none; border-radius: 12px; color: white; background: rgba(255,255,255,0.15); font-size: 0.7rem; font-weight: 700; cursor: pointer; }
         .nav-tabs button.active { background: white; color: var(--blue); }
 
-        /* Product Cards */
-        .card { background: white; margin: 12px; padding: 16px; border-radius: 16px; display: flex; flex-direction: column; box-shadow: 0 2px 8px rgba(0,0,0,0.04); border: 1px solid #f1f5f9; }
-        .prod-info b { font-size: 1.1rem; display: block; }
-        .prod-desc { font-size: 0.85rem; color: var(--gray); margin-top: 4px; line-height: 1.3; }
-        .price-container { margin-top: 8px; display: flex; gap: 10px; align-items: baseline; }
-        .bulk-tag { font-size: 0.75rem; font-weight: 700; color: var(--green); background: #DCFCE7; padding: 2px 8px; border-radius: 4px; }
-        .unit-price { font-size: 1rem; font-weight: 800; color: var(--blue); }
+        /* Product & Group Cards */
+        .card { 
+            background: white; margin: 12px; padding: 16px; border-radius: 20px; 
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border: 1px solid #e2e8f0;
+            display: flex; flex-direction: column; gap: 12px;
+        }
+        .card-top { display: flex; gap: 15px; align-items: flex-start; }
+        .prod-img { width: 85px; height: 85px; border-radius: 12px; object-fit: cover; background: #f8fafc; border: 1px solid #eee; }
+        .prod-title { font-size: 1.1rem; font-weight: 800; color: var(--dark); margin: 0; }
+        .prod-desc { font-size: 0.82rem; color: var(--gray); line-height: 1.4; margin: 4px 0; }
+        
+        .badge { padding: 4px 10px; border-radius: 6px; font-size: 0.65rem; font-weight: 700; text-transform: uppercase; }
+        .badge-bulk { background: #DCFCE7; color: #166534; border: 1px solid #bbf7d0; }
+        .badge-market { background: #eff6ff; color: #1e40af; border: 1px solid #dbeafe; }
+        .badge-group { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
+        
+        .price-display { font-size: 1.25rem; font-weight: 900; color: var(--blue); }
+        .card-bottom { display: flex; justify-content: space-between; align-items: center; padding-top: 12px; border-top: 1px solid #f1f5f9; }
+        .counter-box { display: flex; align-items: center; gap: 15px; background: #f8fafc; padding: 6px 12px; border-radius: 14px; border: 1px solid #edf2f7; }
+        .c-btn { width: 34px; height: 34px; border: none; background: white; border-radius: 8px; color: var(--blue); font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.05); cursor: pointer; }
 
-        /* Counter */
-        .counter-box { display: flex; align-items: center; gap: 12px; background: #f1f5f9; padding: 6px; border-radius: 12px; }
-        .c-btn { width: 34px; height: 34px; border: none; background: white; border-radius: 8px; font-weight: bold; color: var(--blue); cursor: pointer; }
+        /* Payment & Footer */
+        .pay-option { border: 2px solid #f1f5f9; border-radius: 16px; padding: 12px 16px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+        .pay-option.selected { border-color: var(--blue); background: #f8faff; }
+        .cart-footer { position: fixed; bottom: 0; width: 100%; max-width: 500px; background: white; padding: 1.2rem 1.5rem calc(1.5rem + var(--safe-bottom)); border-top: 1px solid #e2e8f0; z-index: 500; }
+        #review-order-btn { width: 100%; padding: 1.1rem; background: var(--blue); color: white; border: none; border-radius: 16px; font-weight: 800; font-size: 1rem; cursor: pointer; }
 
-        /* Progress Bar */
-        .group-meta { width: 100%; margin-top: 10px; }
-        .progress-bg { background: #e2e8f0; height: 8px; border-radius: 10px; overflow: hidden; margin: 8px 0; }
-        .progress-fill { background: var(--green); height: 100%; transition: 0.6s ease; }
-
-        /* Footer Sticky Area */
-        .cart-footer { position: fixed; bottom: 0; width: 100%; background: white; padding: 20px 20px 40px; border-top: 1px solid #e2e8f0; z-index: 500; }
-        .total-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-        .total-amount { font-size: 2.2rem; font-weight: 900; color: var(--green); }
-        #review-order-btn { width: 100%; padding: 16px; background: var(--blue); color: white; border: none; border-radius: 50px; font-weight: 800; font-size: 16px; cursor: pointer; }
-
-        /* Modals */
-        .modal-overlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.8); display: flex; align-items: flex-end; z-index: 1000; }
-        .modal-body { background: white; width: 100%; border-radius: 30px 30px 0 0; padding: 30px; box-sizing: border-box; max-height: 80vh; overflow-y: auto; }
-        .participant-item { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #f1f5f9; }
+        /* Modal */
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: flex; align-items: flex-end; z-index: 1000; }
+        .modal-body { background: white; width: 100%; border-radius: 2rem 2rem 0 0; padding: 2rem; max-height: 85vh; overflow-y: auto; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div id="section-auth">
-        <div class="hero"><h1>SPAZASURE</h1><p>Wholesale prices for the township economy.</p></div>
-        <div style="background: white; margin: -30px 20px 20px; padding: 25px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1);">
-            <input type="tel" id="login-wa" style="width:100%; padding:14px; margin-bottom:10px; border:1.5px solid #eee; border-radius:12px;" placeholder="WhatsApp Number">
-            <button onclick="handleLogin()" style="width:100%; padding:16px; background:var(--blue); color:white; border:none; border-radius:12px; font-weight:bold;">ENTER MARKET</button>
+        <div style="background: var(--blue); padding: 60px 20px; color: white; text-align: center; border-radius: 0 0 30px 30px;">
+            <h1 style="margin:0; letter-spacing: -1px;">SPAZASURE</h1>
+            <p style="opacity: 0.8;">Smart Logistics & Bulk Buying</p>
+            <div style="background: white; padding: 25px; border-radius: 20px; margin-top: 30px; box-shadow: 0 10px 20px rgba(0,0,0,0.2);">
+                <input type="tel" id="login-wa" style="width:100%; padding:15px; border: 2px solid #f1f5f9; border-radius:12px; font-size: 1rem;" placeholder="WhatsApp Number">
+                <button onclick="handleLogin()" style="width:100%; padding:15px; background:var(--green); color:white; border:none; border-radius:12px; margin-top: 12px; font-weight: 800; cursor: pointer;">ACCESS ACCOUNT</button>
+            </div>
         </div>
     </div>
 
     <div id="section-market" class="hidden">
         <div class="sticky-header">
             <div class="profile-bar">
-                <div><span id="txt-store-name" style="font-weight: 800; font-size: 1.2rem; color: var(--blue);">Store</span></div>
-                <button onclick="logout()" style="background:none; border:none; color:var(--red); font-weight:bold;">Logout</button>
+                <span id="txt-store-name" style="font-weight: 900; color: var(--blue);">Store Name</span>
+                <button onclick="logout()" style="background:#fee2e2; border:none; color:var(--red); padding: 8px 12px; border-radius: 8px; font-weight:bold;">LOGOUT</button>
             </div>
             <div class="nav-tabs">
                 <button id="nav-s" class="active" onclick="setMode('single')">MARKET</button>
                 <button id="nav-b" onclick="setMode('bulk')">BULK GROUPS</button>
+                <button id="nav-o" onclick="setMode('history')">MY ORDERS</button>
             </div>
         </div>
 
         <div id="list-render"></div>
+        <div id="history-render" class="hidden"></div>
 
-        <div class="cart-footer">
-            <div class="total-row">
-                <span style="font-weight:700; color:var(--gray); font-size:0.75rem; text-transform:uppercase;">Estimated Total</span>
-                <span id="txt-total" class="total-amount">R 0.00</span>
+        <div class="cart-footer" id="main-footer">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                <span style="font-weight:700; color:var(--gray); font-size:0.75rem;">TOTAL PAYABLE</span>
+                <span id="txt-total" style="font-weight: 900; color: var(--green); font-size: 1.8rem;">R 0.00</span>
             </div>
-            <button id="review-order-btn" onclick="showCheckout()">REVIEW & ORDER</button>
+            <button id="review-order-btn" onclick="showCheckout()">REVIEW & PLACE ORDER</button>
         </div>
     </div>
 
     <div id="modal-checkout" class="modal-overlay hidden">
         <div class="modal-body">
-            <h2 id="checkout-title">Review Order</h2>
-            <div id="checkout-list" style="margin-bottom:20px;"></div>
-            <div style="display:flex; justify-content:space-between; font-weight:900; font-size:1.5rem; margin-bottom:20px;">
-                <span>Total:</span>
-                <span id="checkout-total-val" style="color:var(--green)">R 0.00</span>
+            <h3 style="margin-top:0">Order Review</h3>
+            <div id="checkout-list" style="margin-bottom:20px; border-bottom:1px solid #eee; padding-bottom:10px;"></div>
+            
+            <p style="font-weight:bold; font-size:0.85rem; color: var(--gray);">PAYMENT METHOD</p>
+            <div id="pay-cash" class="pay-option selected" onclick="selectPayment('Cash')">
+                <span><i class="fa-solid fa-money-bill-wave"></i> Cash on Delivery</span>
+                <i class="fa-solid fa-circle-check" style="color:var(--green)"></i>
             </div>
-            <div style="display:grid; grid-template-columns:1fr 2fr; gap:10px;">
-                <button onclick="hideCheckout()" style="padding:16px; border:none; border-radius:12px; background:#f1f5f9;">Back</button>
-                <button onclick="finalPlaceOrder()" style="padding:16px; border:none; border-radius:12px; background:var(--green); color:white; font-weight:bold;">CONFIRM</button>
+            <div id="pay-eft" class="pay-option" onclick="selectPayment('EFT')">
+                <span><i class="fa-solid fa-building-columns"></i> Instant EFT</span>
+                <i class="fa-solid fa-circle" style="color:#e2e8f0"></i>
             </div>
-        </div>
-    </div>
 
-    <div id="modal-members" class="modal-overlay hidden">
-        <div class="modal-body">
-            <h3>Group Participants</h3>
-            <div id="member-list"></div>
-            <button onclick="document.getElementById('modal-members').classList.add('hidden')" style="width:100%; padding:16px; margin-top:20px; border:none; border-radius:12px; background:var(--blue); color:white;">Close</button>
+            <div style="display:grid; grid-template-columns: 1fr 2fr; gap:10px; margin-top:20px;">
+                <button onclick="hideCheckout()" style="padding:1rem; border-radius:12px; border:none; background:#eee; font-weight:bold;">BACK</button>
+                <button id="btn-place-order" onclick="finalPlaceOrder()" style="padding:1rem; border-radius:12px; border:none; background:var(--green); color:white; font-weight:800;">CONFIRM ORDER</button>
+            </div>
         </div>
     </div>
 </div>
@@ -112,22 +124,22 @@
     const _supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNsYmhmeHF4Y3VneGNxdXRuZ3BvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE4MzgxMDMsImV4cCI6MjA4NzQxNDEwM30.VWj5TGjAQhj77BZyoSUmynUPDPTVGL_pAKNyrlpQR1Y';
     const _client = supabase.createClient(_supabaseUrl, _supabaseKey);
 
-    let cart = {}; let products = []; let groups = []; let currentMode = 'single';
+    let cart = {}; let products = []; let groups = []; 
+    let currentMode = 'single'; let selectedPayment = 'Cash';
 
-    window.onload = () => { if(localStorage.getItem('spaza_user')) { initApp(); } };
+    window.onload = () => { if(localStorage.getItem('spaza_user')) initApp(); };
 
     async function handleLogin() {
-        const wa = document.getElementById('login-wa').value;
-        const { data } = await _client.from('profiles').select('*').eq('whatsapp_number', wa).single();
+        const wa = document.getElementById('login-wa').value.trim();
+        const { data } = await _client.from('profiles').select('*').eq('whatsapp_number', wa).maybeSingle();
         if(data) { localStorage.setItem('spaza_user', JSON.stringify(data)); initApp(); }
-        else alert("Store not found.");
+        else alert("Store not found. Please contact admin.");
     }
 
     function initApp() {
         document.getElementById('section-auth').classList.add('hidden');
         document.getElementById('section-market').classList.remove('hidden');
-        const u = JSON.parse(localStorage.getItem('spaza_user'));
-        document.getElementById('txt-store-name').innerText = u.store_name;
+        document.getElementById('txt-store-name').innerText = JSON.parse(localStorage.getItem('spaza_user')).store_name;
         loadContent();
     }
 
@@ -138,56 +150,53 @@
         renderList();
     }
 
-    function setMode(m) { 
-        currentMode = m; 
-        cart = {}; // Clear cart when switching modes to prevent mixing orders
-        document.getElementById('txt-total').innerText = "R 0.00";
-        document.getElementById('nav-s').classList.toggle('active', m === 'single'); 
-        document.getElementById('nav-b').classList.toggle('active', m === 'bulk'); 
-        renderList(); 
+    function setMode(m) {
+        currentMode = m;
+        const tabs = { 'single': 'nav-s', 'bulk': 'nav-b', 'history': 'nav-o' };
+        Object.keys(tabs).forEach(k => document.getElementById(tabs[k]).classList.toggle('active', m === k));
+        
+        document.getElementById('list-render').classList.toggle('hidden', m === 'history');
+        document.getElementById('history-render').classList.toggle('hidden', m !== 'history');
+        document.getElementById('main-footer').classList.toggle('hidden', m === 'history');
+
+        if(m === 'history') loadOrderHistory(); else renderList();
     }
 
     function renderList() {
         const items = currentMode === 'single' ? products : groups;
         const list = document.getElementById('list-render');
+        
         list.innerHTML = items.map(i => {
             const name = i.name || i.group_name;
-            const desc = i.description || "Fresh wholesale stock.";
-            const basePrice = i.price || i.contribution_per_spaza;
-            const finalPrice = basePrice * 1.07;
+            const desc = i.description || "Premium wholesale stock.";
+            const bulkPrice = i.price || i.contribution_per_spaza;
+            const marketPrice = currentMode === 'single' ? bulkPrice * 1.07 : bulkPrice;
             const qty = cart[name]?.qty || 0;
-            
-            let extra = "";
-            if(currentMode === 'bulk') {
-                const pct = (i.current_quantity / i.target_quantity) * 100;
-                extra = `
-                <div class="group-meta">
-                    <div class="progress-bg"><div class="progress-fill" style="width:${pct}%"></div></div>
-                    <div style="display:flex; justify-content:space-between; font-size:11px;">
-                        <span>${i.current_quantity}/${i.target_quantity} joined</span>
-                        <a href="#" onclick="showGroupMembers('${i.id}')" style="color:var(--blue); font-weight:bold; text-decoration:none;">View Members</a>
-                    </div>
-                </div>`;
-            }
+            const localImg = `images/${name}.png`;
 
             return `
             <div class="card">
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <div style="flex:1;">
-                        <b>${name}</b>
-                        <div class="prod-desc">${desc}</div>
-                        <div class="price-container">
-                            <span class="bulk-tag">Bulk: R${basePrice.toFixed(2)}</span>
-                            <span class="unit-price">R${finalPrice.toFixed(2)}</span>
+                <div class="card-top">
+                    <img src="${localImg}" class="prod-img" onerror="this.src='${i.image_url || 'https://via.placeholder.com/100'}';">
+                    <div style="flex:1">
+                        <h3 class="prod-title">${name}</h3>
+                        <p class="prod-desc">${desc}</p>
+                        <div class="price-badge-row">
+                            <span class="badge ${currentMode === 'single' ? 'badge-bulk' : 'badge-group'}">
+                                ${currentMode === 'single' ? 'Wholesale' : 'Group Price'}
+                            </span>
+                            ${currentMode === 'single' ? `<span class="badge badge-market">Retail: R${marketPrice.toFixed(2)}</span>` : ''}
                         </div>
                     </div>
+                </div>
+                <div class="card-bottom">
+                    <div class="price-display">R${marketPrice.toFixed(2)}</div>
                     <div class="counter-box">
-                        <button class="c-btn" onclick="updateCart('${name}', ${finalPrice}, -1)">-</button>
+                        <button class="c-btn" onclick="updateCart('${name}', ${marketPrice}, -1)">-</button>
                         <b style="min-width:20px; text-align:center;">${qty}</b>
-                        <button class="c-btn" onclick="updateCart('${name}', ${finalPrice}, 1)">+</button>
+                        <button class="c-btn" onclick="updateCart('${name}', ${marketPrice}, 1)">+</button>
                     </div>
                 </div>
-                ${extra}
             </div>`;
         }).join('');
     }
@@ -196,65 +205,66 @@
         if(!cart[n]) cart[n] = { price: p, qty: 0 };
         cart[n].qty += c;
         if(cart[n].qty <= 0) delete cart[n];
-        let total = 0; Object.values(cart).forEach(o => total += o.price * o.qty);
-        document.getElementById('txt-total').innerText = "R " + total.toFixed(2);
+        let t = 0; Object.values(cart).forEach(o => t += o.price * o.qty);
+        document.getElementById('txt-total').innerText = "R " + t.toFixed(2);
         renderList();
     }
 
-    async function showGroupMembers(groupId) {
-        document.getElementById('modal-members').classList.remove('hidden');
-        document.getElementById('member-list').innerHTML = "Loading...";
-        
-        const { data } = await _client.from('group_contributions').select('contribution_amount, profiles(store_name, township)').eq('group_id', groupId);
-        
-        if (data) {
-            document.getElementById('member-list').innerHTML = data.map(m => `
-                <div class="participant-item">
-                    <span>${m.profiles.store_name} (${m.profiles.township})</span>
-                    <b>R${m.contribution_amount.toFixed(2)}</b>
-                </div>
-            `).join('') || "No members joined yet.";
-        }
+    function selectPayment(m) {
+        selectedPayment = m;
+        document.getElementById('pay-cash').classList.toggle('selected', m === 'Cash');
+        document.getElementById('pay-eft').classList.toggle('selected', m === 'EFT');
     }
 
     function showCheckout() {
-        if(Object.keys(cart).length === 0) return alert("Select items first!");
-        document.getElementById('checkout-title').innerText = currentMode === 'single' ? "Review Market Order" : "Review Group Contribution";
-        let listHtml = ""; let total = 0;
-        Object.entries(cart).forEach(([n, o]) => { 
-            listHtml += `<div style="display:flex; justify-content:space-between; margin-bottom:10px;"><span>${n} x${o.qty}</span><b>R${(o.price * o.qty).toFixed(2)}</b></div>`;
-            total += o.price * o.qty;
+        if(Object.keys(cart).length === 0) return alert("Basket is empty.");
+        let html = "";
+        Object.entries(cart).forEach(([n, o]) => {
+            html += `<div style="display:flex; justify-content:space-between; margin-bottom:5px;"><span>${n} x${o.qty}</span><b>R${(o.price * o.qty).toFixed(2)}</b></div>`;
         });
-        document.getElementById('checkout-list').innerHTML = listHtml;
-        document.getElementById('checkout-total-val').innerText = "R " + total.toFixed(2);
+        document.getElementById('checkout-list').innerHTML = html;
         document.getElementById('modal-checkout').classList.remove('hidden');
     }
 
-    function hideCheckout() { document.getElementById('modal-checkout').classList.add('hidden'); }
-
     async function finalPlaceOrder() {
         const u = JSON.parse(localStorage.getItem('spaza_user'));
-        const total = parseFloat(document.getElementById('checkout-total-val').innerText.replace('R ', ''));
+        const total = parseFloat(document.getElementById('txt-total').innerText.replace('R ', ''));
+        document.getElementById('btn-place-order').disabled = true;
 
-        if (currentMode === 'single') {
-            await _client.from('market_orders').insert([{ profile_id: u.id, total_amount: total, items: cart }]);
-            alert("Market Order Placed!");
-        } else {
-            for (let name in cart) {
-                const group = groups.find(g => g.group_name === name);
-                await _client.from('group_contributions').insert([{
-                    group_id: group.id, profile_id: u.id,
-                    contribution_amount: cart[name].price * cart[name].qty,
-                    items_quantity: cart[name].qty
-                }]);
-            }
-            alert("Successfully joined bulk group!");
-        }
-        cart = {}; location.reload();
+        const { error } = await _client.from('orders').insert([{ 
+            profile_id: u.id, store_name: u.store_name, total_amount: total, 
+            items: cart, payment_method: selectedPayment, status: 'pending' 
+        }]);
+
+        if(!error) {
+            alert("Order Success!"); cart = {}; 
+            document.getElementById('txt-total').innerText = "R 0.00";
+            hideCheckout(); setMode('history');
+        } else { alert("Error: " + error.message); }
+        document.getElementById('btn-place-order').disabled = false;
     }
 
+    async function loadOrderHistory() {
+        const u = JSON.parse(localStorage.getItem('spaza_user'));
+        const { data } = await _client.from('orders').select('*').eq('profile_id', u.id).order('created_at', {ascending: false});
+        document.getElementById('history-render').innerHTML = (data || []).map(o => `
+            <div class="card" style="border-left: 5px solid ${o.status === 'pending' ? 'var(--yellow)' : 'var(--green)'};">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div>
+                        <b style="font-size:0.9rem;">ORDER #${o.id.slice(0,6).toUpperCase()}</b>
+                        <p style="font-size:0.75rem; color:var(--gray); margin:4px 0;">${new Date(o.created_at).toLocaleDateString()}</p>
+                    </div>
+                    <div style="text-align:right;">
+                        <span class="badge" style="background:#f1f5f9; border:1px solid #e2e8f0;">${o.status}</span>
+                        <div style="font-weight:900; color:var(--blue); margin-top:5px;">R${o.total_amount.toFixed(2)}</div>
+                    </div>
+                </div>
+            </div>
+        `).join('') || "<p style='text-align:center; padding:50px;'>No orders yet.</p>";
+    }
+
+    function hideCheckout() { document.getElementById('modal-checkout').classList.add('hidden'); }
     function logout() { localStorage.clear(); location.reload(); }
 </script>
-
 </body>
 </html>
