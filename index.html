@@ -1,175 +1,177 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SpazaSure | Reliable Market</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <style>
-        :root { --blue: #1E3A8A; --red: #E11D48; --bg: #F3F4F6; }
-        body { font-family: sans-serif; background: var(--bg); margin: 0; padding: 0; }
-        .nav-menu { display: flex; background: var(--blue); padding: 10px; gap: 10px; position: sticky; top: 0; z-index: 1000; }
-        .nav-btn { flex: 1; padding: 12px; border: none; border-radius: 8px; font-weight: bold; color: white; background: rgba(255,255,255,0.1); cursor: pointer; }
-        .nav-btn.active { background: white; color: var(--blue); }
-        .card { background: white; border-radius: 15px; padding: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; border-left: 5px solid var(--blue); }
-        .product-grid { padding: 15px; max-width: 800px; margin: auto; padding-bottom: 180px; }
-        .qty-input { width: 60px; padding: 8px; border: 2px solid #ddd; border-radius: 8px; text-align: center; font-weight: bold; }
-        .add-btn { background: var(--blue); color: white; border: none; padding: 10px 15px; border-radius: 8px; cursor: pointer; font-weight: bold; }
-        .total-box { position: fixed; bottom: 0; width: 100%; background: white; padding: 20px; box-sizing: border-box; border-top: 3px solid var(--red); box-shadow: 0 -5px 15px rgba(0,0,0,0.1); }
-        .hidden { display: none; }
-        input[type="text"] { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
-    </style>
-</head>
-<body>
+<script>
+    const _supabaseUrl = 'https://clbhfxqxcugxcqutngpo.supabase.co';
+    const _supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNsYmhmeHF4Y3VneGNxdXRuZ3BvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE4MzgxMDMsImV4cCI6MjA4NzQxNDEwM30.VWj5TGjAQhj77BZyoSUmynUPDPTVGL_pAKNyrlpQR1Y';
+    const _client = supabase.createClient(_supabaseUrl, _supabaseKey, { auth: { persistSession: false } });
 
-    <div id="login-section" style="max-width: 400px; margin: 80px auto; padding: 20px;">
-        <div class="card" style="flex-direction: column; border: none;">
-            <h1 style="color: var(--blue);">SPAZASURE</h1>
-            <input type="text" id="login-phone" placeholder="WhatsApp Number">
-            <input type="text" id="login-store" placeholder="Store Name">
-            <button onclick="handleLogin()" style="width:100%; padding:15px; background:var(--blue); color:white; border:none; border-radius:10px; font-weight:bold;">ENTER MARKET</button>
-        </div>
-    </div>
+    let cart = {}; 
+    let products = [];
+    let buyingGroups = [];
+    let currentMode = 'single';
 
-    <div id="home-page" class="hidden">
-        <nav class="nav-menu">
-            <button class="nav-btn active" onclick="setMode('single', this)">SINGLE BUY</button>
-            <button class="nav-btn" onclick="setMode('bulk', this)">BULK BUY</button>
-        </nav>
-
-        <div style="padding: 15px;">
-            <div style="display:flex; justify-content: space-between; align-items:center;">
-                <h2 id="mode-title" style="margin:0; color:var(--blue);">Single Units</h2>
-                <div id="cart-count" style="background:var(--red); color:white; padding:5px 15px; border-radius:20px; font-weight:bold;">0 Items</div>
-            </div>
-            <input type="text" id="product-search" placeholder="🔍 Search..." onkeyup="renderProducts()">
-        </div>
-
-        <div class="product-grid" id="product-list"></div>
-
-        <div class="total-box">
-            <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
-                <span style="font-weight: bold;">Total (+7%):</span>
-                <span id="total-cost" style="font-size: 22px; font-weight: 900; color: var(--red);">R 0.00</span>
-            </div>
-            <button onclick="processOrder()" style="width:100%; padding:18px; background:var(--red); color:white; border:none; border-radius:12px; font-weight:bold; font-size:16px;">SEND ORDER VIA WHATSAPP</button>
-        </div>
-    </div>
-
-    <script>
-        const _supabaseUrl = 'https://clbhfxqxcugxcqutngpo.supabase.co';
-        const _supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNsYmhmeHF4Y3VneGNxdXRuZ3BvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE4MzgxMDMsImV4cCI6MjA4NzQxNDEwM30.VWj5TGjAQhj77BZyoSUmynUPDPTVGL_pAKNyrlpQR1Y';
-        const _client = supabase.createClient(_supabaseUrl, _supabaseKey, { auth: { persistSession: false } });
-
-        let cart = {}; 
-        let allProducts = [];
-        let currentMode = 'single';
-
-        // --- LOGIN LOGIC ---
-        async function handleLogin() {
-            const phone = document.getElementById('login-phone').value.trim();
-            const store = document.getElementById('login-store').value.trim();
-            const { data } = await _client.from('profiles').select('*').eq('whatsapp_number', phone).ilike('store_name', store).single();
-            if (data) { localStorage.setItem('spaza_user', JSON.stringify(data)); location.reload(); }
-            else alert("Store not found!");
+    // --- AUTH ---
+    async function handleLogin() {
+        const phone = document.getElementById('login-phone').value.trim();
+        const store = document.getElementById('login-store').value.trim();
+        const { data } = await _client.from('profiles').select('*').eq('whatsapp_number', phone).ilike('store_name', store).single();
+        if (data) { 
+            localStorage.setItem('spaza_user', JSON.stringify(data)); 
+            location.reload(); 
+        } else { 
+            alert("Store not found!"); 
         }
+    }
 
-        window.onload = async () => {
-            const savedUser = localStorage.getItem('spaza_user');
-            if (savedUser) {
-                document.getElementById('login-section').classList.add('hidden');
-                document.getElementById('home-page').classList.remove('hidden');
-                const { data } = await _client.from('products').select('*');
-                allProducts = data || [];
-                renderProducts();
-            }
-        };
-
-        // --- NEW METHOD: GLOBAL CLICK LISTENER ---
-        // This listens for clicks on the entire body. If the clicked element is an ADD button, it works.
-        document.body.addEventListener('click', function(e) {
-            if (e.target && e.target.classList.contains('add-btn')) {
-                const id = e.target.getAttribute('data-id');
-                const name = e.target.getAttribute('data-name');
-                const price = parseFloat(e.target.getAttribute('data-price'));
-                const qtyInput = document.getElementById(`qty-${id}`);
-                const qty = parseInt(qtyInput.value);
-
-                if (qty > 0) {
-                    if (cart[name]) cart[name].qty += qty;
-                    else cart[name] = { price: price, qty: qty };
-                    
-                    updateUI();
-                    qtyInput.value = 1; // Reset
-                    
-                    // Small visual feedback
-                    e.target.innerText = "ADDED!";
-                    setTimeout(() => { e.target.innerText = "ADD"; }, 800);
-                }
-            }
-        });
-
-        function setMode(mode, btn) {
-            currentMode = mode;
-            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            document.getElementById('mode-title').innerText = mode === 'single' ? "Single Units" : "Bulk Packs";
-            renderProducts();
+    window.onload = async () => {
+        const user = localStorage.getItem('spaza_user');
+        if (user) {
+            document.getElementById('login-section').classList.add('hidden');
+            document.getElementById('home-page').classList.remove('hidden');
+            await loadData();
         }
+    };
 
-        function renderProducts() {
-            const term = document.getElementById('product-search').value.toLowerCase();
-            const list = document.getElementById('product-list');
-            
-            const filtered = allProducts.filter(p => {
-                const matches = p.name.toLowerCase().includes(term);
-                const isBulk = /case|shrink|box|pack|bulk/i.test(p.name);
-                return currentMode === 'bulk' ? (matches && isBulk) : (matches && !isBulk);
-            });
+    async function loadData() {
+        const { data: pData } = await _client.from('products').select('*');
+        const { data: gData } = await _client.from('buying_groups').select('*');
+        products = pData || [];
+        buyingGroups = gData || [];
+        renderView();
+    }
 
+    function setMode(mode) {
+        currentMode = mode;
+        document.getElementById('tab-single').classList.toggle('active', mode === 'single');
+        document.getElementById('tab-bulk').classList.toggle('active', mode === 'bulk');
+        document.getElementById('mode-title').innerText = mode === 'single' ? "Single Units" : "Active Buying Groups";
+        renderView();
+    }
+
+    // --- RENDER WITH SAFETY CHECKS ---
+    function renderView() {
+        const list = document.getElementById('main-list');
+        const term = document.getElementById('product-search').value.toLowerCase();
+
+        if (currentMode === 'single') {
+            const filtered = products.filter(p => (p.name || "").toLowerCase().includes(term));
             list.innerHTML = filtered.map(p => {
-                const finalPrice = (p.price * 1.07);
+                // SAFETY: Convert price to number or use 0 if undefined
+                const rawPrice = Number(p.price) || 0;
+                const finalPrice = rawPrice * 1.07;
+                
                 return `
-                <div class="card">
-                    <div style="flex:1">
-                        <b style="text-transform:uppercase">${p.name}</b><br>
-                        <span style="color:var(--blue); font-weight:900">R ${finalPrice.toFixed(2)}</span>
+                <div class="card" style="display:flex; justify-content:space-between; align-items:center;">
+                    <div>
+                        <b style="text-transform:uppercase;">${p.name || 'Unknown Item'}</b><br>
+                        <span style="color:var(--blue); font-weight:bold;">R ${finalPrice.toFixed(2)}</span>
                     </div>
                     <div style="display:flex; align-items:center; gap:8px;">
-                        <input type="number" id="qty-${p.id}" value="1" min="1" class="qty-input">
-                        <button class="add-btn" 
-                                data-id="${p.id}" 
-                                data-name="${p.name}" 
-                                data-price="${finalPrice}">ADD</button>
+                        <input type="number" id="qty-${p.id}" value="1" min="1" style="width:50px; margin:0; padding:5px; text-align:center;">
+                        <button class="add-btn" data-id="${p.id}" data-name="${p.name}" data-price="${finalPrice}">ADD</button>
+                    </div>
+                </div>`;
+            }).join('');
+        } else {
+            list.innerHTML = buyingGroups.map(g => {
+                // SAFETY: Convert price and quantities to numbers
+                const rawPrice = Number(g.unit_price) || 0;
+                const finalPrice = rawPrice * 1.07;
+                const currentQty = Number(g.current_quantity) || 0;
+                const targetQty = Number(g.target_quantity) || 1; // Avoid division by zero
+                const progress = Math.min((currentQty / targetQty) * 100, 100);
+
+                return `
+                <div class="card group-card">
+                    <b style="text-transform:uppercase;">${g.name || 'Group Deal'}</b>
+                    <p style="font-size:12px; color:#666; margin:4px 0;">${g.description || ''}</p>
+                    <div style="font-size:18px; font-weight:900; color:var(--green);">R ${finalPrice.toFixed(2)}</div>
+                    
+                    <div class="progress-container">
+                        <div class="progress-fill" style="width:${progress}%"></div>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; font-size:11px; font-weight:bold;">
+                        <span>${currentQty} JOINED</span>
+                        <span>GOAL: ${targetQty}</span>
+                    </div>
+                    
+                    <div style="display:flex; gap:10px; margin-top:12px;">
+                         <input type="number" id="qty-${g.id}" value="1" min="1" style="width:60px; margin:0; padding:5px; text-align:center;">
+                         <button class="add-btn group-btn" data-id="${g.id}" data-name="[GROUP] ${g.name}" data-price="${finalPrice}">JOIN GROUP</button>
                     </div>
                 </div>`;
             }).join('');
         }
+    }
 
-        function updateUI() {
-            let total = 0, count = 0;
-            for (let key in cart) {
-                total += cart[key].price * cart[key].qty;
-                count += cart[key].qty;
+    // --- BULLETPROOF MATH ---
+    document.body.addEventListener('click', function(e) {
+        if (e.target.classList.contains('add-btn')) {
+            const id = e.target.getAttribute('data-id');
+            const name = e.target.getAttribute('data-name') || "Item";
+            const price = Number(e.target.getAttribute('data-price')) || 0;
+            const qtyInput = document.getElementById(`qty-${id}`);
+            const qty = parseInt(qtyInput.value) || 0;
+
+            if (qty > 0) {
+                if (cart[name]) {
+                    cart[name].qty += qty;
+                } else {
+                    cart[name] = { price: price, qty: qty };
+                }
+                updateUI();
+                qtyInput.value = 1;
+                e.target.innerText = "✓";
+                setTimeout(() => { 
+                    e.target.innerText = name.includes('[GROUP]') ? "JOIN GROUP" : "ADD"; 
+                }, 800);
             }
-            document.getElementById('total-cost').innerText = "R " + total.toFixed(2);
-            document.getElementById('cart-count').innerText = count + " Items";
         }
+    });
 
-        async function processOrder() {
-            const user = JSON.parse(localStorage.getItem('spaza_user'));
-            if (Object.keys(cart).length === 0) return alert("Cart is empty!");
-
-            let itemText = `*NEW ORDER: ${user.store_name}*%0A%0A`;
-            let grandTotal = 0;
-            for (let name in cart) {
-                const sub = cart[name].price * cart[name].qty;
-                itemText += `• ${name} x${cart[name].qty} = R${sub.toFixed(2)}%0A`;
-                grandTotal += sub;
-            }
-
-            window.location.href = `https://wa.me/27764403803?text=${itemText}%0A*TOTAL: R${grandTotal.toFixed(2)}*`;
+    function updateUI() {
+        let total = 0, count = 0;
+        for (let k in cart) { 
+            const itemPrice = Number(cart[k].price) || 0;
+            const itemQty = Number(cart[k].qty) || 0;
+            total += itemPrice * itemQty; 
+            count += itemQty; 
         }
-    </script>
-</body>
-</html>
+        document.getElementById('total-cost').innerText = "R " + total.toFixed(2);
+        document.getElementById('cart-count').innerText = count + " Items";
+    }
+
+    function toggleAdmin() {
+        const panel = document.getElementById('admin-panel');
+        panel.style.display = (panel.style.display === 'block') ? 'none' : 'block';
+    }
+
+    async function createGroup() {
+        const name = document.getElementById('adm-name').value;
+        const desc = document.getElementById('adm-desc').value;
+        const target = Number(document.getElementById('adm-target').value);
+        const price = Number(document.getElementById('adm-price').value);
+
+        if(!name || target <= 0 || price <= 0) return alert("Please enter valid details");
+
+        const { error } = await _client.from('buying_groups').insert([{
+            name, description: desc, target_quantity: target, unit_price: price
+        }]);
+
+        if (error) alert(error.message);
+        else { alert("Group Launched!"); location.reload(); }
+    }
+
+    async function processOrder() {
+        const user = JSON.parse(localStorage.getItem('spaza_user')) || { store_name: "Guest" };
+        if (Object.keys(cart).length === 0) return alert("Cart is empty!");
+
+        let msg = `*ORDER FROM: ${user.store_name}*%0A%0A`;
+        let total = 0;
+        for (let k in cart) {
+            const sub = cart[k].price * cart[k].qty;
+            msg += `• ${k} x${cart[k].qty} = R${sub.toFixed(2)}%0A`;
+            total += sub;
+        }
+        msg += `%0A*GRAND TOTAL: R${total.toFixed(2)}*`;
+        window.location.href = `https://wa.me/27764403803?text=${msg}`;
+    }
+</script>
