@@ -29,7 +29,9 @@
         /* Product Cards */
         .card { background: white; margin: 12px; padding: 16px; border-radius: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; display: flex; flex-direction: column; gap: 12px; }
         .prod-img { width: 85px; height: 85px; border-radius: 12px; object-fit: cover; background: #f8fafc; }
-        
+        .search-bar { padding: 15px; background: white; border-bottom: 1px solid #eee; }
+        .search-input { width: 100%; padding: 12px 15px; border-radius: 12px; border: 1px solid #ddd; background: #f9f9f9; }
+
         /* Navigation */
         .sticky-header { position: sticky; top: 0; background: white; z-index: 100; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
         .nav-tabs { display: flex; padding: 8px; gap: 8px; background: var(--blue); }
@@ -40,41 +42,15 @@
         .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: flex; align-items: flex-end; z-index: 1000; }
         .modal-body { background: white; width: 100%; border-radius: 2rem 2rem 0 0; padding: 2rem; max-height: 90vh; overflow-y: auto; }
 
-        /* Counter box (added for button styling) */
-        .counter-box { display: flex; align-items: center; gap: 12px; background: #f1f5f9; padding: 4px 12px; border-radius: 10px; }
-        .c-btn { background: white; border: none; width: 28px; height: 28px; border-radius: 6px; font-weight: bold; color: var(--blue); cursor: pointer; }
-
-        /* PRINT STYLES */
+        /* Print Specifics */
         @media print {
             body * { visibility: hidden; }
-            #receipt-print-area, #receipt-print-area * { visibility: visible; }
-            #receipt-print-area { 
-                position: absolute; left: 0; top: 0; width: 100%; 
-                padding: 20px; color: black; background: white; 
-                display: block !important;
-            }
+            #receipt-view, #receipt-view * { visibility: visible; }
+            #receipt-view { position: fixed; left: 0; top: 0; width: 100%; }
         }
-        #receipt-print-area { font-family: 'Courier New', Courier, monospace; width: 300px; margin: 0 auto; display: none; }
     </style>
 </head>
 <body>
-
-<div id="receipt-print-area">
-    <div style="text-align:center">
-        <h2 style="margin:0">SPAZASURE</h2>
-        <p id="pr-store-name" style="margin:5px 0; font-weight: bold;"></p>
-        <p id="pr-order-id" style="font-size: 0.8rem;"></p>
-        <p id="pr-date" style="font-size: 0.8rem;"></p>
-    </div>
-    <hr style="border: 0.5px dashed #000;">
-    <div id="pr-items"></div>
-    <hr style="border: 0.5px dashed #000;">
-    <div style="display:flex; justify-content:space-between; font-weight:bold;">
-        <span>TOTAL</span>
-        <span id="pr-total"></span>
-    </div>
-    <p style="text-align:center; margin-top:20px; font-size:0.7rem;">Thank you for your order!</p>
-</div>
 
 <div class="container">
     <div id="section-auth">
@@ -96,42 +72,12 @@
 
         <div id="auth-register" class="auth-card hidden">
             <h3 style="margin-top:0; color:var(--blue);">Store Registration</h3>
-            
             <div class="form-group"><label>First Name</label><input type="text" id="reg-fname" class="auth-input"></div>
             <div class="form-group"><label>Last Name</label><input type="text" id="reg-lname" class="auth-input"></div>
-            
-            <div class="form-group">
-                <label>Gender</label>
-                <select id="reg-gender">
-                    <option value="Male">Male</option><option value="Female">Female</option>
-                    <option value="Other">Other</option><option value="Prefer not to say">Prefer not to say</option>
-                </select>
-            </div>
-
             <div class="form-group"><label>Store Name</label><input type="text" id="reg-sname" class="auth-input"></div>
-            
-            <div class="form-group">
-                <label>Business Type</label>
-                <select id="reg-btype">
-                    <option value="Spaza Shop">Spaza Shop</option><option value="Tuck Shop">Tuck Shop</option>
-                    <option value="Street Vendor">Street Vendor</option><option value="Home-based Retail">Home-based Retail</option>
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label>Store Size</label>
-                <select id="reg-ssize">
-                    <option value="Small/Counter">Small/Counter</option>
-                    <option value="Medium/Walk-in">Medium/Walk-in</option>
-                    <option value="Large/Superette">Large/Superette</option>
-                </select>
-            </div>
-
             <div class="form-group"><label>WhatsApp Number (Numeric)</label><input type="number" id="reg-wa" class="auth-input"></div>
-            <div class="form-group"><label>Secondary Phone</label><input type="number" id="reg-phone" class="auth-input"></div>
             <div class="form-group"><label>Township</label><input type="text" id="reg-town" class="auth-input"></div>
             <div class="form-group"><label>Street Address</label><input type="text" id="reg-address" class="auth-input"></div>
-
             <button onclick="handleRegister()" class="btn-primary" style="background:var(--blue);">COMPLETE REGISTRATION</button>
             <p onclick="toggleAuth(false)" style="text-align:center; color:var(--gray); font-size:0.85rem; margin-top:15px; cursor:pointer;">Back to Login</p>
         </div>
@@ -139,9 +85,12 @@
 
     <div id="section-market" class="hidden">
         <div class="sticky-header">
-            <div class="profile-bar" style="padding: 15px; display:flex; justify-content:space-between; align-items:center;">
+            <div style="display:flex; justify-content:space-between; align-items:center; padding:15px;">
                 <span id="txt-store-name" style="font-weight: 900; color: var(--blue);">Store</span>
                 <button onclick="logout()" style="background:#fee2e2; border:none; color:var(--red); padding: 8px 12px; border-radius: 8px; font-weight:bold;">LOGOUT</button>
+            </div>
+            <div class="search-bar" id="market-search">
+                <input type="text" id="search-input" class="search-input" placeholder="Search products..." onkeyup="renderList()">
             </div>
             <div class="nav-tabs">
                 <button id="nav-s" class="active" onclick="setMode('single')">MARKET</button>
@@ -163,15 +112,20 @@
     <div id="modal-checkout" class="modal-overlay hidden">
         <div class="modal-body">
             <h3 style="margin-top:0">Order Review</h3>
-            <div id="checkout-list" style="margin-bottom:20px;"></div>
+            <div id="checkout-list" style="margin-bottom:20px; border-bottom: 1px solid #eee; padding-bottom:10px;"></div>
             <div class="form-group">
                 <label>Payment Method</label>
-                <div id="pay-cash" class="pay-option selected" style="border:2px solid #eee; padding:15px; border-radius:12px; margin-bottom:10px;" onclick="selectPayment('Cash')">Cash on Delivery</div>
-                <div id="pay-eft" class="pay-option" style="border:2px solid #eee; padding:15px; border-radius:12px;" onclick="selectPayment('EFT')">Instant EFT</div>
+                <div id="pay-cash" style="border:2px solid var(--blue); padding:15px; border-radius:12px; margin-bottom:10px;" onclick="selectPayment('Cash')">Cash on Delivery</div>
+                <div id="pay-eft" style="border:2px solid #eee; padding:15px; border-radius:12px;" onclick="selectPayment('EFT')">Instant EFT</div>
             </div>
             <button onclick="finalPlaceOrder()" class="btn-primary">CONFIRM ORDER</button>
             <button onclick="hideCheckout()" style="width:100%; border:none; background:none; color:var(--gray); margin-top:15px;">Cancel</button>
         </div>
+    </div>
+
+    <div id="modal-order-detail" class="modal-overlay hidden">
+        <div class="modal-body" id="receipt-view">
+            </div>
     </div>
 </div>
 
@@ -180,14 +134,9 @@
     const _supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNsYmhmeHF4Y3VneGNxdXRuZ3BvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE4MzgxMDMsImV4cCI6MjA4NzQxNDEwM30.VWj5TGjAQhj77BZyoSUmynUPDPTVGL_pAKNyrlpQR1Y';
     const _client = supabase.createClient(_supabaseUrl, _supabaseKey);
 
-    let cart = {}; let products = []; let groups = []; let currentMode = 'single'; let selectedPayment = 'Cash'; let orderHistoryCache = [];
+    let cart = {}; let products = []; let groups = []; let currentMode = 'single'; let selectedPayment = 'Cash'; let editingOrderId = null;
 
     window.onload = async () => {
-        const params = new URLSearchParams(window.location.search);
-        if(params.get('wa')) {
-            const { data } = await _client.from('profiles').select('*').eq('whatsapp_number', params.get('wa')).maybeSingle();
-            if(data) { loginSuccess(data); return; }
-        }
         if(localStorage.getItem('spaza_user')) initApp();
     };
 
@@ -206,20 +155,14 @@
         const payload = {
             first_name: document.getElementById('reg-fname').value,
             last_name: document.getElementById('reg-lname').value,
-            gender: document.getElementById('reg-gender').value,
             store_name: document.getElementById('reg-sname').value,
-            business_type: document.getElementById('reg-btype').value,
-            store_size: document.getElementById('reg-ssize').value,
             whatsapp_number: parseInt(document.getElementById('reg-wa').value),
-            phone: parseInt(document.getElementById('reg-phone').value),
             township: document.getElementById('reg-town').value,
             address: document.getElementById('reg-address').value,
             role: 'spaza'
         };
-
         const { data, error } = await _client.from('profiles').insert([payload]).select().single();
-        if(error) alert("Error: " + error.message);
-        else loginSuccess(data);
+        if(error) alert("Error: " + error.message); else loginSuccess(data);
     }
 
     function loginSuccess(user) { localStorage.setItem('spaza_user', JSON.stringify(user)); initApp(); }
@@ -243,6 +186,7 @@
         document.getElementById('nav-s').classList.toggle('active', m === 'single');
         document.getElementById('nav-b').classList.toggle('active', m === 'bulk');
         document.getElementById('nav-o').classList.toggle('active', m === 'history');
+        document.getElementById('market-search').classList.toggle('hidden', m === 'history');
         document.getElementById('list-render').classList.toggle('hidden', m === 'history');
         document.getElementById('history-render').classList.toggle('hidden', m !== 'history');
         document.getElementById('main-footer').classList.toggle('hidden', m === 'history');
@@ -250,30 +194,35 @@
     }
 
     function renderList() {
+        const query = document.getElementById('search-input').value.toLowerCase();
         const items = currentMode === 'single' ? products : groups;
-        document.getElementById('list-render').innerHTML = items.map(i => {
-            const name = i.name || i.group_name;
-            const price = (i.price || i.contribution_per_spaza) * (currentMode === 'single' ? 1.07 : 1);
-            const qty = cart[name]?.qty || 0;
-            return `
-            <div class="card">
-                <div style="display:flex; gap:15px;">
-                    <img src="images/${name}.png" class="prod-img" onerror="this.src='https://via.placeholder.com/100';">
-                    <div style="flex:1">
-                        <h4 style="margin:0">${name}</h4>
-                        <div style="font-weight:900; color:var(--blue); margin:5px 0;">R${price.toFixed(2)}</div>
-                        <span class="badge ${currentMode === 'single' ? 'badge-bulk' : 'badge-group'}">${currentMode === 'single' ? 'Market' : 'Bulk'}</span>
+        
+        document.getElementById('list-render').innerHTML = items
+            .filter(i => (i.name || i.group_name).toLowerCase().includes(query))
+            .map(i => {
+                const name = i.name || i.group_name;
+                const desc = i.description || 'Quality wholesale supply.';
+                const price = (i.price || i.contribution_per_spaza) * (currentMode === 'single' ? 1.07 : 1);
+                const qty = cart[name]?.qty || 0;
+                return `
+                <div class="card">
+                    <div style="display:flex; gap:15px;">
+                        <img src="images/${name}.png" class="prod-img" onerror="this.src='https://via.placeholder.com/100';">
+                        <div style="flex:1">
+                            <h4 style="margin:0">${name}</h4>
+                            <p style="font-size:0.75rem; color:var(--gray); margin:4px 0;">${desc}</p>
+                            <div style="font-weight:900; color:var(--blue); margin:5px 0;">R${price.toFixed(2)}</div>
+                        </div>
                     </div>
-                </div>
-                <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid #eee; padding-top:10px;">
-                    <div class="counter-box">
-                        <button class="c-btn" onclick="updateCart('${name}', ${price}, -1)">-</button>
-                        <b>${qty}</b>
-                        <button class="c-btn" onclick="updateCart('${name}', ${price}, 1)">+</button>
+                    <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid #eee; padding-top:10px;">
+                        <div style="display:flex; align-items:center; background:#f1f5f9; border-radius:10px; padding:4px;">
+                            <button style="border:none; background:white; width:30px; height:30px; border-radius:8px;" onclick="updateCart('${name}', ${price}, -1)">-</button>
+                            <b style="padding:0 15px;">${qty}</b>
+                            <button style="border:none; background:white; width:30px; height:30px; border-radius:8px;" onclick="updateCart('${name}', ${price}, 1)">+</button>
+                        </div>
                     </div>
-                </div>
-            </div>`;
-        }).join('');
+                </div>`;
+            }).join('');
     }
 
     function updateCart(n, p, c) {
@@ -288,47 +237,87 @@
     async function finalPlaceOrder() {
         const u = JSON.parse(localStorage.getItem('spaza_user'));
         const total = parseFloat(document.getElementById('txt-total').innerText.replace('R ', ''));
-        const { error } = await _client.from('orders').insert([{ profile_id: u.id, store_name: u.store_name, total_amount: total, items: cart, payment_method: selectedPayment, status: 'pending' }]);
-        if(!error) { alert("Ordered!"); cart = {}; document.getElementById('txt-total').innerText = "R 0.00"; hideCheckout(); setMode('history'); }
+        const orderData = { profile_id: u.id, store_name: u.store_name, total_amount: total, items: cart, payment_method: selectedPayment, status: 'pending' };
+        
+        let res;
+        if(editingOrderId) {
+            res = await _client.from('orders').update(orderData).eq('id', editingOrderId);
+            editingOrderId = null;
+        } else {
+            res = await _client.from('orders').insert([orderData]);
+        }
+
+        if(!res.error) {
+            alert("Order Success!");
+            cart = {};
+            document.getElementById('txt-total').innerText = "R 0.00";
+            hideCheckout();
+            setMode('history');
+        }
     }
 
     async function loadOrderHistory() {
         const u = JSON.parse(localStorage.getItem('spaza_user'));
         const { data } = await _client.from('orders').select('*').eq('profile_id', u.id).order('created_at', {ascending: false});
-        orderHistoryCache = data || [];
-        document.getElementById('history-render').innerHTML = orderHistoryCache.map((o, index) => `
-            <div class="card" style="border-left:5px solid var(--green)">
-                <div style="display:flex; justify-content:space-between; align-items:start;">
-                    <div>
-                        <b>ORDER #${o.id.toString().slice(-6)}</b>
-                        <div>Status: ${o.status.toUpperCase()}</div>
-                    </div>
-                    <button onclick="printReceipt(${index})" style="background:var(--blue); color:white; border:none; padding:8px 12px; border-radius:8px; font-size:0.7rem;"><i class="fa fa-print"></i> PRINT</button>
+        document.getElementById('history-render').innerHTML = data.map(o => `
+            <div class="card" style="border-left:5px solid ${o.status === 'pending' ? 'var(--yellow)' : 'var(--green)'}">
+                <div style="display:flex; justify-content:space-between;">
+                    <b>ORDER #${o.id.toString().slice(-5)}</b>
+                    <span style="font-size:0.7rem; background:#eee; padding:2px 8px; border-radius:5px;">${o.status.toUpperCase()}</span>
                 </div>
-                <div style="font-weight:900">R${o.total_amount.toFixed(2)}</div>
+                <div style="font-weight:900; font-size:1.2rem;">R${o.total_amount.toFixed(2)}</div>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px; margin-top:5px;">
+                    <button onclick='viewOrder(${JSON.stringify(o)})' style="padding:8px; border:none; border-radius:8px; background:var(--blue); color:white; font-size:0.8rem;">VIEW/PRINT</button>
+                    ${o.status === 'pending' ? `<button onclick='editOrder(${JSON.stringify(o)})' style="padding:8px; border:none; border-radius:8px; background:var(--gray); color:white; font-size:0.8rem;">EDIT</button>` : ''}
+                    ${o.status === 'pending' ? `<button onclick="cancelOrder(${o.id})" style="padding:8px; border:none; border-radius:8px; background:var(--red); color:white; font-size:0.8rem;">CANCEL</button>` : ''}
+                </div>
             </div>`).join('') || "No orders.";
     }
 
-    function printReceipt(index) {
-        const order = orderHistoryCache[index];
+    function viewOrder(o) {
+        const itemsList = Object.entries(o.items).map(([name, detail]) => `<div>${detail.qty}x ${name} - R${(detail.price * detail.qty).toFixed(2)}</div>`).join('');
+        const content = `
+            <h2 style="text-align:center">SPAZASURE RECEIPT</h2>
+            <hr>
+            <p><b>Order ID:</b> #${o.id}</p>
+            <p><b>Store:</b> ${o.store_name}</p>
+            <p><b>Date:</b> ${new Date(o.created_at).toLocaleDateString()}</p>
+            <hr>
+            <div style="margin:20px 0;">${itemsList}</div>
+            <hr>
+            <h3 style="text-align:right">Total: R${o.total_amount.toFixed(2)}</h3>
+            <div style="display:flex; flex-direction:column; gap:10px; margin-top:20px;" class="no-print">
+                <button onclick="window.print()" class="btn-primary">PRINT RECEIPT</button>
+                <button onclick="shareWhatsApp(${JSON.stringify(o)})" style="padding:16px; background:#25D366; color:white; border:none; border-radius:12px; font-weight:800;">SEND TO WHATSAPP</button>
+                <button onclick="document.getElementById('modal-order-detail').classList.add('hidden')" style="background:none; border:none; color:var(--gray);">Close</button>
+            </div>
+        `;
+        document.getElementById('receipt-view').innerHTML = content;
+        document.getElementById('modal-order-detail').classList.remove('hidden');
+    }
+
+    function shareWhatsApp(o) {
         const u = JSON.parse(localStorage.getItem('spaza_user'));
-        
-        document.getElementById('pr-store-name').innerText = u.store_name;
-        document.getElementById('pr-order-id').innerText = "Order ID: #" + order.id;
-        document.getElementById('pr-date').innerText = "Date: " + new Date(order.created_at).toLocaleString();
-        document.getElementById('pr-total').innerText = "R" + order.total_amount.toFixed(2);
-        
-        let itemsHtml = '';
-        for (let name in order.items) {
-            let item = order.items[name];
-            itemsHtml += `<div style="display:flex; justify-content:space-between; font-size:0.8rem; margin:3px 0;">
-                <span>${item.qty}x ${name}</span>
-                <span>R${(item.price * item.qty).toFixed(2)}</span>
-            </div>`;
+        let text = `*SPAZASURE RECEIPT*%0AStore: ${o.store_name}%0AOrder: #${o.id}%0A%0A`;
+        Object.entries(o.items).forEach(([name, d]) => { text += `• ${d.qty}x ${name}: R${(d.price * d.qty).toFixed(2)}%0A`; });
+        text += `%0A*TOTAL: R${o.total_amount.toFixed(2)}*%0APayment: ${o.payment_method}`;
+        window.open(`https://wa.me/${u.whatsapp_number}?text=${text}`);
+    }
+
+    async function cancelOrder(id) {
+        if(confirm("Cancel this order?")) {
+            await _client.from('orders').delete().eq('id', id);
+            loadOrderHistory();
         }
-        document.getElementById('pr-items').innerHTML = itemsHtml;
-        
-        window.print();
+    }
+
+    function editOrder(o) {
+        cart = o.items;
+        editingOrderId = o.id;
+        setMode('single');
+        let t = 0; Object.values(cart).forEach(obj => t += obj.price * obj.qty);
+        document.getElementById('txt-total').innerText = "R " + t.toFixed(2);
+        alert("Editing mode active. Update items and Place Order to save.");
     }
 
     function selectPayment(m) { 
@@ -336,7 +325,13 @@
         document.getElementById('pay-cash').style.borderColor = m === 'Cash' ? 'var(--blue)' : '#eee';
         document.getElementById('pay-eft').style.borderColor = m === 'EFT' ? 'var(--blue)' : '#eee';
     }
-    function showCheckout() { document.getElementById('modal-checkout').classList.remove('hidden'); }
+    
+    function showCheckout() { 
+        if(Object.keys(cart).length === 0) return alert("Cart is empty");
+        const list = Object.entries(cart).map(([n, d]) => `<div>${d.qty}x ${n} (R${(d.price * d.qty).toFixed(2)})</div>`).join('');
+        document.getElementById('checkout-list').innerHTML = list;
+        document.getElementById('modal-checkout').classList.remove('hidden'); 
+    }
     function hideCheckout() { document.getElementById('modal-checkout').classList.add('hidden'); }
     function logout() { localStorage.clear(); location.reload(); }
 </script>
