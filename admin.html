@@ -2,324 +2,267 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SpazaSure | Complete Wholesale System</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SpazaSure | Master Admin Hub</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        :root { 
-            --blue: #1E3A8A; --red: #E11D48; --bg: #F1F5F9; 
-            --green: #10B981; --dark: #0F172A; --gray: #64748B;
-            --yellow: #FBBF24;
-            --safe-bottom: env(safe-area-inset-bottom);
-        }
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { font-family: 'Inter', sans-serif; background: var(--bg); margin: 0; color: var(--dark); }
-        .container { width: 100%; max-width: 500px; margin: 0 auto; min-height: 100vh; padding-bottom: 160px; }
+        :root { --blue: #1E3A8A; --green: #10B981; --red: #E11D48; --dark: #0F172A; --gray: #64748B; --light: #F1F5F9; }
+        body { font-family: 'Inter', sans-serif; background: var(--light); margin: 0; color: #1E293B; display: flex; }
+        
+        /* Security Barrier */
+        #auth-barrier { position: fixed; inset: 0; background: var(--dark); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10000; color: white; }
+        .admin-input { padding: 15px; border-radius: 12px; border: none; width: 250px; text-align: center; font-size: 18px; margin-bottom: 20px; }
+
+        /* Sidebar */
+        .sidebar { width: 240px; background: var(--dark); color: white; height: 100vh; position: fixed; padding: 20px; box-sizing: border-box; display: flex; flex-direction: column; }
+        .sidebar h2 { font-size: 18px; letter-spacing: 1px; margin-bottom: 30px; color: var(--green); }
+        .nav-link { padding: 12px; display: block; color: #94A3B8; text-decoration: none; border-radius: 8px; margin-bottom: 5px; cursor: pointer; transition: 0.3s; }
+        .nav-link:hover, .nav-link.active { background: rgba(255,255,255,0.1); color: white; }
+        .logout-btn { margin-top: auto; color: var(--red); border: 1px solid var(--red); padding: 10px; border-radius: 8px; text-align: center; cursor: pointer; font-weight: bold; }
+
+        /* Main Content */
+        .main { margin-left: 240px; padding: 30px; width: calc(100% - 240px); min-height: 100vh; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        
+        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 30px; }
+        .stat-card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+        .stat-card h4 { margin: 0; font-size: 11px; color: var(--gray); text-transform: uppercase; }
+        .stat-card .val { font-size: 24px; font-weight: 800; margin: 10px 0; }
+
+        .card-ui { background: white; border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border-left: 6px solid #CBD5E1; }
+        .card-ui.pending { border-left-color: orange; }
+        .card-ui.processing { border-left-color: var(--blue); }
+        .card-ui.completed { border-left-color: var(--green); }
+        
+        .table-container { background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        table { width: 100%; border-collapse: collapse; text-align: left; }
+        th { background: #F8FAFC; padding: 15px; color: var(--gray); font-size: 12px; text-transform: uppercase; }
+        td { padding: 15px; border-top: 1px solid #F1F5F9; }
+
+        .btn { padding: 10px 15px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 12px; color: white; display: flex; align-items: center; justify-content: center; gap: 5px; }
+        .badge { padding: 4px 10px; border-radius: 20px; font-size: 10px; font-weight: 800; text-transform: uppercase; }
         .hidden { display: none !important; }
-
-        /* Auth & Forms */
-        .auth-card { background: white; padding: 25px; border-radius: 24px; margin: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
-        .form-group { margin-bottom: 15px; text-align: left; }
-        .form-group label { display: block; font-size: 0.75rem; font-weight: 700; color: var(--gray); margin-bottom: 5px; text-transform: uppercase; }
-        .auth-input, select { width:100%; padding:14px; border: 2px solid #f1f5f9; border-radius:12px; font-size: 1rem; outline: none; background: #f8fafc; }
-        .auth-input:focus { border-color: var(--blue); background: white; }
-        .btn-primary { width:100%; padding:16px; background:var(--green); color:white; border:none; border-radius:12px; font-weight: 800; cursor: pointer; font-size: 1rem; }
-        
-        /* Product Cards */
-        .card { background: white; margin: 12px; padding: 16px; border-radius: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; display: flex; flex-direction: column; gap: 12px; }
-        .prod-img { width: 85px; height: 85px; border-radius: 12px; object-fit: cover; background: #f8fafc; }
-        
-        /* Navigation */
-        .sticky-header { position: sticky; top: 0; background: white; z-index: 100; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
-        .nav-tabs { display: flex; padding: 8px; gap: 8px; background: var(--blue); }
-        .nav-tabs button { flex: 1; padding: 12px; border: none; border-radius: 12px; color: white; background: rgba(255,255,255,0.1); font-size: 0.7rem; font-weight: 700; }
-        .nav-tabs button.active { background: white; color: var(--blue); }
-
-        .cart-footer { position: fixed; bottom: 0; width: 100%; max-width: 500px; background: white; padding: 1.2rem; border-top: 1px solid #e2e8f0; z-index: 500; }
-        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: flex; align-items: flex-end; z-index: 1000; }
-        .modal-body { background: white; width: 100%; border-radius: 2rem 2rem 0 0; padding: 2rem; max-height: 90vh; overflow-y: auto; }
-
-        /* Receipt Print Area Styles */
-        #receipt-box { display: none; }
-        @media print {
-            body * { visibility: hidden; }
-            #receipt-box, #receipt-box * { visibility: visible; }
-            #receipt-box { display: block !important; position: absolute; left: 0; top: 0; width: 100%; padding: 20px; color: black; }
-        }
+        input, select { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #DDD; border-radius: 8px; box-sizing: border-box; }
     </style>
 </head>
 <body>
 
-<div id="receipt-box">
-    <center>
-        <h2>SPAZASURE RECEIPT</h2>
-        <p id="pr-store-name"></p>
-        <p id="pr-date"></p>
-    </center>
-    <hr>
-    <div id="pr-items"></div>
-    <hr>
-    <h3 id="pr-total" style="text-align: right;"></h3>
-</div>
+    <div id="auth-barrier">
+        <h1 style="color:var(--green)">ADMIN ACCESS</h1>
+        <p>Enter Master Password to Unlock</p>
+        <input type="password" id="admin-pass-input" class="admin-input" placeholder="••••••••">
+        <button onclick="unlockAdmin()" class="btn" style="background:var(--blue); width:250px; padding:15px;">UNLOCK DASHBOARD</button>
+    </div>
 
-<div class="container">
-    <div id="section-auth">
-        <div style="background: var(--blue); padding: 40px 20px; color: white; text-align: center; border-radius: 0 0 30px 30px;">
-            <h1 style="margin:0; letter-spacing: -1px;">SPAZASURE</h1>
-            <p style="opacity: 0.8; font-size: 0.9rem;">Official Wholesale Portal</p>
+    <div id="admin-ui" class="hidden">
+        <div class="sidebar">
+            <h2>SPAZASURE ADMIN</h2>
+            <div class="nav-link active" onclick="showTab('dashboard', this)"><i class="fa fa-chart-line"></i> Dashboard</div>
+            <div class="nav-link" onclick="showTab('vetting', this)"><i class="fa fa-user-check"></i> Vetting</div>
+            <div class="nav-link" onclick="showTab('orders', this)"><i class="fa fa-shopping-basket"></i> Orders</div>
+            <div class="nav-link" onclick="showTab('drivers', this)"><i class="fa fa-truck"></i> Drivers</div>
+            <div class="nav-link" onclick="showTab('groups', this)"><i class="fa fa-users"></i> Buying Groups</div>
+            <div class="logout-btn" onclick="doLogout()">LOGOUT</div>
         </div>
 
-        <div id="auth-login" class="auth-card">
-            <div class="form-group">
-                <label>WhatsApp Number</label>
-                <input type="tel" id="login-wa" class="auth-input" placeholder="e.g. 27821234567">
-            </div>
-            <button onclick="handleLogin()" class="btn-primary">SIGN IN</button>
-            <p style="text-align:center; color:var(--gray); font-size:0.85rem; margin-top:20px;">
-                New store? <span onclick="toggleAuth(true)" style="color:var(--blue); font-weight:700; text-decoration:underline; cursor:pointer;">Register Here</span>
-            </p>
-        </div>
-
-        <div id="auth-register" class="auth-card hidden">
-            <h3 style="margin-top:0; color:var(--blue);">Store Registration</h3>
-            
-            <div class="form-group"><label>First Name</label><input type="text" id="reg-fname" class="auth-input"></div>
-            <div class="form-group"><label>Last Name</label><input type="text" id="reg-lname" class="auth-input"></div>
-            
-            <div class="form-group">
-                <label>Gender</label>
-                <select id="reg-gender">
-                    <option value="Male">Male</option><option value="Female">Female</option>
-                    <option value="Other">Other</option><option value="Prefer not to say">Prefer not to say</option>
-                </select>
+        <div class="main">
+            <div id="tab-dashboard">
+                <div class="header"><h1>Analytics Overview</h1></div>
+                <div class="stats-grid">
+                    <div class="stat-card"><h4>Total Revenue</h4><div class="val" id="stat-rev">R 0</div></div>
+                    <div class="stat-card"><h4>Active Orders</h4><div class="val" id="stat-active" style="color:orange">0</div></div>
+                    <div class="stat-card"><h4>Active Drivers</h4><div class="val" id="stat-drivers">0</div></div>
+                    <div class="stat-card"><h4>Vetting Needed</h4><div class="val" id="stat-vet" style="color:var(--red)">0</div></div>
+                </div>
             </div>
 
-            <div class="form-group"><label>Store Name</label><input type="text" id="reg-sname" class="auth-input"></div>
-            
-            <div class="form-group">
-                <label>Business Type</label>
-                <select id="reg-btype">
-                    <option value="Spaza Shop">Spaza Shop</option><option value="Tuck Shop">Tuck Shop</option>
-                    <option value="Street Vendor">Street Vendor</option><option value="Home-based Retail">Home-based Retail</option>
-                </select>
+            <div id="tab-vetting" class="hidden">
+                <div class="header"><h1>Store Approvals</h1></div>
+                <div class="table-container">
+                    <table>
+                        <thead><tr><th>Store Details</th><th>Township</th><th>Contact</th><th>Action</th></tr></thead>
+                        <tbody id="vetting-list"></tbody>
+                    </table>
+                </div>
             </div>
 
-            <div class="form-group"><label>WhatsApp Number (Numeric)</label><input type="number" id="reg-wa" class="auth-input"></div>
-            <div class="form-group"><label>Secondary Phone</label><input type="number" id="reg-phone" class="auth-input"></div>
-            <div class="form-group"><label>Township</label><input type="text" id="reg-town" class="auth-input"></div>
-            <div class="form-group"><label>Street Address</label><input type="text" id="reg-address" class="auth-input"></div>
+            <div id="tab-orders" class="hidden">
+                <div class="header"><h1>Order Management</h1></div>
+                <div id="master-order-list"></div>
+            </div>
 
-            <button onclick="handleRegister()" class="btn-primary" style="background:var(--blue);">COMPLETE REGISTRATION</button>
-            <p onclick="toggleAuth(false)" style="text-align:center; color:var(--gray); font-size:0.85rem; margin-top:15px; cursor:pointer;">Back to Login</p>
+            <div id="tab-drivers" class="hidden">
+                <div class="header">
+                    <h1>Driver Fleet</h1>
+                    <button class="btn" style="background:var(--blue)" onclick="toggleAddDriver()">+ ADD NEW DRIVER</button>
+                </div>
+                
+                <div id="add-driver-form" class="card-ui hidden">
+                    <h3>Register New Driver</h3>
+                    <input type="text" id="drv-name" placeholder="Full Name">
+                    <input type="text" id="drv-phone" placeholder="Phone Number">
+                    <input type="text" id="drv-veh" placeholder="Vehicle Info (e.g. White Isuzu NP200)">
+                    <button class="btn" style="background:var(--green); width:100%" onclick="saveDriver()">SAVE DRIVER</button>
+                </div>
+
+                <div class="table-container">
+                    <table>
+                        <thead><tr><th>Driver Name</th><th>Vehicle</th><th>Phone</th><th>Status</th></tr></thead>
+                        <tbody id="drivers-list"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="tab-groups" class="hidden">
+                <div class="header"><h1>Bulk Buying & Contributions</h1></div>
+                <div id="group-contributions-list"></div>
+            </div>
         </div>
     </div>
 
-    <div id="section-market" class="hidden">
-        <div class="sticky-header">
-            <div class="profile-bar" style="padding:15px; display:flex; justify-content:space-between; align-items:center;">
-                <span id="txt-store-name" style="font-weight: 900; color: var(--blue);">Store</span>
-                <button onclick="logout()" style="background:#fee2e2; border:none; color:var(--red); padding: 8px 12px; border-radius: 8px; font-weight:bold;">LOGOUT</button>
-            </div>
-            <div class="nav-tabs">
-                <button id="nav-s" class="active" onclick="setMode('single')">MARKET</button>
-                <button id="nav-b" onclick="setMode('bulk')">BULK GROUPS</button>
-                <button id="nav-o" onclick="setMode('history')">ORDERS</button>
-            </div>
-        </div>
-        <div id="list-render"></div>
-        <div id="history-render" class="hidden"></div>
-        <div class="cart-footer" id="main-footer">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                <span style="font-weight:700; color:var(--gray); font-size:0.7rem;">TOTAL</span>
-                <span id="txt-total" style="font-weight: 900; color: var(--green); font-size: 1.5rem;">R 0.00</span>
-            </div>
-            <button class="btn-primary" id="review-order-btn" onclick="showCheckout()">PLACE ORDER</button>
-        </div>
-    </div>
+    <script>
+        const _supabaseUrl = 'https://clbhfxqxcugxcqutngpo.supabase.co';
+        const _supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNsYmhmeHF4Y3VneGNxdXRuZ3BvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE4MzgxMDMsImV4cCI6MjA4NzQxNDEwM30.VWj5TGjAQhj77BZyoSUmynUPDPTVGL_pAKNyrlpQR1Y';
+        const _client = supabase.createClient(_supabaseUrl, _supabaseKey);
 
-    <div id="modal-checkout" class="modal-overlay hidden">
-        <div class="modal-body">
-            <h3 style="margin-top:0">Order Review</h3>
-            <div id="checkout-list" style="margin-bottom:20px;"></div>
-            <div class="form-group">
-                <label>Payment Method</label>
-                <div id="pay-cash" class="pay-option selected" style="border:2px solid var(--blue); padding:15px; border-radius:12px; margin-bottom:10px;" onclick="selectPayment('Cash')">Cash on Delivery</div>
-                <div id="pay-eft" class="pay-option" style="border:2px solid #eee; padding:15px; border-radius:12px;" onclick="selectPayment('EFT')">Instant EFT</div>
-            </div>
-            <button onclick="finalPlaceOrder()" class="btn-primary">CONFIRM ORDER</button>
-            <button onclick="hideCheckout()" style="width:100%; border:none; background:none; color:var(--gray); margin-top:15px;">Cancel</button>
-        </div>
-    </div>
-</div>
+        const ADMIN_PASSWORD = "Spaza2024!";
+        let globalDrivers = [];
 
-<script>
-    const _supabaseUrl = 'https://clbhfxqxcugxcqutngpo.supabase.co';
-    const _supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNsYmhmeHF4Y3VneGNxdXRuZ3BvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE4MzgxMDMsImV4cCI6MjA4NzQxNDEwM30.VWj5TGjAQhj77BZyoSUmynUPDPTVGL_pAKNyrlpQR1Y';
-    const _client = supabase.createClient(_supabaseUrl, _supabaseKey);
-
-    let cart = {}; let products = []; let groups = []; let currentMode = 'single'; let selectedPayment = 'Cash';
-
-    window.onload = async () => {
-        const params = new URLSearchParams(window.location.search);
-        if(params.get('wa')) {
-            const { data } = await _client.from('profiles').select('*').eq('whatsapp_number', params.get('wa')).maybeSingle();
-            if(data) { loginSuccess(data); return; }
+        function unlockAdmin() {
+            const pass = document.getElementById('admin-pass-input').value;
+            if(pass === ADMIN_PASSWORD) {
+                document.getElementById('auth-barrier').classList.add('hidden');
+                document.getElementById('admin-ui').classList.remove('hidden');
+                loadAllData();
+            } else { alert("Incorrect Password"); }
         }
-        if(localStorage.getItem('spaza_user')) initApp();
-    };
 
-    function toggleAuth(showReg) {
-        document.getElementById('auth-login').classList.toggle('hidden', showReg);
-        document.getElementById('auth-register').classList.toggle('hidden', !showReg);
-    }
+        async function loadAllData() {
+            fetchDashboardStats();
+            fetchVetting();
+            await fetchDrivers(); // Load drivers before orders so mapping exists
+            fetchOrders();
+            fetchGroupContributions();
+        }
 
-    async function handleLogin() {
-        const wa = document.getElementById('login-wa').value.trim();
-        const { data } = await _client.from('profiles').select('*').eq('whatsapp_number', wa).maybeSingle();
-        if(data) loginSuccess(data); else alert("Store not found.");
-    }
+        // --- DRIVER MGMT ---
+        async function fetchDrivers() {
+            const { data } = await _client.from('drivers').select('*');
+            globalDrivers = data || [];
+            document.getElementById('stat-drivers').innerText = globalDrivers.length;
+            document.getElementById('drivers-list').innerHTML = globalDrivers.map(d => `
+                <tr>
+                    <td><b>${d.driver_name}</b></td>
+                    <td>${d.vehicle_info || 'N/A'}</td>
+                    <td>${d.phone_number}</td>
+                    <td><span class="badge" style="background:#def7ec; color:#03543f">${d.status}</span></td>
+                </tr>
+            `).join('');
+        }
 
-    async function handleRegister() {
-        const payload = {
-            first_name: document.getElementById('reg-fname').value,
-            last_name: document.getElementById('reg-lname').value,
-            gender: document.getElementById('reg-gender').value,
-            store_name: document.getElementById('reg-sname').value,
-            business_type: document.getElementById('reg-btype').value,
-            whatsapp_number: parseInt(document.getElementById('reg-wa').value),
-            phone: parseInt(document.getElementById('reg-phone').value),
-            township: document.getElementById('reg-town').value,
-            address: document.getElementById('reg-address').value,
-            role: 'spaza'
-        };
-        const { data, error } = await _client.from('profiles').insert([payload]).select().single();
-        if(error) alert("Error: " + error.message); else loginSuccess(data);
-    }
+        function toggleAddDriver() { document.getElementById('add-driver-form').classList.toggle('hidden'); }
 
-    function loginSuccess(user) { localStorage.setItem('spaza_user', JSON.stringify(user)); initApp(); }
-    
-    function initApp() {
-        document.getElementById('section-auth').classList.add('hidden');
-        document.getElementById('section-market').classList.remove('hidden');
-        document.getElementById('txt-store-name').innerText = JSON.parse(localStorage.getItem('spaza_user')).store_name;
-        loadContent();
-    }
+        async function saveDriver() {
+            const payload = {
+                driver_name: document.getElementById('drv-name').value,
+                phone_number: document.getElementById('drv-phone').value,
+                vehicle_info: document.getElementById('drv-veh').value
+            };
+            await _client.from('drivers').insert([payload]);
+            toggleAddDriver();
+            fetchDrivers();
+        }
 
-    async function loadContent() {
-        const { data: p } = await _client.from('products').select('*');
-        const { data: g } = await _client.from('buying_groups').select('*').eq('status', 'open');
-        products = p || []; groups = g || [];
-        renderList();
-    }
-
-    function setMode(m) {
-        currentMode = m;
-        document.getElementById('nav-s').classList.toggle('active', m === 'single');
-        document.getElementById('nav-b').classList.toggle('active', m === 'bulk');
-        document.getElementById('nav-o').classList.toggle('active', m === 'history');
-        document.getElementById('list-render').classList.toggle('hidden', m === 'history');
-        document.getElementById('history-render').classList.toggle('hidden', m !== 'history');
-        document.getElementById('main-footer').classList.toggle('hidden', m === 'history');
-        if(m === 'history') loadOrderHistory(); else renderList();
-    }
-
-    function renderList() {
-        const items = currentMode === 'single' ? products : groups;
-        document.getElementById('list-render').innerHTML = items.map(i => {
-            const name = i.name || i.group_name;
-            const price = (i.price || i.contribution_per_spaza) * (currentMode === 'single' ? 1.07 : 1);
-            const qty = cart[name]?.qty || 0;
-            return `
-            <div class="card">
-                <div style="display:flex; gap:15px;">
-                    <img src="https://via.placeholder.com/100" class="prod-img" onerror="this.src='https://via.placeholder.com/100';">
-                    <div style="flex:1">
-                        <h4 style="margin:0">${name}</h4>
-                        <div style="font-weight:900; color:var(--blue); margin:5px 0;">R${price.toFixed(2)}</div>
+        // --- ORDER MGMT (WITH DRIVER ASSIGN) ---
+        async function fetchOrders() {
+            const { data: orders } = await _client.from('orders').select('*').order('created_at', {ascending:false});
+            document.getElementById('master-order-list').innerHTML = (orders || []).map(o => `
+                <div class="card-ui ${o.status}">
+                    <div style="display:flex; justify-content:space-between">
+                        <div><span class="badge" style="background:#EEE">${o.status}</span><h3>${o.store_name}</h3></div>
+                        <div style="text-align:right"><b>R${Number(o.total_amount).toFixed(2)}</b><br><small>${o.payment_method}</small></div>
                     </div>
-                </div>
-                <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid #eee; padding-top:10px;">
-                    <div style="display:flex; align-items:center; gap:10px; background:#f1f5f9; padding:5px; border-radius:8px;">
-                        <button style="border:none; padding:5px 10px;" onclick="updateCart('${name}', ${price}, -1)">-</button>
-                        <b>${qty}</b>
-                        <button style="border:none; padding:5px 10px;" onclick="updateCart('${name}', ${price}, 1)">+</button>
+                    <div style="font-size:13px; margin:10px 0;">
+                        ${Object.entries(o.items).map(([name, detail]) => `• ${name} (x${detail.qty})`).join('<br>')}
                     </div>
-                </div>
-            </div>`;
-        }).join('');
-    }
-
-    function updateCart(n, p, c) {
-        if(!cart[n]) cart[n] = { price: p, qty: 0 };
-        cart[n].qty += c;
-        if(cart[n].qty <= 0) delete cart[n];
-        let t = 0; Object.values(cart).forEach(o => t += o.price * o.qty);
-        document.getElementById('txt-total').innerText = "R " + t.toFixed(2);
-        renderList();
-    }
-
-    async function finalPlaceOrder() {
-        const u = JSON.parse(localStorage.getItem('spaza_user'));
-        const total = parseFloat(document.getElementById('txt-total').innerText.replace('R ', ''));
-        const { data, error } = await _client.from('orders').insert([{ profile_id: u.id, store_name: u.store_name, total_amount: total, items: cart, payment_method: selectedPayment, status: 'pending' }]).select().single();
-        if(!error) { 
-            alert("Order Placed Successfully!");
-            const share = confirm("Would you like to send the receipt to WhatsApp?");
-            if(share) sendReceiptToWA(data, u);
-            cart = {}; 
-            document.getElementById('txt-total').innerText = "R 0.00"; 
-            hideCheckout(); 
-            setMode('history'); 
-        }
-    }
-
-    async function loadOrderHistory() {
-        const u = JSON.parse(localStorage.getItem('spaza_user'));
-        const { data } = await _client.from('orders').select('*').eq('profile_id', u.id).order('created_at', {ascending: false});
-        document.getElementById('history-render').innerHTML = data.map(o => `
-            <div class="card" style="border-left:5px solid var(--green)">
-                <div style="display:flex; justify-content:space-between;">
-                    <b>ORDER #${o.id.toString().slice(-6)}</b>
-                    <div style="display:flex; gap:10px;">
-                        <i class="fa fa-print" onclick='printReceipt(${JSON.stringify(o)})' style="color:var(--blue); cursor:pointer;"></i>
-                        <i class="fab fa-whatsapp" onclick='sendReceiptToWA(${JSON.stringify(o)}, ${localStorage.getItem('spaza_user')})' style="color:var(--green); cursor:pointer;"></i>
+                    
+                    <div style="display:grid; grid-template-columns: 1.2fr 1fr 0.8fr 0.8fr; gap:10px; align-items:center;">
+                        <select onchange="assignDriver('${o.id}', this.value)" style="margin:0; font-size:11px; background:#f0f9ff">
+                            <option value="">-- Assign Driver --</option>
+                            ${globalDrivers.map(d => `<option value="${d.id}" ${o.driver_id === d.id ? 'selected' : ''}>${d.driver_name}</option>`).join('')}
+                        </select>
+                        <select onchange="updateOrderStatus('${o.id}', this.value)" style="margin:0; font-size:11px;">
+                            <option value="pending" ${o.status === 'pending'?'selected':''}>Pending</option>
+                            <option value="processing" ${o.status === 'processing'?'selected':''}>Processing</option>
+                            <option value="completed" ${o.status === 'completed'?'selected':''}>Completed</option>
+                        </select>
+                        <button class="btn" style="background:var(--blue)" onclick="window.print()"><i class="fa fa-print"></i></button>
+                        <button class="btn" style="background:var(--red)" onclick="deleteOrder('${o.id}')"><i class="fa fa-trash"></i></button>
                     </div>
-                </div>
-                <div>Status: ${o.status.toUpperCase()}</div>
-                <div style="font-weight:900">R${o.total_amount.toFixed(2)}</div>
-            </div>`).join('') || "No orders.";
-    }
-
-    function printReceipt(order) {
-        document.getElementById('pr-store-name').innerText = order.store_name;
-        document.getElementById('pr-date').innerText = new Date(order.created_at).toLocaleString();
-        document.getElementById('pr-total').innerText = "TOTAL: R" + order.total_amount.toFixed(2);
-        let itemsHtml = "";
-        for (const [name, info] of Object.entries(order.items)) {
-            itemsHtml += `<p>${info.qty}x ${name} @ R${info.price.toFixed(2)} = R${(info.qty * info.price).toFixed(2)}</p>`;
+                </div>`).join('');
         }
-        document.getElementById('pr-items').innerHTML = itemsHtml;
-        window.print();
-    }
 
-    function sendReceiptToWA(order, user) {
-        let text = `*SPAZASURE ORDER RECEIPT*\n--------------------------\n*Store:* ${order.store_name}\n*Order ID:* #${order.id.toString().slice(-6)}\n*Date:* ${new Date(order.created_at).toLocaleDateString()}\n\n*Items:*`;
-        for (const [name, info] of Object.entries(order.items)) {
-            text += `\n- ${info.qty}x ${name} (R${(info.qty * info.price).toFixed(2)})`;
+        async function assignDriver(orderId, driverId) {
+            await _client.from('orders').update({ driver_id: driverId }).eq('id', orderId);
+            alert("Driver Assigned Successfully");
         }
-        text += `\n\n*TOTAL: R${order.total_amount.toFixed(2)}*\n*Payment:* ${order.payment_method}\n--------------------------\nThank you for your order!`;
-        window.open(`https://wa.me/${user.whatsapp_number}?text=${encodeURIComponent(text)}`, '_blank');
-    }
 
-    function selectPayment(m) { 
-        selectedPayment = m; 
-        document.getElementById('pay-cash').style.borderColor = m === 'Cash' ? 'var(--blue)' : '#eee';
-        document.getElementById('pay-eft').style.borderColor = m === 'EFT' ? 'var(--blue)' : '#eee';
-    }
-    function showCheckout() { document.getElementById('modal-checkout').classList.remove('hidden'); }
-    function hideCheckout() { document.getElementById('modal-checkout').classList.add('hidden'); }
-    function logout() { localStorage.clear(); location.reload(); }
-</script>
+        // --- DASHBOARD & VETTING (Keeping core functions) ---
+        async function fetchDashboardStats() {
+            const { data: orders } = await _client.from('orders').select('total_amount, status');
+            const { count: storeCount } = await _client.from('profiles').select('*', { count: 'exact', head: true });
+            let revenue = orders?.reduce((sum, o) => sum + Number(o.total_amount), 0) || 0;
+            let pending = orders?.filter(o => o.status === 'pending' || o.status === 'processing').length || 0;
+            document.getElementById('stat-rev').innerText = "R " + revenue.toLocaleString();
+            document.getElementById('stat-active').innerText = pending;
+        }
+
+        async function fetchVetting() {
+            const { data } = await _client.from('profiles').select('*').eq('is_verified', false);
+            document.getElementById('stat-vet').innerText = data?.length || 0;
+            document.getElementById('vetting-list').innerHTML = (data || []).map(p => `
+                <tr>
+                    <td><b>${p.store_name}</b><br><small>${p.first_name} ${p.last_name}</small></td>
+                    <td>${p.township}</td>
+                    <td><a href="https://wa.me/${p.whatsapp_number}" target="_blank" style="color:var(--green)"><i class="fab fa-whatsapp"></i> Chat</a></td>
+                    <td><button class="btn" style="background:var(--green)" onclick="verifyStore('${p.id}')">APPROVE</button></td>
+                </tr>`).join('');
+        }
+
+        async function verifyStore(id) {
+            await _client.from('profiles').update({ is_verified: true }).eq('id', id);
+            loadAllData();
+        }
+
+        async function updateOrderStatus(id, val) {
+            await _client.from('orders').update({ status: val }).eq('id', id);
+            loadAllData();
+        }
+
+        async function deleteOrder(id) {
+            if(confirm("Delete order?")) {
+                await _client.from('orders').delete().eq('id', id);
+                loadAllData();
+            }
+        }
+
+        async function fetchGroupContributions() {
+            const { data } = await _client.from('group_contributions').select('*, profiles(store_name, township), buying_groups(group_name)');
+            document.getElementById('group-contributions-list').innerHTML = `<div class="table-container"><table><thead><tr><th>Store</th><th>Item</th><th>Paid</th></tr></thead><tbody>${(data || []).map(c => `<tr><td><b>${c.profiles?.store_name}</b></td><td>${c.buying_groups?.group_name}</td><td style="color:var(--green)">R${Number(c.contribution_amount).toFixed(2)}</td></tr>`).join('')}</tbody></table></div>`;
+        }
+
+        function showTab(tab, btn) {
+            document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+            btn.classList.add('active');
+            ['dashboard', 'vetting', 'orders', 'groups', 'drivers'].forEach(t => {
+                const el = document.getElementById('tab-'+t);
+                if(el) el.classList.add('hidden');
+            });
+            document.getElementById('tab-'+tab).classList.remove('hidden');
+        }
+
+        function doLogout() { location.reload(); }
+    </script>
 </body>
 </html>

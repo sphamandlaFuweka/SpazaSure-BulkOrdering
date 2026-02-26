@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>SpazaSure | Complete Wholesale System</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root { 
@@ -46,8 +47,11 @@
         @media print {
             body * { visibility: hidden; }
             #receipt-view, #receipt-view * { visibility: visible; }
-            #receipt-view { position: fixed; left: 0; top: 0; width: 100%; }
+            #receipt-view { position: fixed; left: 0; top: 0; width: 100%; padding: 20px; }
+            .no-print { display: none !important; }
         }
+        
+        #qrcode-container { display: flex; justify-content: center; margin: 20px 0; padding: 10px; background: white; }
     </style>
 </head>
 <body>
@@ -281,11 +285,17 @@
             <hr>
             <p><b>Order ID:</b> #${o.id}</p>
             <p><b>Store:</b> ${o.store_name}</p>
-            <p><b>Date:</b> ${new Date(o.created_at).toLocaleDateString()}</p>
+            <p><b>Date:</b> ${new Date(o.created_at).toLocaleString()}</p>
             <hr>
             <div style="margin:20px 0;">${itemsList}</div>
             <hr>
             <h3 style="text-align:right">Total: R${o.total_amount.toFixed(2)}</h3>
+            
+            <div id="qrcode-container">
+                <div id="qrcode"></div>
+            </div>
+            <p style="text-align:center; font-size:0.7rem; color:var(--gray)">Scan to verify order details</p>
+
             <div style="display:flex; flex-direction:column; gap:10px; margin-top:20px;" class="no-print">
                 <button onclick="window.print()" class="btn-primary">PRINT RECEIPT</button>
                 <button onclick="shareWhatsApp(${JSON.stringify(o)})" style="padding:16px; background:#25D366; color:white; border:none; border-radius:12px; font-weight:800;">SEND TO WHATSAPP</button>
@@ -293,6 +303,18 @@
             </div>
         `;
         document.getElementById('receipt-view').innerHTML = content;
+        
+        // Generate the QR Code
+        const qrData = `Order ID: ${o.id}\nStore: ${o.store_name}\nTotal: R${o.total_amount.toFixed(2)}\nStatus: ${o.status}`;
+        new QRCode(document.getElementById("qrcode"), {
+            text: qrData,
+            width: 128,
+            height: 128,
+            colorDark : "#0F172A",
+            colorLight : "#ffffff",
+            correctLevel : QRCode.CorrectLevel.H
+        });
+
         document.getElementById('modal-order-detail').classList.remove('hidden');
     }
 
