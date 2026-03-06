@@ -197,34 +197,6 @@
             <p style="margin-top:20px;">Processing your order...</p>
         </div>
     </div>
-
-    <!-- Hidden PDF template for receipt generation -->
-    <div id="pdf-receipt-template" style="display: none;">
-        <div class="pdf-receipt">
-            <h1>SPAZASURE</h1>
-            <h3>Authentic Wholesale Supply</h3>
-            <hr>
-            <div class="store-info" id="pdf-store-info"></div>
-            <hr>
-            <table class="items-table" id="pdf-items-table">
-                <thead>
-                    <tr>
-                        <th>Item</th>
-                        <th>Qty</th>
-                        <th>Price</th>
-                        <th>Total</th>
-                    </tr>
-                </thead>
-                <tbody id="pdf-items-body"></tbody>
-            </table>
-            <hr>
-            <div class="total-row" id="pdf-total"></div>
-            <div class="footer">
-                <p>Thank you for choosing SpazaSure!</p>
-                <p>Contact: 076 440 3803</p>
-            </div>
-        </div>
-    </div>
 </div>
 
 <script>
@@ -232,9 +204,6 @@
     const _supabaseUrl = 'https://clbhfxqxcugxcqutngpo.supabase.co';
     const _supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNsYmhmeHF4Y3VneGNxdXRuZ3BvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE4MzgxMDMsImV4cCI6MjA4NzQxNDEwM30.VWj5TGjAQhj77BZyoSUmynUPDPTVGL_pAKNyrlpQR1Y';
     const _client = supabase.createClient(_supabaseUrl, _supabaseKey);
-
-    // SUPABASE STORAGE BASE URL
-    const storageBase = "https://clbhfxqxcugxcqutngpo.supabase.co/storage/v1/object/public/Images/";
 
     // Admin WhatsApp number for all orders
     const ADMIN_WHATSAPP = '27764403803'; // 0764403803 with country code
@@ -246,440 +215,408 @@
     let selectedPayment = 'Cash'; 
     let editingOrderId = null;
     let currentUser = null;
+    
+    // Image cache and file mapping
+    let imageFileMap = new Map();
+    const imageUrlCache = new Map();
 
-    // Enhanced products with all schema fields from your SpazaShop price list
+    // Enhanced products with all schema fields - UPDATED WITH +100 STOCK
     const defaultProducts = [
         { 
             name: 'Ace Instant Porridge (Banana)', 
             description: 'Banana flavored instant porridge, 1kg pack. Perfect for quick breakfast.',
             price: 22.77, 
             bulk_price: '197.99', 
-            stock_quantity: 96,
+            stock_quantity: 196, // +100 from original
             category: 'Breakfast Cereals',
             barcode: '96 Y1',
             batch_code: 'ACE-BAN-0326',
-            is_authentic_verified: true,
-            image_url: `${storageBase}Ace%20Instant%20Porridge%20(Banana).png?t=${Date.now()}`
+            is_authentic_verified: true
         },
         { 
             name: 'Ace Super Maize 10kg', 
             description: '10kg super maize meal, fortified with vitamins and minerals.',
             price: 85.79, 
             bulk_price: '85.79', 
-            stock_quantity: 98,
+            stock_quantity: 198, // +100
             category: 'Maize Meal',
             barcode: '98 N1',
             batch_code: 'ACE-10KG-0326',
-            is_authentic_verified: true,
-            image_url: `${storageBase}Ace%20Super%20Maize%2010kg.png?t=${Date.now()}`
+            is_authentic_verified: true
         },
         { 
             name: 'Ace Super Maize 25kg', 
             description: '25kg super maize meal, family size. Fortified with essential nutrients.',
             price: 241.99, 
             bulk_price: '241.99', 
-            stock_quantity: 40,
+            stock_quantity: 140, // +100
             category: 'Maize Meal',
             barcode: '40 N1',
             batch_code: 'ACE-25KG-0326',
-            is_authentic_verified: true,
-            image_url: `${storageBase}Ace%20Super%20Maize%2025kg.png?t=${Date.now()}`
+            is_authentic_verified: true
         },
         { 
             name: 'Ace Super Maize Poly 5kg', 
             description: '5kg super maize meal in poly bag, easy to carry and store.',
             price: 61.59, 
             bulk_price: '61.59', 
-            stock_quantity: 180,
+            stock_quantity: 280, // +100
             category: 'Maize Meal',
             barcode: '180 N1',
             batch_code: 'ACE-5KG-0326',
-            is_authentic_verified: true,
-            image_url: `${storageBase}Ace%20Super%20Maize%20Poly%205kg.png?t=${Date.now()}`
+            is_authentic_verified: true
         },
         { 
             name: 'Allsome Rice (10kg)', 
             description: '10kg premium quality white rice, long grain.',
             price: 105.59, 
             bulk_price: '105.59', 
-            stock_quantity: 100,
+            stock_quantity: 200, // +100
             category: 'Rice',
             barcode: '100 N1',
             batch_code: 'ALL-10KG-0326',
-            is_authentic_verified: true,
-            image_url: `${storageBase}Allsome%20Rice%20(10kg).png?t=${Date.now()}`
+            is_authentic_verified: true
         },
         { 
             name: 'Allsome Rice (4x5kg)', 
             description: '4 x 5kg rice pack, convenient multi-pack for reselling.',
             price: 60.50, 
             bulk_price: '241.99', 
-            stock_quantity: 52,
+            stock_quantity: 152, // +100
             category: 'Rice',
             barcode: '52 N1',
             batch_code: 'ALL-4X5KG-0326',
-            is_authentic_verified: true,
-            image_url: `${storageBase}Allsome%20Rice%20(4x5kg).png?t=${Date.now()}`
+            is_authentic_verified: true
         },
         { 
             name: 'Always Max Night (6x4x8s)', 
             description: 'Max night sanitary pads with wings, extra protection.',
             price: 15.13, 
             bulk_price: '362.93', 
-            stock_quantity: 32,
+            stock_quantity: 132, // +100
             category: 'Sanitary Products',
             barcode: '32 N1',
             batch_code: 'ALW-NIGHT-0326',
-            is_authentic_verified: true,
-            image_url: `${storageBase}Always%20Max%20Night%20(6x4x8s).png?t=${Date.now()}`
+            is_authentic_verified: true
         },
         { 
             name: 'Aquafresh Toothpaste 100ml', 
             description: '100ml triple protection toothpaste, fresh mint flavor.',
             price: 14.18, 
             bulk_price: '170.16', 
-            stock_quantity: 360,
+            stock_quantity: 460, // +100
             category: 'Oral Care',
             barcode: '360 Y1',
             batch_code: 'AQUA-100ML-0326',
-            is_authentic_verified: true,
-            image_url: `${storageBase}Aquafresh%20T_Paste%20(12x100ml).png?t=${Date.now()}`
+            is_authentic_verified: true
         },
         { 
             name: 'Aquafresh Toothpaste 50ml', 
             description: '50ml triple protection toothpaste, travel size.',
             price: 12.42, 
             bulk_price: '149.04', 
-            stock_quantity: 240,
+            stock_quantity: 340, // +100
             category: 'Oral Care',
             barcode: 'Y1',
             batch_code: 'AQUA-50ML-0326',
-            is_authentic_verified: true,
-            image_url: `${storageBase}Aquafresh%20T_Paste%20(12x50ml).png?t=${Date.now()}`
+            is_authentic_verified: true
         },
         { 
             name: 'Aunt Caroline Rice (10kg)', 
             description: '10kg premium long grain rice, fluffy when cooked.',
             price: 134.19, 
             bulk_price: '134.19', 
-            stock_quantity: 100,
+            stock_quantity: 200, // +100
             category: 'Rice',
             barcode: '100 N1',
             batch_code: 'AUNT-10KG-0326',
-            is_authentic_verified: true,
-            image_url: `${storageBase}Aunt%20Caroline%20Rice%20(10kg).png?t=${Date.now()}`
+            is_authentic_verified: true
         },
         { 
             name: 'Aunt Caroline Rice (4X5kg)', 
             description: '4 x 5kg rice pack, perfect for spaza shops to resell.',
             price: 101.75, 
             bulk_price: '406.99', 
-            stock_quantity: 48,
+            stock_quantity: 148, // +100
             category: 'Rice',
             barcode: '48 N1',
             batch_code: 'AUNT-4X5KG-0326',
-            is_authentic_verified: true,
-            image_url: `${storageBase}Aunt%20Caroline%20Rice%20(4X5kg).png?t=${Date.now()}`
+            is_authentic_verified: true
         },
         { 
             name: 'Bakers Eet-Sum-Mor 200g', 
             description: '200g Eet-Sum-Mor biscuits, classic South African favorite.',
             price: 33.64, 
             bulk_price: '403.69', 
-            stock_quantity: 145,
+            stock_quantity: 245, // +100
             category: 'Biscuits',
             barcode: '145 Y1',
             batch_code: 'BAK-EET-0326',
-            is_authentic_verified: true,
-            image_url: `${storageBase}Bakers%20Eet-Sum-Mor%20(12x200g).png?t=${Date.now()}`
+            is_authentic_verified: true
         },
         { 
             name: 'Bakers Lemon Creams 200g', 
             description: '200g lemon cream biscuits, sweet and tangy.',
             price: 23.46, 
             bulk_price: '281.59', 
-            stock_quantity: 156,
+            stock_quantity: 256, // +100
             category: 'Biscuits',
             barcode: '156 Y1',
             batch_code: 'BAK-LEMON-0326',
-            is_authentic_verified: true,
-            image_url: `${storageBase}Bakers%20Lemon%20Creams%20(12x200g).png?t=${Date.now()}`
+            is_authentic_verified: true
         },
         { 
             name: 'Bakers Marie Biscuits 200g', 
             description: '200g Marie biscuits, perfect for tea time.',
             price: 19.89, 
             bulk_price: '238.69', 
-            stock_quantity: 110,
+            stock_quantity: 210, // +100
             category: 'Biscuits',
             barcode: '110 Y1',
             batch_code: 'BAK-MARIE-0326',
-            is_authentic_verified: true,
-            image_url: `${storageBase}Bakers%20Marie%20Biscuits%20(12x200g).png?t=${Date.now()}`
+            is_authentic_verified: true
         },
         { 
             name: 'Black Cat Peanut Butter 400g', 
             description: '400g smooth peanut butter, no added sugar.',
             price: 39.59, 
             bulk_price: '237.53', 
-            stock_quantity: 308,
+            stock_quantity: 408, // +100
             category: 'Spreads',
             barcode: '308 Y1',
             batch_code: 'BLK-PB-0326',
-            is_authentic_verified: true,
-            image_url: `${storageBase}Black%20Cat%20Peanut%20Butter%20(6X400g).png?t=${Date.now()}`
+            is_authentic_verified: true
         },
         { 
             name: 'Blue Seal Pet Jelly 100ml', 
             description: '100ml petroleum jelly, pure and gentle.',
             price: 19.11, 
             bulk_price: '229.34', 
-            stock_quantity: 240,
+            stock_quantity: 340, // +100
             category: 'Personal Care',
             barcode: 'Y1',
             batch_code: 'BLUE-100ML-0326',
-            is_authentic_verified: true,
-            image_url: `${storageBase}Blue%20Seal%20Pet%20Jelly%20(12x100ml).png?t=${Date.now()}`
+            is_authentic_verified: true
         },
         { 
             name: 'Bull Brand Corned Meat 300g', 
             description: '300g corned meat, ready to eat.',
             price: 23.46, 
             bulk_price: '140.79', 
-            stock_quantity: 432,
+            stock_quantity: 532, // +100
             category: 'Canned Meat',
             barcode: '432 Y1',
             batch_code: 'BULL-CM-0326',
-            is_authentic_verified: true,
-            image_url: `${storageBase}Bull%20Brand%20Corned%20Meat%20(6%20x%20300g).png?t=${Date.now()}`
+            is_authentic_verified: true
         },
         { 
             name: 'C&B Mayonnaise 1.5kg', 
             description: '1.5kg creamy mayonnaise, perfect for salads and sandwiches.',
             price: 92.76, 
             bulk_price: '556.59', 
-            stock_quantity: 65,
+            stock_quantity: 165, // +100
             category: 'Condiments',
             barcode: '65 Y1',
             batch_code: 'CNB-MAYO-0326',
-            is_authentic_verified: true,
-            image_url: `${storageBase}C&B%20Mayonnaise%20(6x1.5kg).png?t=${Date.now()}`
+            is_authentic_verified: true
         },
         { 
             name: 'Cadbury Lunch Bar 40g', 
             description: '40g milk chocolate bar, creamy and delicious.',
             price: 11.68, 
             bulk_price: '467.49', 
-            stock_quantity: 184,
+            stock_quantity: 284, // +100
             category: 'Confectionery',
             barcode: '184 Y1',
             batch_code: 'CAD-LUNCH-0326',
-            is_authentic_verified: true,
-            image_url: `${storageBase}Cadbury%20Lunch%20Bar%20(1x40s).png?t=${Date.now()}`
+            is_authentic_verified: true
         },
         { 
             name: 'Clover Longlife Milk 1L', 
             description: '1L longlife milk, UHT treated, shelf stable.',
             price: 17.24, 
             bulk_price: '103.39', 
-            stock_quantity: 150,
+            stock_quantity: 250, // +100
             category: 'Dairy',
             barcode: '150 N1',
             batch_code: 'CLV-MILK-1L-0326',
-            is_authentic_verified: true,
-            image_url: `${storageBase}Clover%20Longlife%20Milk%20(6%20x%201L).png?t=${Date.now()}`
+            is_authentic_verified: true
         },
         { 
             name: 'Coke 2.25L', 
             description: '2.25L Coca-Cola original taste, family size.',
             price: 25.49, 
             bulk_price: '152.89', 
-            stock_quantity: 64,
+            stock_quantity: 164, // +100
             category: 'Beverages',
             barcode: '64 Y1',
             batch_code: 'COKE-225L-0326',
-            is_authentic_verified: true,
-            image_url: `${storageBase}Coke%20(2.25ltx6).png?t=${Date.now()}`
+            is_authentic_verified: true
         },
         { 
             name: 'Coke/Fanta/Sprite 2L', 
             description: '2L carbonated soft drink, various flavors available.',
             price: 19.61, 
             bulk_price: '117.69', 
-            stock_quantity: 80,
+            stock_quantity: 180, // +100
             category: 'Beverages',
             barcode: '80 Y1',
             batch_code: 'COKE-2L-0326',
-            is_authentic_verified: true,
-            image_url: `${storageBase}Coke%20C_S%20Fanta%20Orange%20(2lx6).png?t=${Date.now()}`
+            is_authentic_verified: true
         },
         { 
             name: 'Chez Eggs Large (per egg)', 
             description: 'Large fresh eggs, per egg price.',
             price: 1.80, 
             bulk_price: '325.59', 
-            stock_quantity: 750,
+            stock_quantity: 850, // +100
             category: 'Dairy',
             barcode: '50 N50',
             batch_code: 'CHEZ-EGGS-0326',
-            is_authentic_verified: true,
-            image_url: `${storageBase}Chez%20Eggs%20Large%20(15DZ).png?t=${Date.now()}`
+            is_authentic_verified: true
         },
         { 
             name: 'Cremora 750g', 
             description: '750g cremora, non-dairy creamer, perfect for coffee.',
             price: 54.99, 
             bulk_price: '1099.79', 
-            stock_quantity: 21,
+            stock_quantity: 121, // +100
             category: 'Dairy',
             barcode: '21 Y1',
             batch_code: 'CREMORA-750G-0326',
-            is_authentic_verified: true,
-            image_url: `${storageBase}Cremora%20(20x750g).png?t=${Date.now()}`
+            is_authentic_verified: true
         },
         { 
             name: 'DeLite Oil 5L', 
             description: '5L cooking oil, perfect for frying and cooking.',
             price: 141.89, 
             bulk_price: '567.56', 
-            stock_quantity: 55,
+            stock_quantity: 155, // +100
             category: 'Cooking Oil',
             barcode: '55 N1',
             batch_code: 'DEL-OIL-5L-0326',
-            is_authentic_verified: true,
-            image_url: `${storageBase}DeLite%20Oil%20(4x5l).png?t=${Date.now()}`
+            is_authentic_verified: true
         },
         { 
             name: 'Excella Oil 5L', 
             description: '5L premium cooking oil, high smoke point.',
             price: 167.75, 
             bulk_price: '670.99', 
-            stock_quantity: 50,
+            stock_quantity: 150, // +100
             category: 'Cooking Oil',
             barcode: '50 N1',
             batch_code: 'EXC-5L-0326',
-            is_authentic_verified: true,
-            image_url: `${storageBase}Excella%20Oil%20(4x5lt).png?t=${Date.now()}`
+            is_authentic_verified: true
         },
         { 
             name: 'Five Roses Tea 100s', 
             description: '100 tea bags, classic South African tea blend.',
             price: 27.69, 
             bulk_price: '379.49', 
-            stock_quantity: 120,
+            stock_quantity: 220, // +100
             category: 'Beverages',
             barcode: 'Y1',
             batch_code: '5ROSES-100S-0326',
-            is_authentic_verified: true,
-            image_url: `${storageBase}Five%20Roses%20Tea%20(6x100s).png?t=${Date.now()}`
+            is_authentic_verified: true
         },
         { 
             name: 'Glenryck Pilchards 400g', 
             description: '400g pilchards in tomato sauce, rich in omega-3.',
             price: 26.59, 
             bulk_price: '318.99', 
-            stock_quantity: 150,
+            stock_quantity: 250, // +100
             category: 'Canned Fish',
             barcode: '150 N1',
             batch_code: 'GLEN-400G-0326',
-            is_authentic_verified: true,
-            image_url: `${storageBase}Glenryck%20Pilchards%20Tom%20(12x400g).png?t=${Date.now()}`
+            is_authentic_verified: true
         },
         { 
             name: 'Golden Cloud Flour 10kg', 
             description: '10kg cake flour, perfect for baking.',
             price: 123.19, 
             bulk_price: '123.19', 
-            stock_quantity: 99,
+            stock_quantity: 199, // +100
             category: 'Flour',
             barcode: '99 N1',
             batch_code: 'GC-10KG-0326',
-            is_authentic_verified: true,
-            image_url: `${storageBase}Golden%20Cloud%20Cake%20Flour%20(10kg).png?t=${Date.now()}`
+            is_authentic_verified: true
         },
         { 
             name: 'Golden Delight Rice 5kg', 
             description: '5kg basmati rice, aromatic long grain.',
             price: 65.99, 
             bulk_price: '65.99', 
-            stock_quantity: 200,
+            stock_quantity: 300, // +100
             category: 'Rice',
             barcode: '200 N1',
             batch_code: 'GD-BAS-5KG-0326',
-            is_authentic_verified: true,
-            image_url: `${storageBase}Golden%20Delight%20Basmati%20Rice%20(5kg).png?t=${Date.now()}`
+            is_authentic_verified: true
         },
         { 
             name: 'Huletts White Sugar 10kg', 
             description: '10kg white sugar, pure cane sugar.',
             price: 230.99, 
             bulk_price: '230.99', 
-            stock_quantity: 100,
+            stock_quantity: 200, // +100
             category: 'Sugar',
             barcode: '100 Y1',
             batch_code: 'HUL-WHITE-0326',
-            is_authentic_verified: true,
-            image_url: `${storageBase}Huletts%20White%20Sugar%20(10kg).png?t=${Date.now()}`
+            is_authentic_verified: true
         },
         { 
             name: 'Iwisa Maize 10kg', 
             description: '10kg super maize meal, fortified.',
             price: 111.09, 
             bulk_price: '111.09', 
-            stock_quantity: 104,
+            stock_quantity: 204, // +100
             category: 'Maize Meal',
             barcode: '104 N1',
             batch_code: 'IWISA-10KG-0326',
-            is_authentic_verified: true,
-            image_url: `${storageBase}Iwisa%20Super%20Maize%20Meal%20(10kg).png?t=${Date.now()}`
+            is_authentic_verified: true
         },
         { 
             name: 'Koo Baked Beans 400g', 
             description: '400g baked beans in tomato sauce.',
             price: 16.39, 
             bulk_price: '188.87', 
-            stock_quantity: 165,
+            stock_quantity: 265, // +100
             category: 'Canned Food',
             barcode: '165 Y1',
             batch_code: 'KOO-BEANS-0326',
-            is_authentic_verified: true,
-            image_url: `${storageBase}Koo%20Baked%20Beans%20(12%20x%20400g).png?t=${Date.now()}`
+            is_authentic_verified: true
         },
         { 
             name: 'Lucky Star Pilchards 400g', 
             description: '400g pilchards in tomato sauce.',
             price: 26.95, 
             bulk_price: '308.69', 
-            stock_quantity: 150,
+            stock_quantity: 250, // +100
             category: 'Canned Fish',
             barcode: '150 N1',
             batch_code: 'LUCKY-400G-0326',
-            is_authentic_verified: true,
-            image_url: `${storageBase}Lucky%20Star-%20Chilli%20(12x400g).png?t=${Date.now()}`
+            is_authentic_verified: true
         },
         { 
             name: 'Sunfoil Oil 2L', 
             description: '2L sunflower oil, healthy cooking oil.',
             price: 68.50, 
             bulk_price: 'R68.50', 
-            stock_quantity: 100,
+            stock_quantity: 200, // +100
             category: 'Cooking Oil',
             barcode: 'N1',
             batch_code: 'SUN-2L-0326',
-            is_authentic_verified: true,
-            image_url: `${storageBase}Sunfoil%20Oil%20(12%20x%20750ml).png?t=${Date.now()}`
+            is_authentic_verified: true
         },
         { 
             name: 'White Star Maize 10kg', 
             description: '10kg super maize meal, premium quality.',
             price: 118.99, 
             bulk_price: '118.99', 
-            stock_quantity: 98,
+            stock_quantity: 198, // +100
             category: 'Maize Meal',
             barcode: '98 N1',
             batch_code: 'WSTAR-10KG-0326',
-            is_authentic_verified: true,
-            image_url: `${storageBase}White%20Star%20Super%20Maize%20Meal%20(10kg).png?t=${Date.now()}`
+            is_authentic_verified: true
         }
     ];
 
@@ -757,117 +694,197 @@
         initApp();
     }
 
-    function initApp() {
+    async function initApp() {
         document.getElementById('section-auth').classList.add('hidden');
         document.getElementById('section-market').classList.remove('hidden');
         document.getElementById('txt-store-name').innerText = currentUser.store_name;
         document.getElementById('txt-badge').innerText = currentUser.is_verified ? 'VERIFIED' : 'PENDING';
         document.getElementById('txt-badge').style.background = currentUser.is_verified ? 'var(--green)' : 'var(--yellow)';
-        loadContent();
+        
+        // Load image map first
+        await loadImageMap();
+        await loadContent();
+    }
+
+    // NEW: Load all image filenames from storage
+    async function loadImageMap() {
+        try {
+            const { data: files, error } = await _client
+                .storage
+                .from('Images')
+                .list();
+            
+            if (error) {
+                console.error("Error loading image map:", error);
+                return;
+            }
+            
+            // Create a map of product name to filename
+            files.forEach(file => {
+                const fileName = file.name;
+                // Remove extension
+                const baseName = fileName.replace(/\.[^/.]+$/, "").toLowerCase();
+                // Also store cleaned version without special chars
+                const cleanName = baseName.replace(/[^a-z0-9]/g, '');
+                imageFileMap.set(baseName, fileName);
+                imageFileMap.set(cleanName, fileName);
+            });
+            
+            console.log("✅ Loaded", imageFileMap.size, "image mappings");
+        } catch (error) {
+            console.error("Error loading image map:", error);
+        }
+    }
+
+    // NEW: Get image URL from map or cache
+    function getImageUrl(productName) {
+        // Check cache first
+        if (imageUrlCache.has(productName)) {
+            return imageUrlCache.get(productName);
+        }
+        
+        const baseUrl = "https://clbhfxqxcugxcqutngpo.supabase.co/storage/v1/object/public/Images/";
+        const normalizedName = productName.toLowerCase();
+        const cleanName = normalizedName.replace(/[^a-z0-9]/g, '');
+        
+        // Try to find matching file in our map
+        let matchedFile = null;
+        
+        // Try exact match
+        if (imageFileMap.has(normalizedName)) {
+            matchedFile = imageFileMap.get(normalizedName);
+        }
+        // Try clean match
+        else if (imageFileMap.has(cleanName)) {
+            matchedFile = imageFileMap.get(cleanName);
+        }
+        // Try partial match
+        else {
+            for (let [key, filename] of imageFileMap.entries()) {
+                if (normalizedName.includes(key) || key.includes(normalizedName) || 
+                    cleanName.includes(key) || key.includes(cleanName)) {
+                    matchedFile = filename;
+                    break;
+                }
+            }
+        }
+        
+        if (matchedFile) {
+            const url = baseUrl + encodeURIComponent(matchedFile);
+            imageUrlCache.set(productName, url);
+            return url;
+        }
+        
+        // Fallback to placeholder
+        const placeholder = `https://via.placeholder.com/150/1E3A8A/ffffff?text=${encodeURIComponent(productName.substring(0, 20))}`;
+        imageUrlCache.set(productName, placeholder);
+        return placeholder;
     }
 
     async function loadContent() {
-        // Try to load from Supabase, fall back to enhanced default products
         try {
             const { data: p, error } = await _client.from('products').select('*');
             if (error) throw error;
             products = p && p.length > 0 ? p : defaultProducts;
+            await renderList();
         } catch (error) {
             console.log("Using enhanced default products:", error);
             products = defaultProducts;
+            await renderList();
         }
-        renderList();
     }
 
-    // Render products with all schema fields - FIXED IMAGE LOADING
-    function renderList() {
+    // UPDATED: Render products with fixed image loading
+    async function renderList() {
         const query = document.getElementById('search-input').value.toLowerCase();
         const items = products;
         
-        document.getElementById('list-render').innerHTML = items
-            .filter(i => {
-                const searchableText = `${i.name || ''} ${i.category || ''} ${i.description || ''} ${i.batch_code || ''}`.toLowerCase();
-                return searchableText.includes(query);
-            })
-            .map(i => {
-                const name = i.name || i.group_name;
-                const price = i.price || 0;
-                const bulkPrice = i.bulk_price || 'N/A';
-                const stockQty = i.stock_quantity || 0;
-                const isVerified = i.is_authentic_verified !== false;
-                const qty = cart[name]?.qty || 0;
-                
-                // Calculate savings if bulk price exists and is numeric
-                let savings = null;
-                if (bulkPrice && bulkPrice !== 'N/A' && !isNaN(parseFloat(bulkPrice))) {
-                    const bulkNum = parseFloat(bulkPrice);
-                    const unitNum = price;
-                    if (bulkNum > unitNum) {
-                        savings = ((bulkNum - (unitNum * 12)) / bulkNum * 100).toFixed(0);
-                    }
-                }
-                
-                // FIXED: Better image URL handling with timestamp to prevent caching
-                const imageName = encodeURIComponent(name);
-                const imgUrl = i.image_url || `${storageBase}${imageName}.png?t=${Date.now()}`;
-                const fallbackJpg = `${storageBase}${imageName}.jpg?t=${Date.now()}`;
-                const fallbackPlaceholder = `https://via.placeholder.com/150/1E3A8A/ffffff?text=${encodeURIComponent(name.substring(0, 20))}`;
-                
-                // Escape single quotes for JavaScript
-                const safeName = name.replace(/'/g, "\\'"); 
-
-                return `
-                <div class="card">
-                    <div style="display:flex; gap:15px;">
-                        <img src="${imgUrl}" 
-                             class="prod-img" 
-                             alt="${name}"
-                             loading="lazy"
-                             onerror="this.onerror=null; this.src='${fallbackJpg}'; this.onerror=function(){this.src='${fallbackPlaceholder}'; this.onerror=null;}"
-                             onload="this.style.opacity='1'"
-                             style="opacity:1; transition:opacity 0.3s;">
-                        <div style="flex:1">
-                            <div style="display:flex; align-items:center; gap:5px; flex-wrap:wrap; margin-bottom:5px;">
-                                <h4 style="margin:0; font-size:1rem;">${name}</h4>
-                                ${isVerified ? '<span class="product-badge verified-badge"><i class="fas fa-check-circle"></i> VERIFIED</span>' : ''}
-                                ${stockQty < 20 ? '<span class="product-badge stock-badge">LOW STOCK</span>' : ''}
-                            </div>
-                            
-                            <div class="category-tag">${i.category || 'Uncategorized'}</div>
-                            
-                            <p class="product-description">${i.description || 'No description available'}</p>
-                            
-                            <div class="price-comparison">
-                                <span class="unit-price">R${price.toFixed(2)}</span>
-                                ${bulkPrice && bulkPrice !== 'N/A' ? `<span class="bulk-price">Bulk: R${bulkPrice}</span>` : ''}
-                                ${savings ? `<span class="savings-tag">Save ${savings}%</span>` : ''}
-                            </div>
-                            
-                            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px;">
-                                <div style="font-size:0.7rem; color:var(--gray);">
-                                    <i class="fas fa-box"></i> Stock: ${stockQty} | 
-                                    <i class="fas fa-barcode"></i> ${i.batch_code || 'N/A'}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid #eee; padding-top:10px; margin-top:10px;">
-                        <div style="display:flex; align-items:center; background:#f1f5f9; border-radius:10px; padding:4px;">
-                            <button style="border:none; background:white; width:35px; height:35px; border-radius:8px; font-weight:bold; cursor:pointer;" onclick="updateCart('${safeName}', ${price}, -1)">-</button>
-                            <b style="padding:0 20px;">${qty}</b>
-                            <button style="border:none; background:white; width:35px; height:35px; border-radius:8px; font-weight:bold; cursor:pointer;" onclick="updateCart('${safeName}', ${price}, 1)" ${stockQty <= 0 ? 'disabled' : ''}>+</button>
-                        </div>
-                        ${stockQty <= 0 ? '<span style="color:var(--red); font-size:0.8rem;">Out of Stock</span>' : ''}
-                    </div>
-                    
-                    ${i.batch_code ? `<div class="batch-code">Batch: ${i.batch_code} | Barcode: ${i.barcode || 'N/A'}</div>` : ''}
-                </div>`;
-            }).join('');
+        let html = '';
         
-        if (items.length === 0) {
-            document.getElementById('list-render').innerHTML = '<p style="text-align:center; padding:40px; color:var(--gray);">No products found matching your search.</p>';
+        for (let i of items) {
+            // Skip items without description (they should have been deleted)
+            if (!i.description || i.description.trim() === '') {
+                continue;
+            }
+            
+            const name = i.name || i.group_name;
+            const price = i.price || 0;
+            const bulkPrice = i.bulk_price || 'N/A';
+            const stockQty = i.stock_quantity || 0;
+            const isVerified = i.is_authentic_verified !== false;
+            const qty = cart[name]?.qty || 0;
+            
+            // Filter by search query
+            const searchableText = `${name} ${i.category || ''} ${i.description || ''} ${i.batch_code || ''}`.toLowerCase();
+            if (!searchableText.includes(query)) {
+                continue;
+            }
+            
+            // Calculate savings if bulk price exists and is numeric
+            let savings = null;
+            if (bulkPrice && bulkPrice !== 'N/A' && !isNaN(parseFloat(bulkPrice))) {
+                const bulkNum = parseFloat(bulkPrice);
+                const unitNum = price;
+                if (bulkNum > unitNum) {
+                    savings = ((bulkNum - (unitNum * 12)) / bulkNum * 100).toFixed(0);
+                }
+            }
+            
+            // Get image URL from our map
+            const imgUrl = getImageUrl(name);
+            
+            // Escape single quotes for JavaScript
+            const safeName = name.replace(/'/g, "\\'"); 
+
+            html += `
+            <div class="card">
+                <div style="display:flex; gap:15px;">
+                    <img src="${imgUrl}" 
+                         class="prod-img" 
+                         alt="${name}"
+                         loading="lazy"
+                         onerror="this.onerror=null; this.src='https://via.placeholder.com/150/1E3A8A/ffffff?text=${encodeURIComponent(name.substring(0, 20))}'"
+                         style="opacity:1; transition:opacity 0.3s;">
+                    <div style="flex:1">
+                        <div style="display:flex; align-items:center; gap:5px; flex-wrap:wrap; margin-bottom:5px;">
+                            <h4 style="margin:0; font-size:1rem;">${name}</h4>
+                            ${isVerified ? '<span class="product-badge verified-badge"><i class="fas fa-check-circle"></i> VERIFIED</span>' : ''}
+                            ${stockQty < 20 ? '<span class="product-badge stock-badge">LOW STOCK</span>' : ''}
+                        </div>
+                        
+                        <div class="category-tag">${i.category || 'Uncategorized'}</div>
+                        
+                        <p class="product-description">${i.description || 'No description available'}</p>
+                        
+                        <div class="price-comparison">
+                            <span class="unit-price">R${price.toFixed(2)}</span>
+                            ${bulkPrice && bulkPrice !== 'N/A' ? `<span class="bulk-price">Bulk: R${bulkPrice}</span>` : ''}
+                            ${savings ? `<span class="savings-tag">Save ${savings}%</span>` : ''}
+                        </div>
+                        
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px;">
+                            <div style="font-size:0.7rem; color:var(--gray);">
+                                <i class="fas fa-box"></i> Stock: ${stockQty} | 
+                                <i class="fas fa-barcode"></i> ${i.batch_code || 'N/A'}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid #eee; padding-top:10px; margin-top:10px;">
+                    <div style="display:flex; align-items:center; background:#f1f5f9; border-radius:10px; padding:4px;">
+                        <button style="border:none; background:white; width:35px; height:35px; border-radius:8px; font-weight:bold; cursor:pointer;" onclick="updateCart('${safeName}', ${price}, -1)">-</button>
+                        <b style="padding:0 20px;">${qty}</b>
+                        <button style="border:none; background:white; width:35px; height:35px; border-radius:8px; font-weight:bold; cursor:pointer;" onclick="updateCart('${safeName}', ${price}, 1)" ${stockQty <= 0 ? 'disabled' : ''}>+</button>
+                    </div>
+                    ${stockQty <= 0 ? '<span style="color:var(--red); font-size:0.8rem;">Out of Stock</span>' : ''}
+                </div>
+                
+                ${i.batch_code ? `<div class="batch-code">Batch: ${i.batch_code} | Barcode: ${i.barcode || 'N/A'}</div>` : ''}
+            </div>`;
         }
+        
+        document.getElementById('list-render').innerHTML = html || '<p style="text-align:center; padding:40px; color:var(--gray);">No products found matching your search.</p>';
     }
 
     function updateCart(name, price, change) {
@@ -1248,7 +1265,7 @@
                 const savings = ((p.price * 12 - bulkNum) / (p.price * 12) * 100).toFixed(0);
                 return {
                     name: p.name,
-                    price: bulkNum / 12, // Approximate per unit when buying bulk
+                    price: bulkNum / 12,
                     original: p.price,
                     savings: savings,
                     stock: p.stock_quantity,
