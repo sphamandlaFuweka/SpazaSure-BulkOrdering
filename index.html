@@ -11,284 +11,132 @@
         :root { 
             --blue: #1E3A8A; --red: #E11D48; --bg: #F1F5F9; 
             --green: #10B981; --dark: #0F172A; --gray: #64748B;
-            --yellow: #FBBF24; --orange: #F59E0B;
+            --yellow: #FBBF24;
         }
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Inter', sans-serif; background: var(--bg); color: var(--dark); }
-        .container { width: 100%; max-width: 500px; margin: 0 auto; min-height: 100vh; background: white; position: relative; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); margin: 0; color: var(--dark); }
+        .container { width: 100%; max-width: 500px; margin: 0 auto; min-height: 100vh; padding-bottom: 160px; }
         .hidden { display: none !important; }
 
-        /* Auth Styles */
-        .auth-container { padding: 20px; }
-        .auth-header { background: var(--blue); padding: 40px 20px; color: white; text-align: center; border-radius: 0 0 30px 30px; margin-bottom: 20px; }
-        .auth-header h1 { font-size: 2rem; letter-spacing: -1px; margin-bottom: 10px; }
-        .auth-card { background: white; padding: 25px; border-radius: 24px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
-        .form-group { margin-bottom: 20px; text-align: left; }
-        .form-group label { display: block; font-size: 0.75rem; font-weight: 700; color: var(--gray); margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.5px; }
-        .auth-input, select { width:100%; padding:15px; border: 2px solid #e2e8f0; border-radius:12px; font-size: 1rem; outline: none; background: #f8fafc; transition: all 0.2s; }
+        /* UI Components */
+        .auth-card { background: white; padding: 25px; border-radius: 24px; margin: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        .form-group { margin-bottom: 15px; text-align: left; }
+        .form-group label { display: block; font-size: 0.75rem; font-weight: 700; color: var(--gray); margin-bottom: 5px; text-transform: uppercase; }
+        .auth-input, select { width:100%; padding:14px; border: 2px solid #f1f5f9; border-radius:12px; font-size: 1rem; outline: none; background: #f8fafc; }
         .auth-input:focus { border-color: var(--blue); background: white; }
-        .btn-primary { width:100%; padding:16px; background:var(--green); color:white; border:none; border-radius:12px; font-weight: 800; cursor: pointer; font-size: 1rem; transition: opacity 0.2s; }
-        .btn-primary:active { opacity: 0.8; }
-        .btn-secondary { width:100%; padding:16px; background:var(--blue); color:white; border:none; border-radius:12px; font-weight: 800; cursor: pointer; font-size: 1rem; }
-
+        .btn-primary { width:100%; padding:16px; background:var(--green); color:white; border:none; border-radius:12px; font-weight: 800; cursor: pointer; font-size: 1rem; }
+        
         /* Product Layout */
-        .card { background: white; margin: 12px; padding: 16px; border-radius: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; }
-        .product-row { display:flex; gap:15px; align-items:center; }
-        .prod-img { width: 85px; height: 85px; border-radius: 12px; object-fit: cover; background: #f8fafc; border: 1px solid #e2e8f0; }
-        .product-info { flex:1; }
-        .product-name { font-weight: 700; margin-bottom: 4px; font-size: 1rem; }
-        .product-meta { font-size:0.75rem; color:var(--gray); margin:4px 0; }
-        .product-price { font-weight:900; color:var(--blue); font-size:1.2rem; }
-        .cart-controls { display:flex; justify-content:space-between; align-items:center; border-top:1px solid #e2e8f0; padding-top:12px; margin-top:12px; }
-        .qty-selector { display:flex; align-items:center; background:#f1f5f9; border-radius:10px; padding:4px; }
-        .qty-btn { border:none; background:white; width:40px; height:40px; border-radius:8px; font-weight:bold; font-size:1.2rem; cursor:pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-        .qty-value { padding:0 20px; font-weight:700; min-width: 40px; text-align: center; }
+        .card { background: white; margin: 12px; padding: 16px; border-radius: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; }
+        .prod-img { width: 85px; height: 85px; border-radius: 12px; object-fit: cover; background: #f8fafc; }
+        .search-bar { padding: 15px; background: white; border-bottom: 1px solid #eee; }
+        .search-input { width: 100%; padding: 12px 15px; border-radius: 12px; border: 1px solid #ddd; background: #f9f9f9; }
 
-        /* Navigation */
         .sticky-header { position: sticky; top: 0; background: white; z-index: 100; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
-        .header-top { display:flex; justify-content:space-between; align-items:center; padding:15px; }
-        .store-name { font-weight: 900; color: var(--blue); font-size: 1.2rem; }
-        .logout-btn { background:#fee2e2; border:none; color:var(--red); padding: 8px 15px; border-radius: 8px; font-weight:bold; cursor: pointer; }
-        .search-bar { padding: 0 15px 15px; }
-        .search-input { width: 100%; padding: 12px 15px; border-radius: 12px; border: 1px solid #e2e8f0; background: #f8fafc; font-size: 0.95rem; }
         .nav-tabs { display: flex; padding: 8px; gap: 8px; background: var(--blue); }
-        .nav-tabs button { flex: 1; padding: 12px; border: none; border-radius: 12px; color: white; background: rgba(255,255,255,0.15); font-size: 0.8rem; font-weight: 700; cursor: pointer; transition: all 0.2s; }
+        .nav-tabs button { flex: 1; padding: 12px; border: none; border-radius: 12px; color: white; background: rgba(255,255,255,0.1); font-size: 0.7rem; font-weight: 700; }
         .nav-tabs button.active { background: white; color: var(--blue); }
 
-        /* Cart Footer */
-        .cart-footer { position: fixed; bottom: 0; width: 100%; max-width: 500px; background: white; padding: 1.2rem; border-top: 1px solid #e2e8f0; z-index: 500; box-shadow: 0 -4px 10px rgba(0,0,0,0.05); }
-        .footer-row { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
-        .total-label { font-weight:700; color:var(--gray); font-size:0.8rem; text-transform: uppercase; }
-        .total-amount { font-weight: 900; color: var(--green); font-size: 1.5rem; }
-
-        /* Modal Styles */
+        .cart-footer { position: fixed; bottom: 0; width: 100%; max-width: 500px; background: white; padding: 1.2rem; border-top: 1px solid #e2e8f0; z-index: 500; }
         .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: flex; align-items: flex-end; z-index: 1000; }
-        .modal-body { background: white; width: 100%; border-radius: 2rem 2rem 0 0; padding: 2rem; max-height: 85vh; overflow-y: auto; }
-        .modal-close { position: absolute; top: 1rem; right: 1rem; font-size: 1.5rem; cursor: pointer; }
-        .payment-option { border:2px solid #e2e8f0; padding:15px; border-radius:12px; margin-bottom:10px; cursor: pointer; transition: all 0.2s; }
-        .payment-option.selected { border-color: var(--blue); background: #eff6ff; }
-        .payment-option:hover { border-color: var(--blue); }
-
-        /* Order History */
-        .order-card { border-left:5px solid var(--yellow); }
-        .order-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
-        .order-id { font-weight:700; color: var(--blue); }
-        .order-status { font-size:0.7rem; background:#f1f5f9; padding:4px 8px; border-radius:20px; }
-        .order-total { font-weight:900; font-size:1.2rem; margin:10px 0; }
-        .order-actions { display:grid; grid-template-columns: 1fr 1fr; gap:8px; }
-
-        /* Receipt */
-        .receipt-header { text-align: center; margin-bottom: 20px; }
-        .receipt-title { color: var(--blue); font-size: 1.5rem; margin-bottom: 5px; }
-        .receipt-items { margin: 20px 0; border-top: 1px dashed #ccc; border-bottom: 1px dashed #ccc; padding: 15px 0; }
-        .receipt-item { display: flex; justify-content: space-between; margin-bottom: 8px; }
-        .receipt-total { font-size: 1.3rem; text-align: right; margin: 15px 0; }
-        #qrcode-container { display: flex; justify-content: center; margin: 20px 0; padding: 15px; background: white; border-radius: 12px; }
-        .print-btn { width:100%; background: var(--blue); color: white; border: none; padding: 12px; border-radius: 8px; margin-top: 10px; font-weight: bold; cursor: pointer; }
-
-        /* Loading States */
-        .loading { text-align: center; padding: 30px; color: var(--gray); }
-        .loading::after { content: ''; display: inline-block; width: 20px; height: 20px; border: 2px solid #f3f3f3; border-top: 2px solid var(--blue); border-radius: 50%; animation: spin 1s linear infinite; margin-left: 10px; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
-        @media print { .no-print { display: none !important; } body { background: white; } .modal-body { max-height: none; } }
+        .modal-body { background: white; width: 100%; border-radius: 2rem 2rem 0 0; padding: 2rem; max-height: 90vh; overflow-y: auto; }
+        
+        #qrcode-container { display: flex; justify-content: center; margin: 20px 0; padding: 10px; background: white; }
+        @media print { .no-print { display: none !important; } }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <!-- AUTH SECTION -->
-    <div id="section-auth" class="auth-container">
-        <div class="auth-header">
-            <h1>SPAZASURE</h1>
-            <p style="opacity: 0.9;">Authentic Wholesale Supply</p>
+    <div id="section-auth">
+        <div style="background: var(--blue); padding: 40px 20px; color: white; text-align: center; border-radius: 0 0 30px 30px;">
+            <h1 style="margin:0; letter-spacing: -1px;">SPAZASURE</h1>
+            <p style="opacity: 0.8; font-size: 0.9rem;">Authentic Wholesale Supply</p>
         </div>
 
-        <!-- LOGIN FORM -->
         <div id="auth-login" class="auth-card">
-            <h3 style="margin-bottom: 20px; color: var(--blue);">Welcome Back!</h3>
             <div class="form-group">
-                <label><i class="fas fa-phone-alt"></i> WhatsApp Number</label>
-                <input type="tel" id="login-wa" class="auth-input" placeholder="e.g., 27821234567" value="27821234567">
+                <label>WhatsApp Number</label>
+                <input type="tel" id="login-wa" class="auth-input" placeholder="e.g. 27821234567">
             </div>
-            <button onclick="handleLogin()" class="btn-primary">
-                <i class="fas fa-sign-in-alt"></i> SIGN IN
-            </button>
+            <button onclick="handleLogin()" class="btn-primary">SIGN IN</button>
             <p style="text-align:center; color:var(--gray); font-size:0.85rem; margin-top:20px;">
                 New store? <span onclick="toggleAuth(true)" style="color:var(--blue); font-weight:700; text-decoration:underline; cursor:pointer;">Register Here</span>
             </p>
         </div>
 
-        <!-- REGISTER FORM -->
         <div id="auth-register" class="auth-card hidden">
-            <h3 style="margin-bottom: 20px; color: var(--blue);">Register Your Store</h3>
-            <div class="form-group">
-                <label>First Name</label>
-                <input type="text" id="reg-fname" class="auth-input" placeholder="John">
-            </div>
-            <div class="form-group">
-                <label>Last Name</label>
-                <input type="text" id="reg-lname" class="auth-input" placeholder="Doe">
-            </div>
-            <div class="form-group">
-                <label>Store Name</label>
-                <input type="text" id="reg-sname" class="auth-input" placeholder="Doe's Spaza">
-            </div>
-            <div class="form-group">
-                <label>WhatsApp Number</label>
-                <input type="tel" id="reg-wa" class="auth-input" placeholder="27821234567">
-            </div>
-            <div class="form-group">
-                <label>Township</label>
-                <input type="text" id="reg-town" class="auth-input" placeholder="Umlazi">
-            </div>
-            <div class="form-group">
-                <label>Street Address</label>
-                <input type="text" id="reg-address" class="auth-input" placeholder="123 Main St">
-            </div>
-            <button onclick="handleRegister()" class="btn-secondary">
-                <i class="fas fa-user-plus"></i> REGISTER & LOGIN
-            </button>
-            <p onclick="toggleAuth(false)" style="text-align:center; color:var(--gray); font-size:0.85rem; margin-top:15px; cursor:pointer;">
-                <i class="fas fa-arrow-left"></i> Back to Login
-            </p>
+            <h3 style="margin-top:0; color:var(--blue);">Register Your Store</h3>
+            <div class="form-group"><label>First Name</label><input type="text" id="reg-fname" class="auth-input"></div>
+            <div class="form-group"><label>Last Name</label><input type="text" id="reg-lname" class="auth-input"></div>
+            <div class="form-group"><label>Store Name</label><input type="text" id="reg-sname" class="auth-input"></div>
+            <div class="form-group"><label>WhatsApp Number</label><input type="number" id="reg-wa" class="auth-input"></div>
+            <div class="form-group"><label>Township</label><input type="text" id="reg-town" class="auth-input"></div>
+            <div class="form-group"><label>Street Address</label><input type="text" id="reg-address" class="auth-input"></div>
+            <button onclick="handleRegister()" class="btn-primary" style="background:var(--blue);">REGISTER & LOGIN</button>
+            <p onclick="toggleAuth(false)" style="text-align:center; color:var(--gray); font-size:0.85rem; margin-top:15px; cursor:pointer;">Back to Login</p>
         </div>
     </div>
 
-    <!-- MAIN MARKET SECTION -->
     <div id="section-market" class="hidden">
         <div class="sticky-header">
-            <div class="header-top">
-                <span id="txt-store-name" class="store-name">
-                    <i class="fas fa-store"></i> Loading...
-                </span>
-                <button onclick="logout()" class="logout-btn">
-                    <i class="fas fa-sign-out-alt"></i> LOGOUT
-                </button>
+            <div style="display:flex; justify-content:space-between; align-items:center; padding:15px;">
+                <span id="txt-store-name" style="font-weight: 900; color: var(--blue);">Store</span>
+                <button onclick="logout()" style="background:#fee2e2; border:none; color:var(--red); padding: 8px 12px; border-radius: 8px; font-weight:bold;">LOGOUT</button>
             </div>
             <div class="search-bar" id="market-search">
                 <input type="text" id="search-input" class="search-input" placeholder="Search products..." onkeyup="renderList()">
             </div>
             <div class="nav-tabs">
-                <button id="nav-s" class="active" onclick="setMode('single')">
-                    <i class="fas fa-box"></i> MARKET
-                </button>
-                <button id="nav-b" onclick="setMode('bulk')">
-                    <i class="fas fa-boxes"></i> BULK
-                </button>
-                <button id="nav-o" onclick="setMode('history')">
-                    <i class="fas fa-history"></i> ORDERS
-                </button>
+                <button id="nav-s" class="active" onclick="setMode('single')">MARKET</button>
+                <button id="nav-b" onclick="setMode('bulk')">BULK DEALS</button>
+                <button id="nav-o" onclick="setMode('history')">MY ORDERS</button>
             </div>
         </div>
-
-        <!-- PRODUCT LIST -->
-        <div id="list-render" class="products-container"></div>
-        
-        <!-- ORDER HISTORY -->
+        <div id="list-render"></div>
         <div id="history-render" class="hidden"></div>
         
-        <!-- CART FOOTER -->
         <div class="cart-footer" id="main-footer">
-            <div class="footer-row">
-                <span class="total-label">TOTAL AMOUNT</span>
-                <span id="txt-total" class="total-amount">R 0.00</span>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                <span style="font-weight:700; color:var(--gray); font-size:0.7rem;">TOTAL AMOUNT</span>
+                <span id="txt-total" style="font-weight: 900; color: var(--green); font-size: 1.5rem;">R 0.00</span>
             </div>
-            <button id="review-order-btn" class="btn-primary" onclick="showCheckout()">
-                <i class="fas fa-shopping-cart"></i> VIEW CART & CHECKOUT
-            </button>
+            <button id="review-order-btn" class="btn-primary" onclick="showCheckout()">VIEW CART & CHECKOUT</button>
         </div>
     </div>
 
-    <!-- CHECKOUT MODAL -->
     <div id="modal-checkout" class="modal-overlay hidden">
         <div class="modal-body">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <h3 style="margin:0"><i class="fas fa-shopping-bag"></i> Review Order</h3>
-                <span onclick="hideCheckout()" style="font-size: 1.5rem; cursor: pointer;">&times;</span>
-            </div>
-            
-            <div id="checkout-list" style="margin-bottom:20px; max-height: 300px; overflow-y: auto;"></div>
-            
-            <div style="background: #f8fafc; padding: 15px; border-radius: 12px; margin-bottom: 20px;">
-                <div style="display: flex; justify-content: space-between; font-weight: bold;">
-                    <span>Subtotal:</span>
-                    <span id="checkout-subtotal">R 0.00</span>
-                </div>
-                <div style="display: flex; justify-content: space-between; color: var(--gray); font-size: 0.9rem; margin-top: 5px;">
-                    <span>Delivery:</span>
-                    <span>Free</span>
-                </div>
-                <div style="border-top: 1px dashed #ccc; margin: 10px 0; padding-top: 10px; display: flex; justify-content: space-between; font-weight: 900; font-size: 1.2rem;">
-                    <span>Total:</span>
-                    <span id="checkout-total">R 0.00</span>
-                </div>
-            </div>
-
+            <h3 style="margin-top:0">Review Your Order</h3>
+            <div id="checkout-list" style="margin-bottom:20px; border-bottom: 1px solid #eee; padding-bottom:10px;"></div>
             <div class="form-group">
-                <label><i class="fas fa-credit-card"></i> Payment Method</label>
-                <div id="pay-cash" class="payment-option" onclick="selectPayment('Cash')">
-                    <i class="fas fa-money-bill-wave"></i> Cash on Delivery
-                </div>
-                <div id="pay-eft" class="payment-option" onclick="selectPayment('EFT')">
-                    <i class="fas fa-university"></i> Instant EFT
-                </div>
+                <label>Select Payment Method</label>
+                <div id="pay-cash" style="border:2px solid var(--blue); padding:15px; border-radius:12px; margin-bottom:10px;" onclick="selectPayment('Cash')">Cash on Delivery</div>
+                <div id="pay-eft" style="border:2px solid #eee; padding:15px; border-radius:12px;" onclick="selectPayment('EFT')">Instant EFT</div>
             </div>
-
-            <button onclick="finalPlaceOrder()" class="btn-primary" style="margin-bottom: 10px;">
-                <i class="fas fa-check-circle"></i> CONFIRM ORDER
-            </button>
-            <button onclick="hideCheckout()" style="width:100%; border:none; background:none; color:var(--gray); padding: 15px; cursor: pointer;">
-                Continue Shopping
-            </button>
+            <button onclick="finalPlaceOrder()" class="btn-primary">CONFIRM & SEND ORDER</button>
+            <button onclick="hideCheckout()" style="width:100%; border:none; background:none; color:var(--gray); margin-top:15px;">Continue Shopping</button>
         </div>
     </div>
 
-    <!-- ORDER DETAIL MODAL -->
     <div id="modal-order-detail" class="modal-overlay hidden">
         <div class="modal-body" id="receipt-view"></div>
-    </div>
-
-    <!-- LOADING OVERLAY -->
-    <div id="loading-overlay" class="modal-overlay hidden" style="align-items: center; justify-content: center;">
-        <div style="background: white; padding: 30px; border-radius: 20px; text-align: center;">
-            <div class="loading"></div>
-            <p style="margin-top: 10px;">Processing...</p>
-        </div>
     </div>
 </div>
 
 <script>
-    // ==================== CONFIGURATION ====================
-    const SUPABASE_URL = 'https://clbhfxqxcugxcqutngpo.supabase.co';
-    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNsYmhmeHF4Y3VneGNxdXRuZ3BvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE4MzgxMDMsImV4cCI6MjA4NzQxNDEwM30.VWj5TGjAQhj77BZyoSUmynUPDPTVGL_pAKNyrlpQR1Y';
-    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-    const STORAGE_URL = `${SUPABASE_URL}/storage/v1/object/public/Images/`;
+    // 1. CONFIGURATION
+    const _supabaseUrl = 'https://clbhfxqxcugxcqutngpo.supabase.co';
+    const _supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNsYmhmeHF4Y3VneGNxdXRuZ3BvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE4MzgxMDMsImV4cCI6MjA4NzQxNDEwM30.VWj5TGjAQhj77BZyoSUmynUPDPTVGL_pAKNyrlpQR1Y';
+    const _client = supabase.createClient(_supabaseUrl, _supabaseKey);
 
-    // ==================== GLOBAL STATE ====================
-    let cart = {};
-    let products = [];
-    let groups = [];
-    let currentMode = 'single';
-    let selectedPayment = 'Cash';
-    let editingOrderId = null;
-    let currentUser = null;
+    // SUPABASE STORAGE BASE URL
+    const storageBase = "https://clbhfxqxcugxcqutngpo.supabase.co/storage/v1/object/public/Images/";
 
-    // ==================== INITIALIZATION ====================
-    window.onload = async () => {
-        try {
-            const savedUser = localStorage.getItem('spaza_user');
-            if (savedUser) {
-                currentUser = JSON.parse(savedUser);
-                await initApp();
-            }
-        } catch (error) {
-            console.error('Init error:', error);
-            localStorage.clear();
-        }
-    };
+    let cart = {}; let products = []; let groups = []; let currentMode = 'single'; let selectedPayment = 'Cash'; let editingOrderId = null;
 
-    // ==================== AUTH FUNCTIONS ====================
+    window.onload = async () => { if(localStorage.getItem('spaza_user')) initApp(); };
+
     function toggleAuth(showReg) {
         document.getElementById('auth-login').classList.toggle('hidden', showReg);
         document.getElementById('auth-register').classList.toggle('hidden', !showReg);
@@ -296,29 +144,8 @@
 
     async function handleLogin() {
         const wa = document.getElementById('login-wa').value.trim();
-        if (!wa) return alert('Please enter WhatsApp number');
-
-        showLoading(true);
-        try {
-            const { data, error } = await supabase
-                .from('profiles')
-                .select('*')
-                .eq('whatsapp_number', wa)
-                .maybeSingle();
-
-            if (error) throw error;
-            
-            if (data) {
-                await loginSuccess(data);
-            } else {
-                alert('Store not found. Please register first.');
-            }
-        } catch (error) {
-            console.error('Login error:', error);
-            alert('Login failed. Please try again.');
-        } finally {
-            showLoading(false);
-        }
+        const { data } = await _client.from('profiles').select('*').eq('whatsapp_number', wa).maybeSingle();
+        if(data) loginSuccess(data); else alert("Store not found. Please register.");
     }
 
     async function handleRegister() {
@@ -326,491 +153,166 @@
             first_name: document.getElementById('reg-fname').value,
             last_name: document.getElementById('reg-lname').value,
             store_name: document.getElementById('reg-sname').value,
-            whatsapp_number: document.getElementById('reg-wa').value,
+            whatsapp_number: parseInt(document.getElementById('reg-wa').value),
             township: document.getElementById('reg-town').value,
             address: document.getElementById('reg-address').value,
-            role: 'spaza',
-            created_at: new Date().toISOString()
+            role: 'spaza'
         };
-
-        // Validate
-        for (let [key, value] of Object.entries(payload)) {
-            if (!value && key !== 'role') {
-                return alert(`Please fill in ${key.replace('_', ' ')}`);
-            }
-        }
-
-        showLoading(true);
-        try {
-            const { data, error } = await supabase
-                .from('profiles')
-                .insert([payload])
-                .select()
-                .single();
-
-            if (error) throw error;
-            
-            await loginSuccess(data);
-        } catch (error) {
-            console.error('Registration error:', error);
-            alert('Registration failed. Please try again.');
-        } finally {
-            showLoading(false);
-        }
+        const { data, error } = await _client.from('profiles').insert([payload]).select().single();
+        if(error) alert("Error: " + error.message); else loginSuccess(data);
     }
 
-    async function loginSuccess(user) {
-        currentUser = user;
-        localStorage.setItem('spaza_user', JSON.stringify(user));
-        await initApp();
-    }
-
-    // ==================== APP INITIALIZATION ====================
-    async function initApp() {
+    function loginSuccess(user) { localStorage.setItem('spaza_user', JSON.stringify(user)); initApp(); }
+    function initApp() {
         document.getElementById('section-auth').classList.add('hidden');
         document.getElementById('section-market').classList.remove('hidden');
-        document.getElementById('txt-store-name').innerHTML = `<i class="fas fa-store"></i> ${currentUser.store_name}`;
-        
-        await loadProducts();
-        await loadGroups();
+        document.getElementById('txt-store-name').innerText = JSON.parse(localStorage.getItem('spaza_user')).store_name;
+        loadContent();
+    }
+
+    async function loadContent() {
+        const { data: p } = await _client.from('products').select('*');
+        products = p || [];
         renderList();
     }
 
-    async function loadProducts() {
-        showLoading(true);
-        try {
-            const { data, error } = await supabase
-                .from('products')
-                .select('*')
-                .order('name');
-
-            if (error) throw error;
-            products = data || [];
-            
-            // If no products, add sample data
-            if (products.length === 0) {
-                await seedSampleProducts();
-                const { data: newData } = await supabase.from('products').select('*');
-                products = newData || [];
-            }
-        } catch (error) {
-            console.error('Error loading products:', error);
-            products = getFallbackProducts();
-        } finally {
-            showLoading(false);
-        }
-    }
-
-    async function loadGroups() {
-        try {
-            const { data, error } = await supabase
-                .from('bulk_groups')
-                .select('*');
-            
-            if (!error) groups = data || [];
-        } catch (error) {
-            console.error('Error loading groups:', error);
-            groups = [];
-        }
-    }
-
-    // Fallback products if database is empty
-    function getFallbackProducts() {
-        return [
-            { name: 'Ace Instant Porridge (Banana)', price: 22.77, category: 'Breakfast' },
-            { name: 'Ace Super Maize 10kg', price: 85.79, category: 'Maize' },
-            { name: 'Allsome Rice (10kg)', price: 105.59, category: 'Rice' },
-            { name: 'Aquafresh Toothpaste 100ml', price: 14.18, category: 'Personal Care' },
-            { name: 'Bakers Marie Biscuits 200g', price: 19.89, category: 'Biscuits' },
-            { name: 'Black Cat Peanut Butter 400g', price: 39.59, category: 'Spreads' },
-            { name: 'Clover Longlife Milk 1L', price: 17.24, category: 'Dairy' },
-            { name: 'Coke 2L', price: 19.61, category: 'Beverages' },
-            { name: 'Creamline Butter 500g', price: 62.69, category: 'Dairy' },
-            { name: 'Excella Oil 5L', price: 167.75, category: 'Cooking Oil' }
-        ];
-    }
-
-    async function seedSampleProducts() {
-        const sampleProducts = getFallbackProducts().map(p => ({
-            ...p,
-            stock_quantity: 100,
-            is_authentic_verified: true,
-            created_at: new Date().toISOString()
-        }));
-        
-        await supabase.from('products').insert(sampleProducts);
-    }
-
-    // ==================== RENDERING ====================
+    // 2. UPDATED RENDERER WITH FALLBACK LOGIC
     function renderList() {
-        const query = document.getElementById('search-input')?.value.toLowerCase() || '';
+        const query = document.getElementById('search-input').value.toLowerCase();
         const items = currentMode === 'single' ? products : groups;
         
-        if (!items || items.length === 0) {
-            document.getElementById('list-render').innerHTML = `
-                <div style="text-align: center; padding: 40px; color: var(--gray);">
-                    <i class="fas fa-box-open" style="font-size: 3rem; margin-bottom: 10px;"></i>
-                    <p>No products available</p>
-                </div>
-            `;
-            return;
-        }
+        document.getElementById('list-render').innerHTML = items
+            .filter(i => (i.name || i.group_name).toLowerCase().includes(query))
+            .map(i => {
+                const name = i.name || i.group_name;
+                const price = (i.price || i.contribution_per_spaza);
+                const qty = cart[name]?.qty || 0;
+                
+                // Primary URL (The one we hope works)
+                const imgUrl = `${storageBase}${encodeURIComponent(name)}.png`;
+                
+                // Fallback URLs (Try these if the first fails)
+                const fallbackJpg = `${storageBase}${encodeURIComponent(name)}.jpg`;
+                const fallbackLong = `${storageBase}${encodeURIComponent(name)}%20Original%20500ml.png`;
+                
+                const safeName = name.replace(/'/g, "\\'"); 
 
-        const filtered = items.filter(i => 
-            (i.name || i.group_name || '').toLowerCase().includes(query)
-        );
-
-        document.getElementById('list-render').innerHTML = filtered.map(item => {
-            const name = item.name || item.group_name || 'Unknown';
-            const price = parseFloat(item.price || item.contribution_per_spaza || 0);
-            const qty = cart[name]?.qty || 0;
-            
-            // Image URL with fallbacks
-            const imgUrl = `${STORAGE_URL}${encodeURIComponent(name)}.png`;
-            const fallbackJpg = `${STORAGE_URL}${encodeURIComponent(name)}.jpg`;
-            const fallbackPng = `${STORAGE_URL}default-product.png`;
-
-            return `
+                return `
                 <div class="card">
-                    <div class="product-row">
+                    <div style="display:flex; gap:15px; align-items:center;">
                         <img src="${imgUrl}" 
                              class="prod-img" 
-                             alt="${name}"
-                             onerror="this.onerror=null; this.src='${fallbackJpg}'; this.onerror=function(){this.src='${fallbackPng}'; this.onerror=function(){this.src='https://via.placeholder.com/100?text=Product'}}">
-                        <div class="product-info">
-                            <div class="product-name">${name}</div>
-                            <div class="product-meta">
-                                <i class="fas fa-check-circle" style="color: var(--green);"></i> Authentic Stock
-                            </div>
-                            <div class="product-price">R${price.toFixed(2)}</div>
+                             onerror="this.onerror=null; this.src='${fallbackLong}'; this.onerror=function(){this.src='${fallbackJpg}'; this.onerror=function(){this.src='https://via.placeholder.com/100?text=Stock'}}">
+                        <div style="flex:1">
+                            <h4 style="margin:0">${name}</h4>
+                            <p style="font-size:0.75rem; color:var(--gray); margin:4px 0;">Wholesale Authentic Stock</p>
+                            <div style="font-weight:900; color:var(--blue); font-size:1.2rem;">R${price.toFixed(2)}</div>
                         </div>
                     </div>
-                    <div class="cart-controls">
-                        <span style="color: var(--gray); font-size: 0.85rem;">
-                            <i class="fas fa-box"></i> Bulk available
-                        </span>
-                        <div class="qty-selector">
-                            <button class="qty-btn" onclick="updateCart('${name.replace(/'/g, "\\'")}', ${price}, -1)">
-                                <i class="fas fa-minus"></i>
-                            </button>
-                            <span class="qty-value">${qty}</span>
-                            <button class="qty-btn" onclick="updateCart('${name.replace(/'/g, "\\'")}', ${price}, 1)">
-                                <i class="fas fa-plus"></i>
-                            </button>
+                    <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid #eee; padding-top:10px; margin-top:10px;">
+                        <div style="display:flex; align-items:center; background:#f1f5f9; border-radius:10px; padding:4px;">
+                            <button style="border:none; background:white; width:35px; height:35px; border-radius:8px; font-weight:bold;" onclick="updateCart('${safeName}', ${price}, -1)">-</button>
+                            <b style="padding:0 20px;">${qty}</b>
+                            <button style="border:none; background:white; width:35px; height:35px; border-radius:8px; font-weight:bold;" onclick="updateCart('${safeName}', ${price}, 1)">+</button>
                         </div>
                     </div>
-                </div>
-            `;
-        }).join('');
+                </div>`;
+            }).join('');
     }
 
-    // ==================== CART FUNCTIONS ====================
-    function updateCart(name, price, change) {
-        if (!cart[name]) {
-            cart[name] = { price: price, qty: 0 };
-        }
-        
-        cart[name].qty += change;
-        
-        if (cart[name].qty <= 0) {
-            delete cart[name];
-        }
-        
-        updateCartTotal();
+    function updateCart(n, p, c) {
+        if(!cart[n]) cart[n] = { price: p, qty: 0 };
+        cart[n].qty += c;
+        if(cart[n].qty <= 0) delete cart[n];
+        let t = 0; Object.values(cart).forEach(o => t += o.price * o.qty);
+        document.getElementById('txt-total').innerText = "R " + t.toFixed(2);
         renderList();
     }
 
-    function updateCartTotal() {
-        let total = 0;
-        Object.values(cart).forEach(item => {
-            total += item.price * item.qty;
-        });
-        document.getElementById('txt-total').innerText = `R ${total.toFixed(2)}`;
+    async function finalPlaceOrder() {
+        const u = JSON.parse(localStorage.getItem('spaza_user'));
+        const total = parseFloat(document.getElementById('txt-total').innerText.replace('R ', ''));
+        const orderData = { profile_id: u.id, store_name: u.store_name, total_amount: total, items: cart, payment_method: selectedPayment, status: 'pending' };
+        
+        let res;
+        if(editingOrderId) {
+            res = await _client.from('orders').update(orderData).eq('id', editingOrderId).select();
+            editingOrderId = null;
+        } else {
+            res = await _client.from('orders').insert([orderData]).select();
+        }
+
+        if(!res.error) {
+            alert("Order Success! Order #" + res.data[0].id);
+            cart = {};
+            document.getElementById('txt-total').innerText = "R 0.00";
+            hideCheckout();
+            setMode('history');
+        }
     }
 
-    // ==================== ORDER FUNCTIONS ====================
-    async function finalPlaceOrder() {
-        if (!currentUser) {
-            alert('Please login again');
-            logout();
-            return;
-        }
-
-        const total = parseFloat(document.getElementById('txt-total').innerText.replace('R ', ''));
-        
-        if (total === 0) {
-            alert('Your cart is empty');
-            return;
-        }
-
-        showLoading(true);
-
-        const orderData = {
-            profile_id: currentUser.id,
-            store_name: currentUser.store_name,
-            total_amount: total,
-            items: cart,
-            payment_method: selectedPayment,
-            status: 'pending',
-            created_at: new Date().toISOString()
-        };
-
-        try {
-            let result;
-            
-            if (editingOrderId) {
-                result = await supabase
-                    .from('orders')
-                    .update(orderData)
-                    .eq('id', editingOrderId)
-                    .select();
-            } else {
-                result = await supabase
-                    .from('orders')
-                    .insert([orderData])
-                    .select();
-            }
-
-            if (result.error) throw result.error;
-
-            alert(`✅ Order placed successfully! Order #${result.data[0].id}`);
-            
-            // Reset cart
-            cart = {};
-            editingOrderId = null;
-            updateCartTotal();
-            hideCheckout();
-            
-            // Switch to history view
-            setMode('history');
-            
-        } catch (error) {
-            console.error('Order error:', error);
-            alert('Failed to place order. Please try again.');
-        } finally {
-            showLoading(false);
-        }
+    function setMode(m) {
+        currentMode = m;
+        document.getElementById('nav-s').classList.toggle('active', m === 'single');
+        document.getElementById('nav-b').classList.toggle('active', m === 'bulk');
+        document.getElementById('nav-o').classList.toggle('active', m === 'history');
+        document.getElementById('market-search').classList.toggle('hidden', m === 'history');
+        document.getElementById('list-render').classList.toggle('hidden', m === 'history');
+        document.getElementById('history-render').classList.toggle('hidden', m !== 'history');
+        document.getElementById('main-footer').classList.toggle('hidden', m === 'history');
+        if(m === 'history') loadOrderHistory(); else renderList();
     }
 
     async function loadOrderHistory() {
-        if (!currentUser) return;
-
-        showLoading(true);
-        try {
-            const { data, error } = await supabase
-                .from('orders')
-                .select('*')
-                .eq('profile_id', currentUser.id)
-                .order('created_at', { ascending: false });
-
-            if (error) throw error;
-
-            if (!data || data.length === 0) {
-                document.getElementById('history-render').innerHTML = `
-                    <div style="text-align: center; padding: 50px 20px; color: var(--gray);">
-                        <i class="fas fa-box-open" style="font-size: 3rem; margin-bottom: 15px;"></i>
-                        <p>No orders yet</p>
-                        <button onclick="setMode('single')" class="btn-primary" style="width: auto; padding: 10px 30px; margin-top: 15px;">
-                            Start Shopping
-                        </button>
-                    </div>
-                `;
-                return;
-            }
-
-            document.getElementById('history-render').innerHTML = data.map(o => {
-                const statusColor = o.status === 'pending' ? 'var(--orange)' : 
-                                   o.status === 'processing' ? 'var(--blue)' : 
-                                   o.status === 'delivered' ? 'var(--green)' : 'var(--gray)';
-                
-                return `
-                    <div class="card" style="border-left:5px solid ${statusColor}">
-                        <div class="order-header">
-                            <span class="order-id">
-                                <i class="fas fa-hashtag"></i> ORDER #${o.id.toString().slice(-6)}
-                            </span>
-                            <span class="order-status" style="background: ${statusColor}20; color: ${statusColor};">
-                                ${o.status.toUpperCase()}
-                            </span>
-                        </div>
-                        <div style="font-size: 0.85rem; color: var(--gray); margin-bottom: 5px;">
-                            <i class="far fa-calendar"></i> ${new Date(o.created_at).toLocaleDateString()}
-                        </div>
-                        <div class="order-total">R ${o.total_amount.toFixed(2)}</div>
-                        <div class="order-actions">
-                            <button onclick='viewOrder(${JSON.stringify(o).replace(/'/g, "\\'")})' 
-                                    style="padding:12px; border:none; border-radius:8px; background:var(--blue); color:white; cursor:pointer;">
-                                <i class="fas fa-receipt"></i> RECEIPT
-                            </button>
-                            ${o.status === 'pending' ? 
-                                `<button onclick='editOrder(${JSON.stringify(o).replace(/'/g, "\\'")})' 
-                                         style="padding:12px; border:none; border-radius:8px; background:var(--gray); color:white; cursor:pointer;">
-                                    <i class="fas fa-edit"></i> EDIT
-                                </button>` : 
-                                `<button style="padding:12px; border:none; border-radius:8px; background:var(--green); color:white; cursor:pointer;" disabled>
-                                    <i class="fas fa-check"></i> COMPLETED
-                                </button>`}
-                        </div>
-                    </div>
-                `;
-            }).join('');
-            
-        } catch (error) {
-            console.error('Error loading orders:', error);
-            document.getElementById('history-render').innerHTML = `
-                <div style="text-align: center; padding: 40px; color: var(--gray);">
-                    <i class="fas fa-exclamation-circle" style="font-size: 2rem; margin-bottom: 10px;"></i>
-                    <p>Failed to load orders</p>
+        const u = JSON.parse(localStorage.getItem('spaza_user'));
+        const { data } = await _client.from('orders').select('*').eq('profile_id', u.id).order('created_at', {ascending: false});
+        document.getElementById('history-render').innerHTML = data.map(o => `
+            <div class="card" style="border-left:5px solid ${o.status === 'pending' ? 'var(--yellow)' : 'var(--green)'}">
+                <div style="display:flex; justify-content:space-between;">
+                    <b>ORDER #${o.id.toString().slice(-5)}</b>
+                    <span style="font-size:0.7rem; background:#eee; padding:2px 8px; border-radius:5px;">${o.status.toUpperCase()}</span>
                 </div>
-            `;
-        } finally {
-            showLoading(false);
-        }
+                <div style="font-weight:900; font-size:1.2rem; margin:10px 0;">R${o.total_amount.toFixed(2)}</div>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
+                    <button onclick='viewOrder(${JSON.stringify(o)})' style="padding:10px; border:none; border-radius:8px; background:var(--blue); color:white; font-size:0.8rem;">RECEIPT</button>
+                    ${o.status === 'pending' ? `<button onclick='editOrder(${JSON.stringify(o)})' style="padding:10px; border:none; border-radius:8px; background:var(--gray); color:white; font-size:0.8rem;">EDIT</button>` : ''}
+                </div>
+            </div>`).join('') || "<p style='text-align:center; color:var(--gray);'>No orders yet.</p>";
     }
 
-    function viewOrder(order) {
-        const itemsList = Object.entries(order.items || {}).map(([name, detail]) => `
-            <div class="receipt-item">
-                <span>${detail.qty} x ${name}</span>
-                <span>R ${(detail.price * detail.qty).toFixed(2)}</span>
-            </div>
-        `).join('');
-
-        const receipt = `
-            <div style="max-width: 400px; margin: 0 auto;">
-                <div class="receipt-header">
-                    <div class="receipt-title">SPAZASURE</div>
-                    <div style="font-size: 0.9rem;">Authentic Wholesale</div>
-                </div>
-                
-                <hr>
-                
-                <div style="margin: 15px 0;">
-                    <p><strong>Order #:</strong> ${order.id}</p>
-                    <p><strong>Store:</strong> ${order.store_name}</p>
-                    <p><strong>Date:</strong> ${new Date(order.created_at).toLocaleString()}</p>
-                    <p><strong>Payment:</strong> ${order.payment_method || 'Cash'}</p>
-                </div>
-                
-                <div class="receipt-items">
-                    ${itemsList || '<p>No items</p>'}
-                </div>
-                
-                <div class="receipt-total">
-                    <strong>Total: R ${order.total_amount.toFixed(2)}</strong>
-                </div>
-                
-                <div id="qrcode-container">
-                    <div id="qrcode"></div>
-                </div>
-                
-                <button onclick="window.print()" class="print-btn">
-                    <i class="fas fa-print"></i> PRINT RECEIPT
-                </button>
-                <button onclick="document.getElementById('modal-order-detail').classList.add('hidden')" 
-                        style="width:100%; background:#f1f5f9; border:none; padding:12px; border-radius:8px; margin-top:10px; cursor:pointer;">
-                    CLOSE
-                </button>
-            </div>
+    function viewOrder(o) {
+        const itemsList = Object.entries(o.items).map(([name, detail]) => `<div>${detail.qty}x ${name} - R${(detail.price * detail.qty).toFixed(2)}</div>`).join('');
+        document.getElementById('receipt-view').innerHTML = `
+            <h2 style="text-align:center; color:var(--blue);">SPAZASURE</h2>
+            <hr>
+            <p><b>Order ID:</b> #${o.id}</p>
+            <p><b>Store:</b> ${o.store_name}</p>
+            <hr>
+            <div style="margin:20px 0;">${itemsList}</div>
+            <hr>
+            <h3 style="text-align:right">Total: R${o.total_amount.toFixed(2)}</h3>
+            <div id="qrcode-container"><div id="qrcode"></div></div>
+            <button onclick="document.getElementById('modal-order-detail').classList.add('hidden')" style="width:100%; background:#eee; border:none; padding:10px; border-radius:8px;">Close</button>
         `;
-
-        document.getElementById('receipt-view').innerHTML = receipt;
-        
-        // Generate QR code
-        setTimeout(() => {
-            const qrDiv = document.getElementById("qrcode");
-            if (qrDiv) {
-                qrDiv.innerHTML = '';
-                new QRCode(qrDiv, {
-                    text: `Order:${order.id}|Total:R${order.total_amount}`,
-                    width: 150,
-                    height: 150
-                });
-            }
-        }, 100);
-
+        new QRCode(document.getElementById("qrcode"), { text: `Order:${o.id}`, width: 120, height: 120 });
         document.getElementById('modal-order-detail').classList.remove('hidden');
     }
 
-    function editOrder(order) {
-        cart = order.items || {};
-        editingOrderId = order.id;
-        updateCartTotal();
-        setMode('single');
-        showCheckout();
+    function selectPayment(m) { 
+        selectedPayment = m; 
+        document.getElementById('pay-cash').style.borderColor = m === 'Cash' ? 'var(--blue)' : '#eee';
+        document.getElementById('pay-eft').style.borderColor = m === 'EFT' ? 'var(--blue)' : '#eee';
     }
-
-    // ==================== UI FUNCTIONS ====================
-    function setMode(mode) {
-        currentMode = mode;
-        
-        // Update tab buttons
-        document.getElementById('nav-s').classList.toggle('active', mode === 'single');
-        document.getElementById('nav-b').classList.toggle('active', mode === 'bulk');
-        document.getElementById('nav-o').classList.toggle('active', mode === 'history');
-        
-        // Show/hide sections
-        document.getElementById('market-search').classList.toggle('hidden', mode === 'history');
-        document.getElementById('list-render').classList.toggle('hidden', mode === 'history');
-        document.getElementById('history-render').classList.toggle('hidden', mode !== 'history');
-        document.getElementById('main-footer').classList.toggle('hidden', mode === 'history');
-        
-        if (mode === 'history') {
-            loadOrderHistory();
-        } else {
-            renderList();
-        }
-    }
-
-    function showCheckout() {
-        if (Object.keys(cart).length === 0) {
-            alert('Your cart is empty. Add some products first.');
-            return;
-        }
-
-        const list = Object.entries(cart).map(([name, detail]) => `
-            <div style="display: flex; justify-content: space-between; margin-bottom: 8px; padding: 5px; border-bottom: 1px solid #eee;">
-                <div>
-                    <span style="font-weight: 500;">${detail.qty}x</span> ${name}
-                </div>
-                <span style="font-weight: 700;">R ${(detail.price * detail.qty).toFixed(2)}</span>
-            </div>
-        `).join('');
-
-        const total = parseFloat(document.getElementById('txt-total').innerText.replace('R ', ''));
-
+    
+    function showCheckout() { 
+        if(Object.keys(cart).length === 0) return alert("Your cart is empty.");
+        const list = Object.entries(cart).map(([n, d]) => `<div>${d.qty}x ${n} (R${(d.price * d.qty).toFixed(2)})</div>`).join('');
         document.getElementById('checkout-list').innerHTML = list;
-        document.getElementById('checkout-subtotal').innerText = `R ${total.toFixed(2)}`;
-        document.getElementById('checkout-total').innerText = `R ${total.toFixed(2)}`;
-        
-        document.getElementById('modal-checkout').classList.remove('hidden');
+        document.getElementById('modal-checkout').classList.remove('hidden'); 
     }
-
-    function hideCheckout() {
-        document.getElementById('modal-checkout').classList.add('hidden');
-    }
-
-    function selectPayment(method) {
-        selectedPayment = method;
-        document.getElementById('pay-cash').classList.toggle('selected', method === 'Cash');
-        document.getElementById('pay-eft').classList.toggle('selected', method === 'EFT');
-    }
-
-    function showLoading(show) {
-        document.getElementById('loading-overlay').classList.toggle('hidden', !show);
-    }
-
-    function logout() {
-        localStorage.clear();
-        currentUser = null;
-        cart = {};
-        document.getElementById('section-auth').classList.remove('hidden');
-        document.getElementById('section-market').classList.add('hidden');
-        toggleAuth(false);
-    }
-
-    // Initialize auth tabs
-    toggleAuth(false);
+    function hideCheckout() { document.getElementById('modal-checkout').classList.add('hidden'); }
+    function logout() { localStorage.clear(); location.reload(); }
 </script>
+
 </body>
 </html>
