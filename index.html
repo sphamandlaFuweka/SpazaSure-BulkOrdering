@@ -25,6 +25,7 @@
         .auth-input, select { width:100%; padding:14px; border: 2px solid #f1f5f9; border-radius:12px; font-size: 1rem; outline: none; background: #f8fafc; }
         .auth-input:focus { border-color: var(--blue); background: white; }
         .btn-primary { width:100%; padding:16px; background:var(--green); color:white; border:none; border-radius:12px; font-weight: 800; cursor: pointer; font-size: 1rem; }
+        .btn-secondary { width:100%; padding:12px; background:var(--blue); color:white; border:none; border-radius:8px; font-weight: 600; cursor: pointer; font-size: 0.9rem; }
         
         /* Product Layout */
         .card { background: white; margin: 12px; padding: 16px; border-radius: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; }
@@ -34,7 +35,7 @@
 
         .sticky-header { position: sticky; top: 0; background: white; z-index: 100; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
         .nav-tabs { display: flex; padding: 8px; gap: 8px; background: var(--blue); }
-        .nav-tabs button { flex: 1; padding: 12px; border: none; border-radius: 12px; color: white; background: rgba(255,255,255,0.1); font-size: 0.7rem; font-weight: 700; }
+        .nav-tabs button { flex: 1; padding: 12px; border: none; border-radius: 12px; color: white; background: rgba(255,255,255,0.1); font-size: 0.7rem; font-weight: 700; cursor: pointer; }
         .nav-tabs button.active { background: white; color: var(--blue); }
 
         .cart-footer { position: fixed; bottom: 0; width: 100%; max-width: 500px; background: white; padding: 1.2rem; border-top: 1px solid #e2e8f0; z-index: 500; }
@@ -42,6 +43,10 @@
         .modal-body { background: white; width: 100%; border-radius: 2rem 2rem 0 0; padding: 2rem; max-height: 90vh; overflow-y: auto; }
         
         #qrcode-container { display: flex; justify-content: center; margin: 20px 0; padding: 10px; background: white; }
+        .order-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px dashed #eee; }
+        .total-row { font-weight: bold; font-size: 1.2rem; margin-top: 15px; padding-top: 10px; border-top: 2px solid var(--blue); }
+        .whatsapp-btn { background: #25D366; color: white; border: none; padding: 12px; border-radius: 8px; width: 100%; font-weight: bold; margin-top: 10px; cursor: pointer; }
+        .loading { opacity: 0.7; pointer-events: none; }
         @media print { .no-print { display: none !important; } }
     </style>
 </head>
@@ -111,16 +116,23 @@
             <div id="checkout-list" style="margin-bottom:20px; border-bottom: 1px solid #eee; padding-bottom:10px;"></div>
             <div class="form-group">
                 <label>Select Payment Method</label>
-                <div id="pay-cash" style="border:2px solid var(--blue); padding:15px; border-radius:12px; margin-bottom:10px;" onclick="selectPayment('Cash')">Cash on Delivery</div>
-                <div id="pay-eft" style="border:2px solid #eee; padding:15px; border-radius:12px;" onclick="selectPayment('EFT')">Instant EFT</div>
+                <div id="pay-cash" style="border:2px solid var(--blue); padding:15px; border-radius:12px; margin-bottom:10px; cursor:pointer;" onclick="selectPayment('Cash')">💵 Cash on Delivery</div>
+                <div id="pay-eft" style="border:2px solid #eee; padding:15px; border-radius:12px; cursor:pointer;" onclick="selectPayment('EFT')">🏦 Instant EFT</div>
             </div>
-            <button onclick="finalPlaceOrder()" class="btn-primary">CONFIRM & SEND ORDER</button>
-            <button onclick="hideCheckout()" style="width:100%; border:none; background:none; color:var(--gray); margin-top:15px;">Continue Shopping</button>
+            <button id="confirm-order-btn" onclick="finalPlaceOrder()" class="btn-primary">CONFIRM & SEND ORDER</button>
+            <button onclick="hideCheckout()" style="width:100%; border:none; background:none; color:var(--gray); margin-top:15px; cursor:pointer;">Continue Shopping</button>
         </div>
     </div>
 
     <div id="modal-order-detail" class="modal-overlay hidden">
         <div class="modal-body" id="receipt-view"></div>
+    </div>
+
+    <div id="modal-loading" class="modal-overlay hidden">
+        <div class="modal-body" style="text-align:center;">
+            <i class="fas fa-spinner fa-spin" style="font-size:3rem; color:var(--blue);"></i>
+            <p style="margin-top:20px;">Processing your order...</p>
+        </div>
     </div>
 </div>
 
@@ -133,9 +145,60 @@
     // SUPABASE STORAGE BASE URL
     const storageBase = "https://clbhfxqxcugxcqutngpo.supabase.co/storage/v1/object/public/Images/";
 
-    let cart = {}; let products = []; let groups = []; let currentMode = 'single'; let selectedPayment = 'Cash'; let editingOrderId = null;
+    let cart = {}; 
+    let products = []; 
+    let groups = []; 
+    let currentMode = 'single'; 
+    let selectedPayment = 'Cash'; 
+    let editingOrderId = null;
+    let currentUser = null;
 
-    window.onload = async () => { if(localStorage.getItem('spaza_user')) initApp(); };
+    // Load products from the price list you provided
+    const defaultProducts = [
+        { name: 'Ace Instant Porridge (Banana)', price: 22.77, category: 'Breakfast' },
+        { name: 'Ace Super Maize 10kg', price: 85.79, category: 'Maize Meal' },
+        { name: 'Ace Super Maize 25kg', price: 241.99, category: 'Maize Meal' },
+        { name: 'Ace Super Maize Poly 5kg', price: 61.59, category: 'Maize Meal' },
+        { name: 'Allsome Rice (10kg)', price: 105.59, category: 'Rice' },
+        { name: 'Allsome Rice (4x5kg)', price: 60.50, category: 'Rice' },
+        { name: 'Always Max Night (8s)', price: 15.13, category: 'Hygiene' },
+        { name: 'Aquafresh Toothpaste 100ml', price: 14.18, category: 'Oral Care' },
+        { name: 'Aquafresh Toothpaste 50ml', price: 12.42, category: 'Oral Care' },
+        { name: 'Aunt Caroline Rice (10kg)', price: 134.19, category: 'Rice' },
+        { name: 'Aunt Caroline Rice (4X5kg)', price: 101.75, category: 'Rice' },
+        { name: 'Bakers Eet-Sum-Mor 200g', price: 33.64, category: 'Biscuits' },
+        { name: 'Bakers Lemon Creams 200g', price: 23.46, category: 'Biscuits' },
+        { name: 'Bakers Marie Biscuits 200g', price: 19.89, category: 'Biscuits' },
+        { name: 'Black Cat Peanut Butter 400g', price: 39.59, category: 'Spreads' },
+        { name: 'Blue Seal Pet Jelly 100ml', price: 19.11, category: 'Personal Care' },
+        { name: 'Bull Brand Corned Meat 300g', price: 23.46, category: 'Canned Food' },
+        { name: 'C&B Mayonnaise 1.5kg', price: 92.76, category: 'Condiments' },
+        { name: 'Cadbury Lunch Bar 40g', price: 11.68, category: 'Confectionery' },
+        { name: 'Clover Longlife Milk 1L', price: 17.24, category: 'Dairy' },
+        { name: 'Coke 2.25L', price: 25.49, category: 'Beverages' },
+        { name: 'Coke/Fanta/Sprite 2L', price: 19.61, category: 'Beverages' },
+        { name: 'Chez Eggs Large (per egg)', price: 1.80, category: 'Dairy' },
+        { name: 'Cremora 750g', price: 54.99, category: 'Dairy' },
+        { name: 'DeLite Oil 5L', price: 141.89, category: 'Cooking Oil' },
+        { name: 'Excella Oil 5L', price: 167.75, category: 'Cooking Oil' },
+        { name: 'Five Roses Tea 100s', price: 27.69, category: 'Beverages' },
+        { name: 'Glenryck Pilchards 400g', price: 26.59, category: 'Canned Fish' },
+        { name: 'Golden Cloud Flour 10kg', price: 123.19, category: 'Flour' },
+        { name: 'Golden Delight Rice 5kg', price: 65.99, category: 'Rice' },
+        { name: 'Huletts White Sugar 10kg', price: 230.99, category: 'Sugar' },
+        { name: 'Iwisa Maize 10kg', price: 111.09, category: 'Maize Meal' },
+        { name: 'Koo Baked Beans 400g', price: 16.39, category: 'Canned Food' },
+        { name: 'Lucky Star Pilchards 400g', price: 26.95, category: 'Canned Fish' },
+        { name: 'Sunfoil Oil 2L', price: 68.50, category: 'Cooking Oil' },
+        { name: 'White Star Maize 10kg', price: 118.99, category: 'Maize Meal' }
+    ];
+
+    window.onload = async () => { 
+        if(localStorage.getItem('spaza_user')) {
+            currentUser = JSON.parse(localStorage.getItem('spaza_user'));
+            initApp();
+        }
+    };
 
     function toggleAuth(showReg) {
         document.getElementById('auth-login').classList.toggle('hidden', showReg);
@@ -144,8 +207,17 @@
 
     async function handleLogin() {
         const wa = document.getElementById('login-wa').value.trim();
-        const { data } = await _client.from('profiles').select('*').eq('whatsapp_number', wa).maybeSingle();
-        if(data) loginSuccess(data); else alert("Store not found. Please register.");
+        if (!wa) return alert("Please enter your WhatsApp number");
+        
+        const { data, error } = await _client.from('profiles').select('*').eq('whatsapp_number', wa).maybeSingle();
+        if(error) {
+            alert("Error logging in. Please try again.");
+            console.error(error);
+        } else if(data) {
+            loginSuccess(data);
+        } else {
+            alert("Store not found. Please register.");
+        }
     }
 
     async function handleRegister() {
@@ -158,43 +230,65 @@
             address: document.getElementById('reg-address').value,
             role: 'spaza'
         };
+
+        // Validate required fields
+        for (let [key, value] of Object.entries(payload)) {
+            if (!value && key !== 'role') {
+                alert(`Please fill in ${key.replace('_', ' ')}`);
+                return;
+            }
+        }
+
         const { data, error } = await _client.from('profiles').insert([payload]).select().single();
-        if(error) alert("Error: " + error.message); else loginSuccess(data);
+        if(error) {
+            alert("Error: " + error.message);
+        } else {
+            loginSuccess(data);
+        }
     }
 
-    function loginSuccess(user) { localStorage.setItem('spaza_user', JSON.stringify(user)); initApp(); }
+    function loginSuccess(user) {
+        currentUser = user;
+        localStorage.setItem('spaza_user', JSON.stringify(user));
+        initApp();
+    }
+
     function initApp() {
         document.getElementById('section-auth').classList.add('hidden');
         document.getElementById('section-market').classList.remove('hidden');
-        document.getElementById('txt-store-name').innerText = JSON.parse(localStorage.getItem('spaza_user')).store_name;
+        document.getElementById('txt-store-name').innerText = currentUser.store_name;
         loadContent();
     }
 
     async function loadContent() {
-        const { data: p } = await _client.from('products').select('*');
-        products = p || [];
+        // Try to load from Supabase, fall back to default products
+        try {
+            const { data: p, error } = await _client.from('products').select('*');
+            if (error) throw error;
+            products = p || defaultProducts;
+        } catch (error) {
+            console.log("Using default products:", error);
+            products = defaultProducts;
+        }
         renderList();
     }
 
-    // 2. UPDATED RENDERER WITH FALLBACK LOGIC
     function renderList() {
         const query = document.getElementById('search-input').value.toLowerCase();
-        const items = currentMode === 'single' ? products : groups;
+        const items = products;
         
         document.getElementById('list-render').innerHTML = items
-            .filter(i => (i.name || i.group_name).toLowerCase().includes(query))
+            .filter(i => (i.name || i.group_name || '').toLowerCase().includes(query))
             .map(i => {
                 const name = i.name || i.group_name;
-                const price = (i.price || i.contribution_per_spaza);
+                const price = i.price || i.contribution_per_spaza || 0;
                 const qty = cart[name]?.qty || 0;
                 
-                // Primary URL (The one we hope works)
+                // Image URL with fallback
                 const imgUrl = `${storageBase}${encodeURIComponent(name)}.png`;
-                
-                // Fallback URLs (Try these if the first fails)
                 const fallbackJpg = `${storageBase}${encodeURIComponent(name)}.jpg`;
-                const fallbackLong = `${storageBase}${encodeURIComponent(name)}%20Original%20500ml.png`;
                 
+                // Escape single quotes for JavaScript
                 const safeName = name.replace(/'/g, "\\'"); 
 
                 return `
@@ -202,116 +296,427 @@
                     <div style="display:flex; gap:15px; align-items:center;">
                         <img src="${imgUrl}" 
                              class="prod-img" 
-                             onerror="this.onerror=null; this.src='${fallbackLong}'; this.onerror=function(){this.src='${fallbackJpg}'; this.onerror=function(){this.src='https://via.placeholder.com/100?text=Stock'}}">
+                             onerror="this.onerror=null; this.src='${fallbackJpg}'; this.onerror=function(){this.src='https://via.placeholder.com/100?text=Product'}">
                         <div style="flex:1">
                             <h4 style="margin:0">${name}</h4>
-                            <p style="font-size:0.75rem; color:var(--gray); margin:4px 0;">Wholesale Authentic Stock</p>
+                            <p style="font-size:0.75rem; color:var(--gray); margin:4px 0;">${i.category || 'Wholesale'}</p>
                             <div style="font-weight:900; color:var(--blue); font-size:1.2rem;">R${price.toFixed(2)}</div>
                         </div>
                     </div>
                     <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid #eee; padding-top:10px; margin-top:10px;">
                         <div style="display:flex; align-items:center; background:#f1f5f9; border-radius:10px; padding:4px;">
-                            <button style="border:none; background:white; width:35px; height:35px; border-radius:8px; font-weight:bold;" onclick="updateCart('${safeName}', ${price}, -1)">-</button>
+                            <button style="border:none; background:white; width:35px; height:35px; border-radius:8px; font-weight:bold; cursor:pointer;" onclick="updateCart('${safeName}', ${price}, -1)">-</button>
                             <b style="padding:0 20px;">${qty}</b>
-                            <button style="border:none; background:white; width:35px; height:35px; border-radius:8px; font-weight:bold;" onclick="updateCart('${safeName}', ${price}, 1)">+</button>
+                            <button style="border:none; background:white; width:35px; height:35px; border-radius:8px; font-weight:bold; cursor:pointer;" onclick="updateCart('${safeName}', ${price}, 1)">+</button>
                         </div>
                     </div>
                 </div>`;
             }).join('');
+        
+        if (items.length === 0) {
+            document.getElementById('list-render').innerHTML = '<p style="text-align:center; padding:20px; color:var(--gray);">No products found</p>';
+        }
     }
 
-    function updateCart(n, p, c) {
-        if(!cart[n]) cart[n] = { price: p, qty: 0 };
-        cart[n].qty += c;
-        if(cart[n].qty <= 0) delete cart[n];
-        let t = 0; Object.values(cart).forEach(o => t += o.price * o.qty);
-        document.getElementById('txt-total').innerText = "R " + t.toFixed(2);
+    function updateCart(name, price, change) {
+        if(!cart[name]) cart[name] = { price: price, qty: 0 };
+        cart[name].qty += change;
+        if(cart[name].qty <= 0) {
+            delete cart[name];
+        }
+        updateTotal();
         renderList();
     }
 
+    function updateTotal() {
+        let total = 0;
+        Object.values(cart).forEach(item => {
+            total += item.price * item.qty;
+        });
+        document.getElementById('txt-total').innerText = "R " + total.toFixed(2);
+    }
+
+    // FIXED: Enhanced order placement with WhatsApp integration
     async function finalPlaceOrder() {
-        const u = JSON.parse(localStorage.getItem('spaza_user'));
-        const total = parseFloat(document.getElementById('txt-total').innerText.replace('R ', ''));
-        const orderData = { profile_id: u.id, store_name: u.store_name, total_amount: total, items: cart, payment_method: selectedPayment, status: 'pending' };
-        
-        let res;
-        if(editingOrderId) {
-            res = await _client.from('orders').update(orderData).eq('id', editingOrderId).select();
-            editingOrderId = null;
-        } else {
-            res = await _client.from('orders').insert([orderData]).select();
+        if (!currentUser) {
+            alert("Please login again");
+            logout();
+            return;
         }
 
-        if(!res.error) {
-            alert("Order Success! Order #" + res.data[0].id);
+        // Show loading modal
+        document.getElementById('modal-loading').classList.remove('hidden');
+        document.getElementById('confirm-order-btn').disabled = true;
+
+        try {
+            const total = parseFloat(document.getElementById('txt-total').innerText.replace('R ', ''));
+            
+            if (total <= 0) {
+                alert("Your cart is empty");
+                hideCheckout();
+                document.getElementById('modal-loading').classList.add('hidden');
+                document.getElementById('confirm-order-btn').disabled = false;
+                return;
+            }
+
+            // Format items for storage
+            const itemsForDb = {};
+            Object.entries(cart).forEach(([name, details]) => {
+                itemsForDb[name] = {
+                    qty: details.qty,
+                    price: details.price,
+                    subtotal: details.price * details.qty
+                };
+            });
+
+            const orderData = { 
+                profile_id: currentUser.id, 
+                store_name: currentUser.store_name, 
+                store_address: currentUser.address,
+                township: currentUser.township,
+                whatsapp_number: currentUser.whatsapp_number,
+                total_amount: total, 
+                items: itemsForDb, 
+                payment_method: selectedPayment, 
+                status: 'pending',
+                created_at: new Date().toISOString()
+            };
+            
+            let result;
+            
+            if(editingOrderId) {
+                result = await _client.from('orders')
+                    .update(orderData)
+                    .eq('id', editingOrderId)
+                    .select();
+                editingOrderId = null;
+            } else {
+                result = await _client.from('orders')
+                    .insert([orderData])
+                    .select();
+            }
+
+            if(result.error) {
+                throw new Error(result.error.message);
+            }
+
+            const newOrder = result.data[0];
+            
+            // Send WhatsApp invoice
+            const whatsappSent = await sendWhatsAppInvoice(newOrder);
+            
+            // Hide loading modal
+            document.getElementById('modal-loading').classList.add('hidden');
+            document.getElementById('confirm-order-btn').disabled = false;
+            
+            // Success message
+            if (whatsappSent) {
+                alert(`✅ Order #${newOrder.id.slice(-8)} created successfully!\nInvoice sent to WhatsApp.`);
+            } else {
+                alert(`✅ Order #${newOrder.id.slice(-8)} created successfully!\nNote: WhatsApp invoice could not be sent. Please check your number.`);
+            }
+            
+            // Clear cart and close modal
             cart = {};
-            document.getElementById('txt-total').innerText = "R 0.00";
+            updateTotal();
             hideCheckout();
+            
+            // Switch to history view
             setMode('history');
+            
+        } catch (error) {
+            console.error("Order error:", error);
+            document.getElementById('modal-loading').classList.add('hidden');
+            document.getElementById('confirm-order-btn').disabled = false;
+            alert("❌ Error creating order: " + error.message);
         }
     }
 
-    function setMode(m) {
-        currentMode = m;
-        document.getElementById('nav-s').classList.toggle('active', m === 'single');
-        document.getElementById('nav-b').classList.toggle('active', m === 'bulk');
-        document.getElementById('nav-o').classList.toggle('active', m === 'history');
-        document.getElementById('market-search').classList.toggle('hidden', m === 'history');
-        document.getElementById('list-render').classList.toggle('hidden', m === 'history');
-        document.getElementById('history-render').classList.toggle('hidden', m !== 'history');
-        document.getElementById('main-footer').classList.toggle('hidden', m === 'history');
-        if(m === 'history') loadOrderHistory(); else renderList();
+    // FIXED: WhatsApp invoice function
+    async function sendWhatsAppInvoice(order) {
+        try {
+            // Format the invoice message
+            const storeName = order.store_name || currentUser.store_name;
+            const phoneNumber = currentUser.whatsapp_number;
+            
+            if (!phoneNumber) {
+                console.log("No WhatsApp number available");
+                return false;
+            }
+
+            // Create invoice text
+            let message = `🧾 *SPAZASURE INVOICE* 🧾\n`;
+            message += `━━━━━━━━━━━━━━━━━━━━━\n`;
+            message += `*Order #:* ${order.id.slice(-8)}\n`;
+            message += `*Store:* ${storeName}\n`;
+            message += `*Date:* ${new Date().toLocaleString()}\n`;
+            message += `*Payment:* ${order.payment_method || selectedPayment}\n`;
+            message += `━━━━━━━━━━━━━━━━━━━━━\n`;
+            message += `*ITEMS:*\n`;
+            
+            // Add items
+            const items = order.items || cart;
+            let subtotal = 0;
+            
+            Object.entries(items).forEach(([name, details]) => {
+                const qty = details.qty || details.quantity;
+                const price = details.price;
+                const lineTotal = qty * price;
+                subtotal += lineTotal;
+                message += `${qty}x ${name} @ R${price.toFixed(2)} = R${lineTotal.toFixed(2)}\n`;
+            });
+            
+            message += `━━━━━━━━━━━━━━━━━━━━━\n`;
+            message += `*TOTAL: R${order.total_amount.toFixed(2)}*\n`;
+            message += `━━━━━━━━━━━━━━━━━━━━━\n`;
+            message += `✅ *Order Confirmed*\n`;
+            message += `📦 Status: Pending\n`;
+            message += `━━━━━━━━━━━━━━━━━━━━━\n`;
+            message += `_Thank you for choosing SpazaSure!_`;
+
+            // Encode for WhatsApp URL
+            const encodedMessage = encodeURIComponent(message);
+            
+            // Format phone number (remove any non-digits, ensure it has country code)
+            let cleanPhone = phoneNumber.toString().replace(/\D/g, '');
+            if (!cleanPhone.startsWith('27') && cleanPhone.length === 10) {
+                cleanPhone = '27' + cleanPhone.slice(1); // Convert 082... to 2782...
+            }
+            
+            // Create WhatsApp URL
+            const whatsappUrl = `https://wa.me/${cleanPhone}?text=${encodedMessage}`;
+            
+            // Try to send via WhatsApp API or open window
+            try {
+                // Attempt to save invoice to Supabase storage as backup
+                const invoiceBlob = new Blob([message], { type: 'text/plain' });
+                const fileName = `invoice_${order.id}_${Date.now()}.txt`;
+                
+                // Upload to Supabase Storage if available
+                try {
+                    const { data, error } = await _client.storage
+                        .from('invoices')
+                        .upload(fileName, invoiceBlob);
+                    
+                    if (!error) {
+                        console.log("Invoice saved to cloud:", data);
+                    }
+                } catch (storageError) {
+                    console.log("Storage not available, continuing...");
+                }
+                
+                // Open WhatsApp
+                window.open(whatsappUrl, '_blank');
+                return true;
+                
+            } catch (waError) {
+                console.error("WhatsApp error:", waError);
+                // Fallback: Copy to clipboard
+                await navigator.clipboard.writeText(message);
+                alert("Invoice copied to clipboard. Please paste in WhatsApp.");
+                return true;
+            }
+            
+        } catch (error) {
+            console.error("Failed to send WhatsApp invoice:", error);
+            return false;
+        }
+    }
+
+    function setMode(mode) {
+        currentMode = mode;
+        
+        // Update tab styling
+        document.getElementById('nav-s').classList.toggle('active', mode === 'single');
+        document.getElementById('nav-b').classList.toggle('active', mode === 'bulk');
+        document.getElementById('nav-o').classList.toggle('active', mode === 'history');
+        
+        // Show/hide appropriate sections
+        document.getElementById('market-search').classList.toggle('hidden', mode === 'history');
+        document.getElementById('list-render').classList.toggle('hidden', mode === 'history');
+        document.getElementById('history-render').classList.toggle('hidden', mode !== 'history');
+        document.getElementById('main-footer').classList.toggle('hidden', mode === 'history');
+        
+        if(mode === 'history') {
+            loadOrderHistory();
+        } else if(mode === 'bulk') {
+            renderBulkDeals();
+        } else {
+            renderList();
+        }
+    }
+
+    function renderBulkDeals() {
+        // Sample bulk deals from your price list
+        const bulkDeals = [
+            { name: 'Ace Super Maize 10kg (Case of 10)', price: 857.90, original: 1055.90, savings: 198 },
+            { name: 'Coke Variety Pack (24 cans)', price: 265.09, original: 299.99, savings: 34.90 },
+            { name: 'Cooking Oil Bundle (4x5L)', price: 637.99, original: 719.99, savings: 82 },
+        ];
+        
+        document.getElementById('list-render').innerHTML = bulkDeals.map(deal => `
+            <div class="card" style="border-left:4px solid var(--green);">
+                <h4>${deal.name}</h4>
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div>
+                        <span style="text-decoration:line-through; color:var(--gray);">R${deal.original}</span>
+                        <span style="font-weight:900; color:var(--green); font-size:1.3rem; margin-left:10px;">R${deal.price}</span>
+                    </div>
+                    <span style="background:var(--green); color:white; padding:4px 8px; border-radius:4px;">Save R${deal.savings}</span>
+                </div>
+                <button onclick="addBulkToCart('${deal.name}', ${deal.price})" style="width:100%; background:var(--blue); color:white; border:none; padding:10px; border-radius:8px; margin-top:10px; cursor:pointer;">ADD TO CART</button>
+            </div>
+        `).join('');
+    }
+
+    function addBulkToCart(name, price) {
+        updateCart(name, price, 1);
     }
 
     async function loadOrderHistory() {
-        const u = JSON.parse(localStorage.getItem('spaza_user'));
-        const { data } = await _client.from('orders').select('*').eq('profile_id', u.id).order('created_at', {ascending: false});
-        document.getElementById('history-render').innerHTML = data.map(o => `
-            <div class="card" style="border-left:5px solid ${o.status === 'pending' ? 'var(--yellow)' : 'var(--green)'}">
-                <div style="display:flex; justify-content:space-between;">
-                    <b>ORDER #${o.id.toString().slice(-5)}</b>
-                    <span style="font-size:0.7rem; background:#eee; padding:2px 8px; border-radius:5px;">${o.status.toUpperCase()}</span>
-                </div>
-                <div style="font-weight:900; font-size:1.2rem; margin:10px 0;">R${o.total_amount.toFixed(2)}</div>
-                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
-                    <button onclick='viewOrder(${JSON.stringify(o)})' style="padding:10px; border:none; border-radius:8px; background:var(--blue); color:white; font-size:0.8rem;">RECEIPT</button>
-                    ${o.status === 'pending' ? `<button onclick='editOrder(${JSON.stringify(o)})' style="padding:10px; border:none; border-radius:8px; background:var(--gray); color:white; font-size:0.8rem;">EDIT</button>` : ''}
-                </div>
-            </div>`).join('') || "<p style='text-align:center; color:var(--gray);'>No orders yet.</p>";
+        try {
+            const { data, error } = await _client
+                .from('orders')
+                .select('*')
+                .eq('profile_id', currentUser.id)
+                .order('created_at', { ascending: false });
+            
+            if (error) throw error;
+            
+            document.getElementById('history-render').innerHTML = (data && data.length > 0) 
+                ? data.map(o => `
+                    <div class="card" style="border-left:5px solid ${o.status === 'pending' ? 'var(--yellow)' : 'var(--green)'}">
+                        <div style="display:flex; justify-content:space-between;">
+                            <b>ORDER #${o.id.toString().slice(-8)}</b>
+                            <span style="font-size:0.7rem; background:#eee; padding:2px 8px; border-radius:5px;">${o.status.toUpperCase()}</span>
+                        </div>
+                        <div style="font-size:0.8rem; color:var(--gray); margin:5px 0;">${new Date(o.created_at).toLocaleDateString()}</div>
+                        <div style="font-weight:900; font-size:1.2rem; margin:10px 0;">R${(o.total_amount || 0).toFixed(2)}</div>
+                        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
+                            <button onclick='viewOrder(${JSON.stringify(o).replace(/'/g, "\\'")})' style="padding:10px; border:none; border-radius:8px; background:var(--blue); color:white; font-size:0.8rem; cursor:pointer;">RECEIPT</button>
+                            ${o.status === 'pending' ? `<button onclick='editOrder(${JSON.stringify(o).replace(/'/g, "\\'")})' style="padding:10px; border:none; border-radius:8px; background:var(--gray); color:white; font-size:0.8rem; cursor:pointer;">EDIT</button>` : ''}
+                        </div>
+                    </div>`).join('') 
+                : "<p style='text-align:center; color:var(--gray); padding:40px;'>No orders yet. Start shopping!</p>";
+        } catch (error) {
+            console.error("Error loading orders:", error);
+            document.getElementById('history-render').innerHTML = "<p style='text-align:center; color:var(--red);'>Error loading orders. Please refresh.</p>";
+        }
     }
 
-    function viewOrder(o) {
-        const itemsList = Object.entries(o.items).map(([name, detail]) => `<div>${detail.qty}x ${name} - R${(detail.price * detail.qty).toFixed(2)}</div>`).join('');
-        document.getElementById('receipt-view').innerHTML = `
-            <h2 style="text-align:center; color:var(--blue);">SPAZASURE</h2>
-            <hr>
-            <p><b>Order ID:</b> #${o.id}</p>
-            <p><b>Store:</b> ${o.store_name}</p>
-            <hr>
-            <div style="margin:20px 0;">${itemsList}</div>
-            <hr>
-            <h3 style="text-align:right">Total: R${o.total_amount.toFixed(2)}</h3>
-            <div id="qrcode-container"><div id="qrcode"></div></div>
-            <button onclick="document.getElementById('modal-order-detail').classList.add('hidden')" style="width:100%; background:#eee; border:none; padding:10px; border-radius:8px;">Close</button>
-        `;
-        new QRCode(document.getElementById("qrcode"), { text: `Order:${o.id}`, width: 120, height: 120 });
-        document.getElementById('modal-order-detail').classList.remove('hidden');
+    function viewOrder(order) {
+        try {
+            const items = order.items || {};
+            const itemsList = Object.entries(items).map(([name, detail]) => {
+                const qty = detail.qty || detail.quantity || 0;
+                const price = detail.price || 0;
+                const subtotal = (price * qty).toFixed(2);
+                return `<div class="order-item"><span>${qty}x ${name}</span><span>R${subtotal}</span></div>`;
+            }).join('');
+
+            document.getElementById('receipt-view').innerHTML = `
+                <h2 style="text-align:center; color:var(--blue); margin-bottom:5px;">SPAZASURE</h2>
+                <p style="text-align:center; margin-top:0;">Authentic Wholesale</p>
+                <hr>
+                <p><b>Order ID:</b> #${order.id.slice(-8)}</p>
+                <p><b>Store:</b> ${order.store_name}</p>
+                <p><b>Date:</b> ${new Date(order.created_at).toLocaleString()}</p>
+                <p><b>Payment:</b> ${order.payment_method || 'Cash'}</p>
+                <p><b>Status:</b> ${order.status.toUpperCase()}</p>
+                <hr>
+                <div style="margin:20px 0;">
+                    <h4 style="margin-top:0;">Items:</h4>
+                    ${itemsList}
+                </div>
+                <hr>
+                <h3 style="text-align:right; margin:15px 0;">Total: R${(order.total_amount || 0).toFixed(2)}</h3>
+                <div id="qrcode-container" style="margin:20px 0;">
+                    <div id="qrcode"></div>
+                </div>
+                <button onclick="resendWhatsApp('${order.id}')" class="whatsapp-btn">
+                    <i class="fab fa-whatsapp"></i> SEND TO WHATSAPP
+                </button>
+                <button onclick="document.getElementById('modal-order-detail').classList.add('hidden')" style="width:100%; background:#eee; border:none; padding:12px; border-radius:8px; margin-top:10px; cursor:pointer;">Close</button>
+            `;
+            
+            // Generate QR code
+            document.getElementById('qrcode').innerHTML = '';
+            new QRCode(document.getElementById("qrcode"), { 
+                text: `SpazaSure Order:${order.id}\nTotal:R${order.total_amount}`, 
+                width: 150, 
+                height: 150 
+            });
+            
+            document.getElementById('modal-order-detail').classList.remove('hidden');
+        } catch (error) {
+            console.error("Error viewing order:", error);
+            alert("Error displaying order receipt");
+        }
     }
 
-    function selectPayment(m) { 
-        selectedPayment = m; 
-        document.getElementById('pay-cash').style.borderColor = m === 'Cash' ? 'var(--blue)' : '#eee';
-        document.getElementById('pay-eft').style.borderColor = m === 'EFT' ? 'var(--blue)' : '#eee';
+    async function resendWhatsApp(orderId) {
+        try {
+            const { data: order, error } = await _client
+                .from('orders')
+                .select('*')
+                .eq('id', orderId)
+                .single();
+            
+            if (error) throw error;
+            
+            document.getElementById('modal-order-detail').classList.add('hidden');
+            await sendWhatsAppInvoice(order);
+        } catch (error) {
+            console.error("Error resending WhatsApp:", error);
+            alert("Failed to resend WhatsApp message");
+        }
+    }
+
+    function editOrder(order) {
+        cart = order.items || {};
+        editingOrderId = order.id;
+        updateTotal();
+        setMode('single');
+        hideCheckout();
+        showCheckout();
+    }
+
+    function selectPayment(method) { 
+        selectedPayment = method; 
+        document.getElementById('pay-cash').style.borderColor = method === 'Cash' ? 'var(--blue)' : '#eee';
+        document.getElementById('pay-eft').style.borderColor = method === 'EFT' ? 'var(--blue)' : '#eee';
     }
     
     function showCheckout() { 
-        if(Object.keys(cart).length === 0) return alert("Your cart is empty.");
-        const list = Object.entries(cart).map(([n, d]) => `<div>${d.qty}x ${n} (R${(d.price * d.qty).toFixed(2)})</div>`).join('');
-        document.getElementById('checkout-list').innerHTML = list;
+        if(Object.keys(cart).length === 0) {
+            alert("Your cart is empty. Add some products first.");
+            return;
+        }
+        
+        const list = Object.entries(cart).map(([name, details]) => {
+            const subtotal = (details.price * details.qty).toFixed(2);
+            return `<div class="order-item"><span>${details.qty}x ${name}</span><span>R${subtotal}</span></div>`;
+        }).join('');
+        
+        const total = Object.values(cart).reduce((sum, item) => sum + (item.price * item.qty), 0);
+        
+        document.getElementById('checkout-list').innerHTML = list + 
+            `<div class="total-row">Total: R${total.toFixed(2)}</div>`;
+        
         document.getElementById('modal-checkout').classList.remove('hidden'); 
     }
-    function hideCheckout() { document.getElementById('modal-checkout').classList.add('hidden'); }
-    function logout() { localStorage.clear(); location.reload(); }
+    
+    function hideCheckout() { 
+        document.getElementById('modal-checkout').classList.add('hidden'); 
+        document.getElementById('confirm-order-btn').disabled = false;
+    }
+
+    function logout() { 
+        localStorage.clear();
+        currentUser = null;
+        cart = {};
+        location.reload(); 
+    }
 </script>
 
 </body>
