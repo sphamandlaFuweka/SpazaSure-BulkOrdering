@@ -27,7 +27,7 @@
         .btn-primary { width:100%; padding:16px; background:var(--green); color:white; border:none; border-radius:12px; font-weight: 800; cursor: pointer; font-size: 1rem; }
         .btn-secondary { width:100%; padding:12px; background:var(--blue); color:white; border:none; border-radius:8px; font-weight: 600; cursor: pointer; font-size: 0.9rem; }
         
-        /* Product Layout */
+        /* Enhanced Product Layout */
         .card { background: white; margin: 12px; padding: 16px; border-radius: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; }
         .prod-img { width: 85px; height: 85px; border-radius: 12px; object-fit: cover; background: #f8fafc; }
         .search-bar { padding: 15px; background: white; border-bottom: 1px solid #eee; }
@@ -47,6 +47,20 @@
         .total-row { font-weight: bold; font-size: 1.2rem; margin-top: 15px; padding-top: 10px; border-top: 2px solid var(--blue); }
         .whatsapp-btn { background: #25D366; color: white; border: none; padding: 12px; border-radius: 8px; width: 100%; font-weight: bold; margin-top: 10px; cursor: pointer; }
         .loading { opacity: 0.7; pointer-events: none; }
+        .error-message { color: var(--red); font-size: 0.85rem; margin-top: 5px; text-align: center; }
+        
+        /* New Product Info Styles */
+        .product-badge { display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: 0.7rem; font-weight: 700; margin-right: 5px; }
+        .verified-badge { background: var(--green); color: white; }
+        .bulk-badge { background: var(--blue); color: white; }
+        .stock-badge { background: var(--gray); color: white; }
+        .product-description { font-size: 0.8rem; color: var(--gray); margin: 5px 0; line-height: 1.4; }
+        .price-comparison { display: flex; gap: 10px; align-items: baseline; margin: 5px 0; }
+        .unit-price { font-weight: 900; color: var(--blue); font-size: 1.2rem; }
+        .bulk-price { font-size: 0.9rem; color: var(--gray); text-decoration: line-through; }
+        .savings-tag { background: var(--green); color: white; padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; font-weight: 700; }
+        .category-tag { background: #e2e8f0; color: var(--dark); padding: 2px 8px; border-radius: 12px; font-size: 0.7rem; display: inline-block; }
+        .batch-code { font-size: 0.65rem; color: var(--gray); margin-top: 5px; font-family: monospace; }
         @media print { .no-print { display: none !important; } }
     </style>
 </head>
@@ -65,6 +79,7 @@
                 <input type="tel" id="login-wa" class="auth-input" placeholder="e.g. 27821234567">
             </div>
             <button onclick="handleLogin()" class="btn-primary">SIGN IN</button>
+            <div id="login-error" class="error-message hidden"></div>
             <p style="text-align:center; color:var(--gray); font-size:0.85rem; margin-top:20px;">
                 New store? <span onclick="toggleAuth(true)" style="color:var(--blue); font-weight:700; text-decoration:underline; cursor:pointer;">Register Here</span>
             </p>
@@ -76,9 +91,33 @@
             <div class="form-group"><label>Last Name</label><input type="text" id="reg-lname" class="auth-input"></div>
             <div class="form-group"><label>Store Name</label><input type="text" id="reg-sname" class="auth-input"></div>
             <div class="form-group"><label>WhatsApp Number</label><input type="number" id="reg-wa" class="auth-input"></div>
+            <div class="form-group"><label>Business Type</label>
+                <select id="reg-bus-type" class="auth-input">
+                    <option value="Spaza Shop">Spaza Shop</option>
+                    <option value="Tuck Shop">Tuck Shop</option>
+                    <option value="Street Vendor">Street Vendor</option>
+                    <option value="Home-based Retail">Home-based Retail</option>
+                </select>
+            </div>
+            <div class="form-group"><label>Store Size</label>
+                <select id="reg-size" class="auth-input">
+                    <option value="Small/Counter">Small/Counter</option>
+                    <option value="Medium/Walk-in">Medium/Walk-in</option>
+                    <option value="Large/Superette">Large/Superette</option>
+                </select>
+            </div>
             <div class="form-group"><label>Township</label><input type="text" id="reg-town" class="auth-input"></div>
             <div class="form-group"><label>Street Address</label><input type="text" id="reg-address" class="auth-input"></div>
+            <div class="form-group"><label>Gender</label>
+                <select id="reg-gender" class="auth-input">
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other</option>
+                    <option value="Prefer not to say">Prefer not to say</option>
+                </select>
+            </div>
             <button onclick="handleRegister()" class="btn-primary" style="background:var(--blue);">REGISTER & LOGIN</button>
+            <div id="register-error" class="error-message hidden"></div>
             <p onclick="toggleAuth(false)" style="text-align:center; color:var(--gray); font-size:0.85rem; margin-top:15px; cursor:pointer;">Back to Login</p>
         </div>
     </div>
@@ -86,11 +125,14 @@
     <div id="section-market" class="hidden">
         <div class="sticky-header">
             <div style="display:flex; justify-content:space-between; align-items:center; padding:15px;">
-                <span id="txt-store-name" style="font-weight: 900; color: var(--blue);">Store</span>
+                <div>
+                    <span id="txt-store-name" style="font-weight: 900; color: var(--blue);">Store</span>
+                    <span id="txt-badge" style="margin-left:10px; font-size:0.7rem; background:var(--green); color:white; padding:2px 8px; border-radius:4px;"></span>
+                </div>
                 <button onclick="logout()" style="background:#fee2e2; border:none; color:var(--red); padding: 8px 12px; border-radius: 8px; font-weight:bold;">LOGOUT</button>
             </div>
             <div class="search-bar" id="market-search">
-                <input type="text" id="search-input" class="search-input" placeholder="Search products..." onkeyup="renderList()">
+                <input type="text" id="search-input" class="search-input" placeholder="Search products by name, category, or description..." onkeyup="renderList()">
             </div>
             <div class="nav-tabs">
                 <button id="nav-s" class="active" onclick="setMode('single')">MARKET</button>
@@ -120,6 +162,7 @@
                 <div id="pay-eft" style="border:2px solid #eee; padding:15px; border-radius:12px; cursor:pointer;" onclick="selectPayment('EFT')">🏦 Instant EFT</div>
             </div>
             <button id="confirm-order-btn" onclick="finalPlaceOrder()" class="btn-primary">CONFIRM & SEND ORDER</button>
+            <div id="order-error" class="error-message hidden"></div>
             <button onclick="hideCheckout()" style="width:100%; border:none; background:none; color:var(--gray); margin-top:15px; cursor:pointer;">Continue Shopping</button>
         </div>
     </div>
@@ -153,44 +196,440 @@
     let editingOrderId = null;
     let currentUser = null;
 
-    // Load products from the price list you provided
+    // Enhanced products with all schema fields from your SpazaShop price list
     const defaultProducts = [
-        { name: 'Ace Instant Porridge (Banana)', price: 22.77, category: 'Breakfast' },
-        { name: 'Ace Super Maize 10kg', price: 85.79, category: 'Maize Meal' },
-        { name: 'Ace Super Maize 25kg', price: 241.99, category: 'Maize Meal' },
-        { name: 'Ace Super Maize Poly 5kg', price: 61.59, category: 'Maize Meal' },
-        { name: 'Allsome Rice (10kg)', price: 105.59, category: 'Rice' },
-        { name: 'Allsome Rice (4x5kg)', price: 60.50, category: 'Rice' },
-        { name: 'Always Max Night (8s)', price: 15.13, category: 'Hygiene' },
-        { name: 'Aquafresh Toothpaste 100ml', price: 14.18, category: 'Oral Care' },
-        { name: 'Aquafresh Toothpaste 50ml', price: 12.42, category: 'Oral Care' },
-        { name: 'Aunt Caroline Rice (10kg)', price: 134.19, category: 'Rice' },
-        { name: 'Aunt Caroline Rice (4X5kg)', price: 101.75, category: 'Rice' },
-        { name: 'Bakers Eet-Sum-Mor 200g', price: 33.64, category: 'Biscuits' },
-        { name: 'Bakers Lemon Creams 200g', price: 23.46, category: 'Biscuits' },
-        { name: 'Bakers Marie Biscuits 200g', price: 19.89, category: 'Biscuits' },
-        { name: 'Black Cat Peanut Butter 400g', price: 39.59, category: 'Spreads' },
-        { name: 'Blue Seal Pet Jelly 100ml', price: 19.11, category: 'Personal Care' },
-        { name: 'Bull Brand Corned Meat 300g', price: 23.46, category: 'Canned Food' },
-        { name: 'C&B Mayonnaise 1.5kg', price: 92.76, category: 'Condiments' },
-        { name: 'Cadbury Lunch Bar 40g', price: 11.68, category: 'Confectionery' },
-        { name: 'Clover Longlife Milk 1L', price: 17.24, category: 'Dairy' },
-        { name: 'Coke 2.25L', price: 25.49, category: 'Beverages' },
-        { name: 'Coke/Fanta/Sprite 2L', price: 19.61, category: 'Beverages' },
-        { name: 'Chez Eggs Large (per egg)', price: 1.80, category: 'Dairy' },
-        { name: 'Cremora 750g', price: 54.99, category: 'Dairy' },
-        { name: 'DeLite Oil 5L', price: 141.89, category: 'Cooking Oil' },
-        { name: 'Excella Oil 5L', price: 167.75, category: 'Cooking Oil' },
-        { name: 'Five Roses Tea 100s', price: 27.69, category: 'Beverages' },
-        { name: 'Glenryck Pilchards 400g', price: 26.59, category: 'Canned Fish' },
-        { name: 'Golden Cloud Flour 10kg', price: 123.19, category: 'Flour' },
-        { name: 'Golden Delight Rice 5kg', price: 65.99, category: 'Rice' },
-        { name: 'Huletts White Sugar 10kg', price: 230.99, category: 'Sugar' },
-        { name: 'Iwisa Maize 10kg', price: 111.09, category: 'Maize Meal' },
-        { name: 'Koo Baked Beans 400g', price: 16.39, category: 'Canned Food' },
-        { name: 'Lucky Star Pilchards 400g', price: 26.95, category: 'Canned Fish' },
-        { name: 'Sunfoil Oil 2L', price: 68.50, category: 'Cooking Oil' },
-        { name: 'White Star Maize 10kg', price: 118.99, category: 'Maize Meal' }
+        { 
+            name: 'Ace Instant Porridge (Banana)', 
+            description: 'Banana flavored instant porridge, 1kg pack. Perfect for quick breakfast.',
+            price: 22.77, 
+            bulk_price: '197.99', 
+            stock_quantity: 96,
+            category: 'Breakfast Cereals',
+            barcode: '96 Y1',
+            batch_code: 'ACE-BAN-0326',
+            is_authentic_verified: true,
+            image_url: `${storageBase}Ace%20Instant%20Porridge%20(Banana).png`
+        },
+        { 
+            name: 'Ace Super Maize 10kg', 
+            description: '10kg super maize meal, fortified with vitamins and minerals.',
+            price: 85.79, 
+            bulk_price: '85.79', 
+            stock_quantity: 98,
+            category: 'Maize Meal',
+            barcode: '98 N1',
+            batch_code: 'ACE-10KG-0326',
+            is_authentic_verified: true,
+            image_url: `${storageBase}Ace%20Super%20Maize%2010kg.png`
+        },
+        { 
+            name: 'Ace Super Maize 25kg', 
+            description: '25kg super maize meal, family size. Fortified with essential nutrients.',
+            price: 241.99, 
+            bulk_price: '241.99', 
+            stock_quantity: 40,
+            category: 'Maize Meal',
+            barcode: '40 N1',
+            batch_code: 'ACE-25KG-0326',
+            is_authentic_verified: true,
+            image_url: `${storageBase}Ace%20Super%20Maize%2025kg.png`
+        },
+        { 
+            name: 'Ace Super Maize Poly 5kg', 
+            description: '5kg super maize meal in poly bag, easy to carry and store.',
+            price: 61.59, 
+            bulk_price: '61.59', 
+            stock_quantity: 180,
+            category: 'Maize Meal',
+            barcode: '180 N1',
+            batch_code: 'ACE-5KG-0326',
+            is_authentic_verified: true,
+            image_url: `${storageBase}Ace%20Super%20Maize%20Poly%205kg.png`
+        },
+        { 
+            name: 'Allsome Rice (10kg)', 
+            description: '10kg premium quality white rice, long grain.',
+            price: 105.59, 
+            bulk_price: '105.59', 
+            stock_quantity: 100,
+            category: 'Rice',
+            barcode: '100 N1',
+            batch_code: 'ALL-10KG-0326',
+            is_authentic_verified: true,
+            image_url: `${storageBase}Allsome%20Rice%20(10kg).png`
+        },
+        { 
+            name: 'Allsome Rice (4x5kg)', 
+            description: '4 x 5kg rice pack, convenient multi-pack for reselling.',
+            price: 60.50, 
+            bulk_price: '241.99', 
+            stock_quantity: 52,
+            category: 'Rice',
+            barcode: '52 N1',
+            batch_code: 'ALL-4X5KG-0326',
+            is_authentic_verified: true,
+            image_url: `${storageBase}Allsome%20Rice%20(4x5kg).png`
+        },
+        { 
+            name: 'Always Max Night (6x4x8s)', 
+            description: 'Max night sanitary pads with wings, extra protection.',
+            price: 15.13, 
+            bulk_price: '362.93', 
+            stock_quantity: 32,
+            category: 'Sanitary Products',
+            barcode: '32 N1',
+            batch_code: 'ALW-NIGHT-0326',
+            is_authentic_verified: true,
+            image_url: `${storageBase}Always%20Max%20Night%20(6x4x8s).png`
+        },
+        { 
+            name: 'Aquafresh Toothpaste 100ml', 
+            description: '100ml triple protection toothpaste, fresh mint flavor.',
+            price: 14.18, 
+            bulk_price: '170.16', 
+            stock_quantity: 360,
+            category: 'Oral Care',
+            barcode: '360 Y1',
+            batch_code: 'AQUA-100ML-0326',
+            is_authentic_verified: true,
+            image_url: `${storageBase}Aquafresh%20T_Paste%20(12x100ml).png`
+        },
+        { 
+            name: 'Aquafresh Toothpaste 50ml', 
+            description: '50ml triple protection toothpaste, travel size.',
+            price: 12.42, 
+            bulk_price: '149.04', 
+            stock_quantity: 240,
+            category: 'Oral Care',
+            barcode: 'Y1',
+            batch_code: 'AQUA-50ML-0326',
+            is_authentic_verified: true,
+            image_url: `${storageBase}Aquafresh%20T_Paste%20(12x50ml).png`
+        },
+        { 
+            name: 'Aunt Caroline Rice (10kg)', 
+            description: '10kg premium long grain rice, fluffy when cooked.',
+            price: 134.19, 
+            bulk_price: '134.19', 
+            stock_quantity: 100,
+            category: 'Rice',
+            barcode: '100 N1',
+            batch_code: 'AUNT-10KG-0326',
+            is_authentic_verified: true,
+            image_url: `${storageBase}Aunt%20Caroline%20Rice%20(10kg).png`
+        },
+        { 
+            name: 'Aunt Caroline Rice (4X5kg)', 
+            description: '4 x 5kg rice pack, perfect for spaza shops to resell.',
+            price: 101.75, 
+            bulk_price: '406.99', 
+            stock_quantity: 48,
+            category: 'Rice',
+            barcode: '48 N1',
+            batch_code: 'AUNT-4X5KG-0326',
+            is_authentic_verified: true,
+            image_url: `${storageBase}Aunt%20Caroline%20Rice%20(4X5kg).png`
+        },
+        { 
+            name: 'Bakers Eet-Sum-Mor 200g', 
+            description: '200g Eet-Sum-Mor biscuits, classic South African favorite.',
+            price: 33.64, 
+            bulk_price: '403.69', 
+            stock_quantity: 145,
+            category: 'Biscuits',
+            barcode: '145 Y1',
+            batch_code: 'BAK-EET-0326',
+            is_authentic_verified: true,
+            image_url: `${storageBase}Bakers%20Eet-Sum-Mor%20(12x200g).png`
+        },
+        { 
+            name: 'Bakers Lemon Creams 200g', 
+            description: '200g lemon cream biscuits, sweet and tangy.',
+            price: 23.46, 
+            bulk_price: '281.59', 
+            stock_quantity: 156,
+            category: 'Biscuits',
+            barcode: '156 Y1',
+            batch_code: 'BAK-LEMON-0326',
+            is_authentic_verified: true,
+            image_url: `${storageBase}Bakers%20Lemon%20Creams%20(12x200g).png`
+        },
+        { 
+            name: 'Bakers Marie Biscuits 200g', 
+            description: '200g Marie biscuits, perfect for tea time.',
+            price: 19.89, 
+            bulk_price: '238.69', 
+            stock_quantity: 110,
+            category: 'Biscuits',
+            barcode: '110 Y1',
+            batch_code: 'BAK-MARIE-0326',
+            is_authentic_verified: true,
+            image_url: `${storageBase}Bakers%20Marie%20Biscuits%20(12x200g).png`
+        },
+        { 
+            name: 'Black Cat Peanut Butter 400g', 
+            description: '400g smooth peanut butter, no added sugar.',
+            price: 39.59, 
+            bulk_price: '237.53', 
+            stock_quantity: 308,
+            category: 'Spreads',
+            barcode: '308 Y1',
+            batch_code: 'BLK-PB-0326',
+            is_authentic_verified: true,
+            image_url: `${storageBase}Black%20Cat%20Peanut%20Butter%20(6X400g).png`
+        },
+        { 
+            name: 'Blue Seal Pet Jelly 100ml', 
+            description: '100ml petroleum jelly, pure and gentle.',
+            price: 19.11, 
+            bulk_price: '229.34', 
+            stock_quantity: 240,
+            category: 'Personal Care',
+            barcode: 'Y1',
+            batch_code: 'BLUE-100ML-0326',
+            is_authentic_verified: true,
+            image_url: `${storageBase}Blue%20Seal%20Pet%20Jelly%20(12x100ml).png`
+        },
+        { 
+            name: 'Bull Brand Corned Meat 300g', 
+            description: '300g corned meat, ready to eat.',
+            price: 23.46, 
+            bulk_price: '140.79', 
+            stock_quantity: 432,
+            category: 'Canned Meat',
+            barcode: '432 Y1',
+            batch_code: 'BULL-CM-0326',
+            is_authentic_verified: true,
+            image_url: `${storageBase}Bull%20Brand%20Corned%20Meat%20(6%20x%20300g).png`
+        },
+        { 
+            name: 'C&B Mayonnaise 1.5kg', 
+            description: '1.5kg creamy mayonnaise, perfect for salads and sandwiches.',
+            price: 92.76, 
+            bulk_price: '556.59', 
+            stock_quantity: 65,
+            category: 'Condiments',
+            barcode: '65 Y1',
+            batch_code: 'CNB-MAYO-0326',
+            is_authentic_verified: true,
+            image_url: `${storageBase}C&B%20Mayonnaise%20(6x1.5kg).png`
+        },
+        { 
+            name: 'Cadbury Lunch Bar 40g', 
+            description: '40g milk chocolate bar, creamy and delicious.',
+            price: 11.68, 
+            bulk_price: '467.49', 
+            stock_quantity: 184,
+            category: 'Confectionery',
+            barcode: '184 Y1',
+            batch_code: 'CAD-LUNCH-0326',
+            is_authentic_verified: true,
+            image_url: `${storageBase}Cadbury%20Lunch%20Bar%20(1x40s).png`
+        },
+        { 
+            name: 'Clover Longlife Milk 1L', 
+            description: '1L longlife milk, UHT treated, shelf stable.',
+            price: 17.24, 
+            bulk_price: '103.39', 
+            stock_quantity: 150,
+            category: 'Dairy',
+            barcode: '150 N1',
+            batch_code: 'CLV-MILK-1L-0326',
+            is_authentic_verified: true,
+            image_url: `${storageBase}Clover%20Longlife%20Milk%20(6%20x%201L).png`
+        },
+        { 
+            name: 'Coke 2.25L', 
+            description: '2.25L Coca-Cola original taste, family size.',
+            price: 25.49, 
+            bulk_price: '152.89', 
+            stock_quantity: 64,
+            category: 'Beverages',
+            barcode: '64 Y1',
+            batch_code: 'COKE-225L-0326',
+            is_authentic_verified: true,
+            image_url: `${storageBase}Coke%20(2.25ltx6).png`
+        },
+        { 
+            name: 'Coke/Fanta/Sprite 2L', 
+            description: '2L carbonated soft drink, various flavors available.',
+            price: 19.61, 
+            bulk_price: '117.69', 
+            stock_quantity: 80,
+            category: 'Beverages',
+            barcode: '80 Y1',
+            batch_code: 'COKE-2L-0326',
+            is_authentic_verified: true,
+            image_url: `${storageBase}Coke%20C_S%20Fanta%20Orange%20(2lx6).png`
+        },
+        { 
+            name: 'Chez Eggs Large (per egg)', 
+            description: 'Large fresh eggs, per egg price.',
+            price: 1.80, 
+            bulk_price: '325.59', 
+            stock_quantity: 750,
+            category: 'Dairy',
+            barcode: '50 N50',
+            batch_code: 'CHEZ-EGGS-0326',
+            is_authentic_verified: true,
+            image_url: `${storageBase}Chez%20Eggs%20Large%20(15DZ).png`
+        },
+        { 
+            name: 'Cremora 750g', 
+            description: '750g cremora, non-dairy creamer, perfect for coffee.',
+            price: 54.99, 
+            bulk_price: '1099.79', 
+            stock_quantity: 21,
+            category: 'Dairy',
+            barcode: '21 Y1',
+            batch_code: 'CREMORA-750G-0326',
+            is_authentic_verified: true,
+            image_url: `${storageBase}Cremora%20(20x750g).png`
+        },
+        { 
+            name: 'DeLite Oil 5L', 
+            description: '5L cooking oil, perfect for frying and cooking.',
+            price: 141.89, 
+            bulk_price: '567.56', 
+            stock_quantity: 55,
+            category: 'Cooking Oil',
+            barcode: '55 N1',
+            batch_code: 'DEL-OIL-5L-0326',
+            is_authentic_verified: true,
+            image_url: `${storageBase}DeLite%20Oil%20(4x5l).png`
+        },
+        { 
+            name: 'Excella Oil 5L', 
+            description: '5L premium cooking oil, high smoke point.',
+            price: 167.75, 
+            bulk_price: '670.99', 
+            stock_quantity: 50,
+            category: 'Cooking Oil',
+            barcode: '50 N1',
+            batch_code: 'EXC-5L-0326',
+            is_authentic_verified: true,
+            image_url: `${storageBase}Excella%20Oil%20(4x5lt).png`
+        },
+        { 
+            name: 'Five Roses Tea 100s', 
+            description: '100 tea bags, classic South African tea blend.',
+            price: 27.69, 
+            bulk_price: '379.49', 
+            stock_quantity: 120,
+            category: 'Beverages',
+            barcode: 'Y1',
+            batch_code: '5ROSES-100S-0326',
+            is_authentic_verified: true,
+            image_url: `${storageBase}Five%20Roses%20Tea%20(6x100s).png`
+        },
+        { 
+            name: 'Glenryck Pilchards 400g', 
+            description: '400g pilchards in tomato sauce, rich in omega-3.',
+            price: 26.59, 
+            bulk_price: '318.99', 
+            stock_quantity: 150,
+            category: 'Canned Fish',
+            barcode: '150 N1',
+            batch_code: 'GLEN-400G-0326',
+            is_authentic_verified: true,
+            image_url: `${storageBase}Glenryck%20Pilchards%20Tom%20(12x400g).png`
+        },
+        { 
+            name: 'Golden Cloud Flour 10kg', 
+            description: '10kg cake flour, perfect for baking.',
+            price: 123.19, 
+            bulk_price: '123.19', 
+            stock_quantity: 99,
+            category: 'Flour',
+            barcode: '99 N1',
+            batch_code: 'GC-10KG-0326',
+            is_authentic_verified: true,
+            image_url: `${storageBase}Golden%20Cloud%20Cake%20Flour%20(10kg).png`
+        },
+        { 
+            name: 'Golden Delight Rice 5kg', 
+            description: '5kg basmati rice, aromatic long grain.',
+            price: 65.99, 
+            bulk_price: '65.99', 
+            stock_quantity: 200,
+            category: 'Rice',
+            barcode: '200 N1',
+            batch_code: 'GD-BAS-5KG-0326',
+            is_authentic_verified: true,
+            image_url: `${storageBase}Golden%20Delight%20Basmati%20Rice%20(5kg).png`
+        },
+        { 
+            name: 'Huletts White Sugar 10kg', 
+            description: '10kg white sugar, pure cane sugar.',
+            price: 230.99, 
+            bulk_price: '230.99', 
+            stock_quantity: 100,
+            category: 'Sugar',
+            barcode: '100 Y1',
+            batch_code: 'HUL-WHITE-0326',
+            is_authentic_verified: true,
+            image_url: `${storageBase}Huletts%20White%20Sugar%20(10kg).png`
+        },
+        { 
+            name: 'Iwisa Maize 10kg', 
+            description: '10kg super maize meal, fortified.',
+            price: 111.09, 
+            bulk_price: '111.09', 
+            stock_quantity: 104,
+            category: 'Maize Meal',
+            barcode: '104 N1',
+            batch_code: 'IWISA-10KG-0326',
+            is_authentic_verified: true,
+            image_url: `${storageBase}Iwisa%20Super%20Maize%20Meal%20(10kg).png`
+        },
+        { 
+            name: 'Koo Baked Beans 400g', 
+            description: '400g baked beans in tomato sauce.',
+            price: 16.39, 
+            bulk_price: '188.87', 
+            stock_quantity: 165,
+            category: 'Canned Food',
+            barcode: '165 Y1',
+            batch_code: 'KOO-BEANS-0326',
+            is_authentic_verified: true,
+            image_url: `${storageBase}Koo%20Baked%20Beans%20(12%20x%20400g).png`
+        },
+        { 
+            name: 'Lucky Star Pilchards 400g', 
+            description: '400g pilchards in tomato sauce.',
+            price: 26.95, 
+            bulk_price: '308.69', 
+            stock_quantity: 150,
+            category: 'Canned Fish',
+            barcode: '150 N1',
+            batch_code: 'LUCKY-400G-0326',
+            is_authentic_verified: true,
+            image_url: `${storageBase}Lucky%20Star-%20Chilli%20(12x400g).png`
+        },
+        { 
+            name: 'Sunfoil Oil 2L', 
+            description: '2L sunflower oil, healthy cooking oil.',
+            price: 68.50, 
+            bulk_price: 'R68.50', 
+            stock_quantity: 100,
+            category: 'Cooking Oil',
+            barcode: 'N1',
+            batch_code: 'SUN-2L-0326',
+            is_authentic_verified: true,
+            image_url: `${storageBase}Sunfoil%20Oil%20(12%20x%20750ml).png`
+        },
+        { 
+            name: 'White Star Maize 10kg', 
+            description: '10kg super maize meal, premium quality.',
+            price: 118.99, 
+            bulk_price: '118.99', 
+            stock_quantity: 98,
+            category: 'Maize Meal',
+            barcode: '98 N1',
+            batch_code: 'WSTAR-10KG-0326',
+            is_authentic_verified: true,
+            image_url: `${storageBase}White%20Star%20Super%20Maize%20Meal%20(10kg).png`
+        }
     ];
 
     window.onload = async () => { 
@@ -200,6 +639,13 @@
         }
     };
 
+    function showError(elementId, message) {
+        const el = document.getElementById(elementId);
+        el.textContent = message;
+        el.classList.remove('hidden');
+        setTimeout(() => el.classList.add('hidden'), 5000);
+    }
+
     function toggleAuth(showReg) {
         document.getElementById('auth-login').classList.toggle('hidden', showReg);
         document.getElementById('auth-register').classList.toggle('hidden', !showReg);
@@ -207,16 +653,19 @@
 
     async function handleLogin() {
         const wa = document.getElementById('login-wa').value.trim();
-        if (!wa) return alert("Please enter your WhatsApp number");
+        if (!wa) {
+            showError('login-error', "Please enter your WhatsApp number");
+            return;
+        }
         
         const { data, error } = await _client.from('profiles').select('*').eq('whatsapp_number', wa).maybeSingle();
         if(error) {
-            alert("Error logging in. Please try again.");
+            showError('login-error', "Error logging in. Please try again.");
             console.error(error);
         } else if(data) {
             loginSuccess(data);
         } else {
-            alert("Store not found. Please register.");
+            showError('login-error', "Store not found. Please register.");
         }
     }
 
@@ -226,22 +675,26 @@
             last_name: document.getElementById('reg-lname').value,
             store_name: document.getElementById('reg-sname').value,
             whatsapp_number: parseInt(document.getElementById('reg-wa').value),
+            business_type: document.getElementById('reg-bus-type').value,
+            store_size: document.getElementById('reg-size').value,
             township: document.getElementById('reg-town').value,
             address: document.getElementById('reg-address').value,
-            role: 'spaza'
+            gender: document.getElementById('reg-gender').value,
+            role: 'spaza',
+            is_verified: false
         };
 
         // Validate required fields
         for (let [key, value] of Object.entries(payload)) {
-            if (!value && key !== 'role') {
-                alert(`Please fill in ${key.replace('_', ' ')}`);
+            if (!value && key !== 'role' && key !== 'is_verified') {
+                showError('register-error', `Please fill in ${key.replace('_', ' ')}`);
                 return;
             }
         }
 
         const { data, error } = await _client.from('profiles').insert([payload]).select().single();
         if(error) {
-            alert("Error: " + error.message);
+            showError('register-error', "Error: " + error.message);
         } else {
             loginSuccess(data);
         }
@@ -257,35 +710,54 @@
         document.getElementById('section-auth').classList.add('hidden');
         document.getElementById('section-market').classList.remove('hidden');
         document.getElementById('txt-store-name').innerText = currentUser.store_name;
+        document.getElementById('txt-badge').innerText = currentUser.is_verified ? 'VERIFIED' : 'PENDING';
+        document.getElementById('txt-badge').style.background = currentUser.is_verified ? 'var(--green)' : 'var(--yellow)';
         loadContent();
     }
 
     async function loadContent() {
-        // Try to load from Supabase, fall back to default products
+        // Try to load from Supabase, fall back to enhanced default products
         try {
             const { data: p, error } = await _client.from('products').select('*');
             if (error) throw error;
-            products = p || defaultProducts;
+            products = p && p.length > 0 ? p : defaultProducts;
         } catch (error) {
-            console.log("Using default products:", error);
+            console.log("Using enhanced default products:", error);
             products = defaultProducts;
         }
         renderList();
     }
 
+    // ENHANCED: Render products with all schema fields
     function renderList() {
         const query = document.getElementById('search-input').value.toLowerCase();
         const items = products;
         
         document.getElementById('list-render').innerHTML = items
-            .filter(i => (i.name || i.group_name || '').toLowerCase().includes(query))
+            .filter(i => {
+                const searchableText = `${i.name || ''} ${i.category || ''} ${i.description || ''} ${i.batch_code || ''}`.toLowerCase();
+                return searchableText.includes(query);
+            })
             .map(i => {
                 const name = i.name || i.group_name;
-                const price = i.price || i.contribution_per_spaza || 0;
+                const price = i.price || 0;
+                const bulkPrice = i.bulk_price || 'N/A';
+                const stockQty = i.stock_quantity || 0;
+                const isVerified = i.is_authentic_verified !== false;
                 const qty = cart[name]?.qty || 0;
                 
+                // Calculate savings if bulk price exists and is numeric
+                let savings = null;
+                if (bulkPrice && bulkPrice !== 'N/A' && !isNaN(parseFloat(bulkPrice))) {
+                    const bulkNum = parseFloat(bulkPrice);
+                    const unitNum = price;
+                    if (bulkNum > unitNum) {
+                        savings = ((bulkNum - (unitNum * 12)) / bulkNum * 100).toFixed(0);
+                    }
+                }
+                
                 // Image URL with fallback
-                const imgUrl = `${storageBase}${encodeURIComponent(name)}.png`;
+                const imgUrl = i.image_url || `${storageBase}${encodeURIComponent(name)}.png`;
                 const fallbackJpg = `${storageBase}${encodeURIComponent(name)}.jpg`;
                 
                 // Escape single quotes for JavaScript
@@ -293,28 +765,51 @@
 
                 return `
                 <div class="card">
-                    <div style="display:flex; gap:15px; align-items:center;">
+                    <div style="display:flex; gap:15px;">
                         <img src="${imgUrl}" 
                              class="prod-img" 
                              onerror="this.onerror=null; this.src='${fallbackJpg}'; this.onerror=function(){this.src='https://via.placeholder.com/100?text=Product'}">
                         <div style="flex:1">
-                            <h4 style="margin:0">${name}</h4>
-                            <p style="font-size:0.75rem; color:var(--gray); margin:4px 0;">${i.category || 'Wholesale'}</p>
-                            <div style="font-weight:900; color:var(--blue); font-size:1.2rem;">R${price.toFixed(2)}</div>
+                            <div style="display:flex; align-items:center; gap:5px; flex-wrap:wrap; margin-bottom:5px;">
+                                <h4 style="margin:0; font-size:1rem;">${name}</h4>
+                                ${isVerified ? '<span class="product-badge verified-badge"><i class="fas fa-check-circle"></i> VERIFIED</span>' : ''}
+                                ${stockQty < 20 ? '<span class="product-badge stock-badge">LOW STOCK</span>' : ''}
+                            </div>
+                            
+                            <div class="category-tag">${i.category || 'Uncategorized'}</div>
+                            
+                            <p class="product-description">${i.description || 'No description available'}</p>
+                            
+                            <div class="price-comparison">
+                                <span class="unit-price">R${price.toFixed(2)}</span>
+                                ${bulkPrice && bulkPrice !== 'N/A' ? `<span class="bulk-price">Bulk: R${bulkPrice}</span>` : ''}
+                                ${savings ? `<span class="savings-tag">Save ${savings}%</span>` : ''}
+                            </div>
+                            
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px;">
+                                <div style="font-size:0.7rem; color:var(--gray);">
+                                    <i class="fas fa-box"></i> Stock: ${stockQty} | 
+                                    <i class="fas fa-barcode"></i> ${i.batch_code || 'N/A'}
+                                </div>
+                            </div>
                         </div>
                     </div>
+                    
                     <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid #eee; padding-top:10px; margin-top:10px;">
                         <div style="display:flex; align-items:center; background:#f1f5f9; border-radius:10px; padding:4px;">
                             <button style="border:none; background:white; width:35px; height:35px; border-radius:8px; font-weight:bold; cursor:pointer;" onclick="updateCart('${safeName}', ${price}, -1)">-</button>
                             <b style="padding:0 20px;">${qty}</b>
-                            <button style="border:none; background:white; width:35px; height:35px; border-radius:8px; font-weight:bold; cursor:pointer;" onclick="updateCart('${safeName}', ${price}, 1)">+</button>
+                            <button style="border:none; background:white; width:35px; height:35px; border-radius:8px; font-weight:bold; cursor:pointer;" onclick="updateCart('${safeName}', ${price}, 1)" ${stockQty <= 0 ? 'disabled' : ''}>+</button>
                         </div>
+                        ${stockQty <= 0 ? '<span style="color:var(--red); font-size:0.8rem;">Out of Stock</span>' : ''}
                     </div>
+                    
+                    ${i.batch_code ? `<div class="batch-code">Batch: ${i.batch_code} | Barcode: ${i.barcode || 'N/A'}</div>` : ''}
                 </div>`;
             }).join('');
         
         if (items.length === 0) {
-            document.getElementById('list-render').innerHTML = '<p style="text-align:center; padding:20px; color:var(--gray);">No products found</p>';
+            document.getElementById('list-render').innerHTML = '<p style="text-align:center; padding:40px; color:var(--gray);">No products found matching your search.</p>';
         }
     }
 
@@ -336,7 +831,7 @@
         document.getElementById('txt-total').innerText = "R " + total.toFixed(2);
     }
 
-    // FIXED: Order placement with store_address properly handled
+    // FIXED: Order placement with proper handling for RLS
     async function finalPlaceOrder() {
         if (!currentUser) {
             alert("Please login again");
@@ -369,22 +864,38 @@
                 };
             });
 
-            // Prepare order data with all available fields
+            // Prepare order data with all fields properly mapped from profiles
             const orderData = { 
-                profile_id: currentUser.id, 
-                store_name: currentUser.store_name, 
-                // Use address as store_address if that's the column name in orders table
+                // Link to profile
+                profile_id: currentUser.id,
+                
+                // Store information from profiles
+                store_name: currentUser.store_name,
                 store_address: currentUser.address || 'No address provided',
                 township: currentUser.township || 'Unknown',
                 whatsapp_number: currentUser.whatsapp_number,
+                
+                // Additional profile info for reference
+                business_type: currentUser.business_type || 'Spaza Shop',
+                store_size: currentUser.store_size || 'Small/Counter',
+                
+                // Order details
                 total_amount: total, 
                 items: itemsForDb, 
                 payment_method: selectedPayment, 
                 status: 'pending',
-                created_at: new Date().toISOString()
+                created_at: new Date().toISOString(),
+                
+                // Verification status at time of order
+                is_verified_at_order: currentUser.is_verified || false
             };
             
-            console.log("Submitting order:", orderData);
+            console.log("Submitting order with profile data:", {
+                profile_id: orderData.profile_id,
+                store_name: orderData.store_name,
+                township: orderData.township,
+                whatsapp_number: orderData.whatsapp_number
+            });
             
             let result;
             
@@ -395,6 +906,7 @@
                     .select();
                 editingOrderId = null;
             } else {
+                // Try insert
                 result = await _client.from('orders')
                     .insert([orderData])
                     .select();
@@ -402,11 +914,16 @@
 
             if(result.error) {
                 console.error("Supabase error:", result.error);
+                
+                // Check if it's an RLS error
+                if (result.error.message.includes('row-level security') || result.error.code === '42501') {
+                    throw new Error("Permission denied. Please contact support or try again.");
+                }
                 throw new Error(result.error.message);
             }
 
             const newOrder = result.data[0];
-            console.log("Order created:", newOrder);
+            console.log("Order created successfully:", newOrder);
             
             // Send WhatsApp invoice
             const whatsappSent = await sendWhatsAppInvoice(newOrder);
@@ -434,11 +951,11 @@
             console.error("Order error:", error);
             document.getElementById('modal-loading').classList.add('hidden');
             document.getElementById('confirm-order-btn').disabled = false;
-            alert("❌ Error creating order: " + error.message);
+            showError('order-error', "❌ Error creating order: " + error.message);
         }
     }
 
-    // WhatsApp invoice function
+    // WhatsApp invoice function with enhanced profile info
     async function sendWhatsAppInvoice(order) {
         try {
             // Format the invoice message
@@ -450,15 +967,19 @@
                 return false;
             }
 
-            // Create invoice text
+            // Create invoice text with full profile info
             let message = `🧾 *SPAZASURE INVOICE* 🧾\n`;
             message += `━━━━━━━━━━━━━━━━━━━━━\n`;
             message += `*Order #:* ${order.id.slice(-8)}\n`;
             message += `*Store:* ${storeName}\n`;
+            message += `*Business Type:* ${currentUser.business_type || 'Spaza Shop'}\n`;
+            message += `*Store Size:* ${currentUser.store_size || 'N/A'}\n`;
             message += `*Address:* ${currentUser.address || 'N/A'}\n`;
             message += `*Township:* ${currentUser.township || 'N/A'}\n`;
+            message += `*Contact:* ${currentUser.whatsapp_number}\n`;
             message += `*Date:* ${new Date().toLocaleString()}\n`;
             message += `*Payment:* ${order.payment_method || selectedPayment}\n`;
+            message += `*Verified:* ${currentUser.is_verified ? '✅' : '⏳ Pending'}\n`;
             message += `━━━━━━━━━━━━━━━━━━━━━\n`;
             message += `*ITEMS:*\n`;
             
@@ -541,22 +1062,38 @@
     }
 
     function renderBulkDeals() {
-        // Sample bulk deals from your price list
-        const bulkDeals = [
-            { name: 'Ace Super Maize 10kg (Case of 10)', price: 857.90, original: 1055.90, savings: 198 },
-            { name: 'Coke Variety Pack (24 cans)', price: 265.09, original: 299.99, savings: 34.90 },
-            { name: 'Cooking Oil Bundle (4x5L)', price: 637.99, original: 719.99, savings: 82 },
-        ];
+        // Enhanced bulk deals with product schema info
+        const bulkDeals = products
+            .filter(p => p.bulk_price && p.bulk_price !== 'N/A' && parseFloat(p.bulk_price) > p.price * 10)
+            .slice(0, 10)
+            .map(p => ({
+                name: p.name,
+                price: parseFloat(p.bulk_price) / 12, // Approximate per unit when buying bulk
+                original: p.price,
+                savings: ((p.price * 12 - parseFloat(p.bulk_price)) / (p.price * 12) * 100).toFixed(0),
+                stock: p.stock_quantity,
+                category: p.category
+            }));
+        
+        if (bulkDeals.length === 0) {
+            document.getElementById('list-render').innerHTML = '<p style="text-align:center; padding:40px; color:var(--gray);">No bulk deals available at the moment.</p>';
+            return;
+        }
         
         document.getElementById('list-render').innerHTML = bulkDeals.map(deal => `
             <div class="card" style="border-left:4px solid var(--green);">
                 <h4>${deal.name}</h4>
+                <div class="category-tag" style="margin-bottom:8px;">${deal.category || 'Uncategorized'}</div>
                 <div style="display:flex; justify-content:space-between; align-items:center;">
                     <div>
-                        <span style="text-decoration:line-through; color:var(--gray);">R${deal.original}</span>
-                        <span style="font-weight:900; color:var(--green); font-size:1.3rem; margin-left:10px;">R${deal.price}</span>
+                        <span style="text-decoration:line-through; color:var(--gray);">R${deal.original.toFixed(2)}</span>
+                        <span style="font-weight:900; color:var(--green); font-size:1.3rem; margin-left:10px;">R${deal.price.toFixed(2)}</span>
+                        <span style="font-size:0.8rem; color:var(--gray);"> per unit (bulk)</span>
                     </div>
-                    <span style="background:var(--green); color:white; padding:4px 8px; border-radius:4px;">Save R${deal.savings}</span>
+                    <span style="background:var(--green); color:white; padding:4px 8px; border-radius:4px;">Save ${deal.savings}%</span>
+                </div>
+                <div style="font-size:0.8rem; color:var(--gray); margin-top:8px;">
+                    <i class="fas fa-box"></i> Stock: ${deal.stock}
                 </div>
                 <button onclick="addBulkToCart('${deal.name}', ${deal.price})" style="width:100%; background:var(--blue); color:white; border:none; padding:10px; border-radius:8px; margin-top:10px; cursor:pointer;">ADD TO CART</button>
             </div>
@@ -586,7 +1123,8 @@
                         </div>
                         <div style="font-size:0.8rem; color:var(--gray); margin:5px 0;">${new Date(o.created_at).toLocaleDateString()}</div>
                         <div style="font-weight:900; font-size:1.2rem; margin:10px 0;">R${(o.total_amount || 0).toFixed(2)}</div>
-                        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
+                        <div style="font-size:0.8rem; color:var(--gray);">${o.business_type || 'Spaza Shop'} • ${o.township || 'N/A'}</div>
+                        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px; margin-top:10px;">
                             <button onclick='viewOrder(${JSON.stringify(o).replace(/'/g, "\\'")})' style="padding:10px; border:none; border-radius:8px; background:var(--blue); color:white; font-size:0.8rem; cursor:pointer;">RECEIPT</button>
                             ${o.status === 'pending' ? `<button onclick='editOrder(${JSON.stringify(o).replace(/'/g, "\\'")})' style="padding:10px; border:none; border-radius:8px; background:var(--gray); color:white; font-size:0.8rem; cursor:pointer;">EDIT</button>` : ''}
                         </div>
@@ -614,8 +1152,11 @@
                 <hr>
                 <p><b>Order ID:</b> #${order.id.slice(-8)}</p>
                 <p><b>Store:</b> ${order.store_name}</p>
+                <p><b>Business Type:</b> ${order.business_type || 'Spaza Shop'}</p>
+                <p><b>Store Size:</b> ${order.store_size || 'N/A'}</p>
                 <p><b>Address:</b> ${order.store_address || 'N/A'}</p>
                 <p><b>Township:</b> ${order.township || 'N/A'}</p>
+                <p><b>WhatsApp:</b> ${order.whatsapp_number || 'N/A'}</p>
                 <p><b>Date:</b> ${new Date(order.created_at).toLocaleString()}</p>
                 <p><b>Payment:</b> ${order.payment_method || 'Cash'}</p>
                 <p><b>Status:</b> ${order.status.toUpperCase()}</p>
@@ -638,7 +1179,7 @@
             // Generate QR code
             document.getElementById('qrcode').innerHTML = '';
             new QRCode(document.getElementById("qrcode"), { 
-                text: `SpazaSure Order:${order.id}\nTotal:R${order.total_amount}`, 
+                text: `SpazaSure Order:${order.id}\nStore:${order.store_name}\nTotal:R${order.total_amount}`, 
                 width: 150, 
                 height: 150 
             });
@@ -705,6 +1246,7 @@
     function hideCheckout() { 
         document.getElementById('modal-checkout').classList.add('hidden'); 
         document.getElementById('confirm-order-btn').disabled = false;
+        document.getElementById('order-error').classList.add('hidden');
     }
 
     function logout() { 
