@@ -336,7 +336,7 @@
         document.getElementById('txt-total').innerText = "R " + total.toFixed(2);
     }
 
-    // FIXED: Enhanced order placement with WhatsApp integration
+    // FIXED: Order placement with store_address properly handled
     async function finalPlaceOrder() {
         if (!currentUser) {
             alert("Please login again");
@@ -369,11 +369,13 @@
                 };
             });
 
+            // Prepare order data with all available fields
             const orderData = { 
                 profile_id: currentUser.id, 
                 store_name: currentUser.store_name, 
-                store_address: currentUser.address,
-                township: currentUser.township,
+                // Use address as store_address if that's the column name in orders table
+                store_address: currentUser.address || 'No address provided',
+                township: currentUser.township || 'Unknown',
                 whatsapp_number: currentUser.whatsapp_number,
                 total_amount: total, 
                 items: itemsForDb, 
@@ -381,6 +383,8 @@
                 status: 'pending',
                 created_at: new Date().toISOString()
             };
+            
+            console.log("Submitting order:", orderData);
             
             let result;
             
@@ -397,10 +401,12 @@
             }
 
             if(result.error) {
+                console.error("Supabase error:", result.error);
                 throw new Error(result.error.message);
             }
 
             const newOrder = result.data[0];
+            console.log("Order created:", newOrder);
             
             // Send WhatsApp invoice
             const whatsappSent = await sendWhatsAppInvoice(newOrder);
@@ -432,7 +438,7 @@
         }
     }
 
-    // FIXED: WhatsApp invoice function
+    // WhatsApp invoice function
     async function sendWhatsAppInvoice(order) {
         try {
             // Format the invoice message
@@ -449,6 +455,8 @@
             message += `━━━━━━━━━━━━━━━━━━━━━\n`;
             message += `*Order #:* ${order.id.slice(-8)}\n`;
             message += `*Store:* ${storeName}\n`;
+            message += `*Address:* ${currentUser.address || 'N/A'}\n`;
+            message += `*Township:* ${currentUser.township || 'N/A'}\n`;
             message += `*Date:* ${new Date().toLocaleString()}\n`;
             message += `*Payment:* ${order.payment_method || selectedPayment}\n`;
             message += `━━━━━━━━━━━━━━━━━━━━━\n`;
@@ -459,8 +467,8 @@
             let subtotal = 0;
             
             Object.entries(items).forEach(([name, details]) => {
-                const qty = details.qty || details.quantity;
-                const price = details.price;
+                const qty = details.qty || details.quantity || 0;
+                const price = details.price || 0;
                 const lineTotal = qty * price;
                 subtotal += lineTotal;
                 message += `${qty}x ${name} @ R${price.toFixed(2)} = R${lineTotal.toFixed(2)}\n`;
@@ -486,36 +494,22 @@
             // Create WhatsApp URL
             const whatsappUrl = `https://wa.me/${cleanPhone}?text=${encodedMessage}`;
             
-            // Try to send via WhatsApp API or open window
+            // Try to save invoice to localStorage as backup
             try {
-                // Attempt to save invoice to Supabase storage as backup
-                const invoiceBlob = new Blob([message], { type: 'text/plain' });
-                const fileName = `invoice_${order.id}_${Date.now()}.txt`;
-                
-                // Upload to Supabase Storage if available
-                try {
-                    const { data, error } = await _client.storage
-                        .from('invoices')
-                        .upload(fileName, invoiceBlob);
-                    
-                    if (!error) {
-                        console.log("Invoice saved to cloud:", data);
-                    }
-                } catch (storageError) {
-                    console.log("Storage not available, continuing...");
-                }
-                
-                // Open WhatsApp
-                window.open(whatsappUrl, '_blank');
-                return true;
-                
-            } catch (waError) {
-                console.error("WhatsApp error:", waError);
-                // Fallback: Copy to clipboard
-                await navigator.clipboard.writeText(message);
-                alert("Invoice copied to clipboard. Please paste in WhatsApp.");
-                return true;
+                const invoices = JSON.parse(localStorage.getItem('invoices') || '[]');
+                invoices.push({
+                    id: order.id,
+                    message: message,
+                    date: new Date().toISOString()
+                });
+                localStorage.setItem('invoices', JSON.stringify(invoices.slice(-10))); // Keep last 10
+            } catch (e) {
+                console.log("Could not save to localStorage");
             }
+            
+            // Open WhatsApp
+            window.open(whatsappUrl, '_blank');
+            return true;
             
         } catch (error) {
             console.error("Failed to send WhatsApp invoice:", error);
@@ -620,6 +614,8 @@
                 <hr>
                 <p><b>Order ID:</b> #${order.id.slice(-8)}</p>
                 <p><b>Store:</b> ${order.store_name}</p>
+                <p><b>Address:</b> ${order.store_address || 'N/A'}</p>
+                <p><b>Township:</b> ${order.township || 'N/A'}</p>
                 <p><b>Date:</b> ${new Date(order.created_at).toLocaleString()}</p>
                 <p><b>Payment:</b> ${order.payment_method || 'Cash'}</p>
                 <p><b>Status:</b> ${order.status.toUpperCase()}</p>
