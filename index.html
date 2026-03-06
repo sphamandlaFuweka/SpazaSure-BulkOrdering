@@ -49,7 +49,7 @@
         .loading { opacity: 0.7; pointer-events: none; }
         .error-message { color: var(--red); font-size: 0.85rem; margin-top: 5px; text-align: center; }
         
-        /* New Product Info Styles */
+        /* Product Info Styles */
         .product-badge { display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: 0.7rem; font-weight: 700; margin-right: 5px; }
         .verified-badge { background: var(--green); color: white; }
         .bulk-badge { background: var(--blue); color: white; }
@@ -180,7 +180,7 @@
 </div>
 
 <script>
-    // 1. CONFIGURATION
+    // CONFIGURATION
     const _supabaseUrl = 'https://clbhfxqxcugxcqutngpo.supabase.co';
     const _supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNsYmhmeHF4Y3VneGNxdXRuZ3BvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE4MzgxMDMsImV4cCI6MjA4NzQxNDEwM30.VWj5TGjAQhj77BZyoSUmynUPDPTVGL_pAKNyrlpQR1Y';
     const _client = supabase.createClient(_supabaseUrl, _supabaseKey);
@@ -728,7 +728,7 @@
         renderList();
     }
 
-    // ENHANCED: Render products with all schema fields
+    // Render products with all schema fields
     function renderList() {
         const query = document.getElementById('search-input').value.toLowerCase();
         const items = products;
@@ -831,7 +831,7 @@
         document.getElementById('txt-total').innerText = "R " + total.toFixed(2);
     }
 
-    // FIXED: Order placement with proper handling for RLS
+    // FIXED: Order placement with all fields that now exist in orders table
     async function finalPlaceOrder() {
         if (!currentUser) {
             alert("Please login again");
@@ -864,7 +864,7 @@
                 };
             });
 
-            // Prepare order data with all fields properly mapped from profiles
+            // Prepare order data with ALL fields that should now exist in orders table
             const orderData = { 
                 // Link to profile
                 profile_id: currentUser.id,
@@ -875,7 +875,7 @@
                 township: currentUser.township || 'Unknown',
                 whatsapp_number: currentUser.whatsapp_number,
                 
-                // Additional profile info for reference
+                // Additional profile info - these should now exist in orders table
                 business_type: currentUser.business_type || 'Spaza Shop',
                 store_size: currentUser.store_size || 'Small/Counter',
                 
@@ -890,12 +890,7 @@
                 is_verified_at_order: currentUser.is_verified || false
             };
             
-            console.log("Submitting order with profile data:", {
-                profile_id: orderData.profile_id,
-                store_name: orderData.store_name,
-                township: orderData.township,
-                whatsapp_number: orderData.whatsapp_number
-            });
+            console.log("Submitting order with all fields:", orderData);
             
             let result;
             
@@ -906,7 +901,6 @@
                     .select();
                 editingOrderId = null;
             } else {
-                // Try insert
                 result = await _client.from('orders')
                     .insert([orderData])
                     .select();
@@ -955,7 +949,7 @@
         }
     }
 
-    // WhatsApp invoice function with enhanced profile info
+    // WhatsApp invoice function with all profile info
     async function sendWhatsAppInvoice(order) {
         try {
             // Format the invoice message
@@ -985,13 +979,11 @@
             
             // Add items
             const items = order.items || cart;
-            let subtotal = 0;
             
             Object.entries(items).forEach(([name, details]) => {
                 const qty = details.qty || details.quantity || 0;
                 const price = details.price || 0;
                 const lineTotal = qty * price;
-                subtotal += lineTotal;
                 message += `${qty}x ${name} @ R${price.toFixed(2)} = R${lineTotal.toFixed(2)}\n`;
             });
             
@@ -1006,27 +998,14 @@
             // Encode for WhatsApp URL
             const encodedMessage = encodeURIComponent(message);
             
-            // Format phone number (remove any non-digits, ensure it has country code)
+            // Format phone number
             let cleanPhone = phoneNumber.toString().replace(/\D/g, '');
             if (!cleanPhone.startsWith('27') && cleanPhone.length === 10) {
-                cleanPhone = '27' + cleanPhone.slice(1); // Convert 082... to 2782...
+                cleanPhone = '27' + cleanPhone.slice(1);
             }
             
             // Create WhatsApp URL
             const whatsappUrl = `https://wa.me/${cleanPhone}?text=${encodedMessage}`;
-            
-            // Try to save invoice to localStorage as backup
-            try {
-                const invoices = JSON.parse(localStorage.getItem('invoices') || '[]');
-                invoices.push({
-                    id: order.id,
-                    message: message,
-                    date: new Date().toISOString()
-                });
-                localStorage.setItem('invoices', JSON.stringify(invoices.slice(-10))); // Keep last 10
-            } catch (e) {
-                console.log("Could not save to localStorage");
-            }
             
             // Open WhatsApp
             window.open(whatsappUrl, '_blank');
@@ -1064,16 +1043,20 @@
     function renderBulkDeals() {
         // Enhanced bulk deals with product schema info
         const bulkDeals = products
-            .filter(p => p.bulk_price && p.bulk_price !== 'N/A' && parseFloat(p.bulk_price) > p.price * 10)
+            .filter(p => p.bulk_price && p.bulk_price !== 'N/A' && !isNaN(parseFloat(p.bulk_price)) && parseFloat(p.bulk_price) > p.price * 10)
             .slice(0, 10)
-            .map(p => ({
-                name: p.name,
-                price: parseFloat(p.bulk_price) / 12, // Approximate per unit when buying bulk
-                original: p.price,
-                savings: ((p.price * 12 - parseFloat(p.bulk_price)) / (p.price * 12) * 100).toFixed(0),
-                stock: p.stock_quantity,
-                category: p.category
-            }));
+            .map(p => {
+                const bulkNum = parseFloat(p.bulk_price);
+                const savings = ((p.price * 12 - bulkNum) / (p.price * 12) * 100).toFixed(0);
+                return {
+                    name: p.name,
+                    price: bulkNum / 12, // Approximate per unit when buying bulk
+                    original: p.price,
+                    savings: savings,
+                    stock: p.stock_quantity,
+                    category: p.category
+                };
+            });
         
         if (bulkDeals.length === 0) {
             document.getElementById('list-render').innerHTML = '<p style="text-align:center; padding:40px; color:var(--gray);">No bulk deals available at the moment.</p>';
