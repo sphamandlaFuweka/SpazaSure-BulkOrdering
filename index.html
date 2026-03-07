@@ -207,6 +207,28 @@
             color: var(--dark);
         }
 
+        .btn-success {
+            background: var(--secondary);
+            color: var(--white);
+        }
+
+        .btn-warning {
+            background: var(--warning);
+            color: var(--white);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 2px solid var(--primary);
+            color: var(--primary);
+        }
+
+        .btn-sm {
+            padding: 8px 16px;
+            font-size: 0.85rem;
+            border-radius: 12px;
+        }
+
         .btn-refresh {
             background: var(--gray-200);
             color: var(--dark);
@@ -523,6 +545,11 @@
             color: var(--white);
         }
 
+        .badge-group {
+            background: var(--accent);
+            color: var(--white);
+        }
+
         .product-info {
             padding: 16px;
         }
@@ -615,6 +642,254 @@
 
         .add-to-cart:hover {
             transform: scale(1.1);
+        }
+
+        /* Buying Groups Grid */
+        .groups-grid {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            padding-bottom: 100px;
+        }
+
+        .group-card {
+            background: var(--white);
+            border-radius: 24px;
+            padding: 20px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--gray-200);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .group-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .group-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+        }
+
+        .group-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 16px;
+        }
+
+        .group-title {
+            font-weight: 800;
+            font-size: 1.2rem;
+            color: var(--dark);
+        }
+
+        .group-status {
+            padding: 4px 12px;
+            border-radius: 30px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .status-open {
+            background: #d1e7dd;
+            color: #0a3622;
+        }
+
+        .status-closed {
+            background: #f8d7da;
+            color: #58151c;
+        }
+
+        .status-full {
+            background: #cfe2ff;
+            color: #084298;
+        }
+
+        .group-product {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+            padding: 12px;
+            background: var(--gray-100);
+            border-radius: 16px;
+        }
+
+        .group-product-image {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            object-fit: cover;
+            background: var(--white);
+        }
+
+        .group-product-info {
+            flex: 1;
+        }
+
+        .group-product-name {
+            font-weight: 700;
+            font-size: 0.95rem;
+            margin-bottom: 4px;
+        }
+
+        .group-product-price {
+            font-weight: 800;
+            color: var(--primary);
+            font-size: 1.1rem;
+        }
+
+        .group-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .group-stat {
+            text-align: center;
+            padding: 12px;
+            background: var(--gray-100);
+            border-radius: 16px;
+        }
+
+        .group-stat-value {
+            font-weight: 800;
+            font-size: 1.3rem;
+            color: var(--dark);
+        }
+
+        .group-stat-label {
+            font-size: 0.7rem;
+            color: var(--gray-600);
+            text-transform: uppercase;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: var(--gray-200);
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 12px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+
+        .group-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid var(--gray-200);
+        }
+
+        .group-creator {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.85rem;
+            color: var(--gray-600);
+        }
+
+        .group-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .group-action-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 30px;
+            font-weight: 600;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-join {
+            background: var(--secondary);
+            color: var(--white);
+        }
+
+        .btn-join:hover {
+            background: #0f9e6e;
+            transform: scale(1.05);
+        }
+
+        .btn-invite {
+            background: var(--primary);
+            color: var(--white);
+        }
+
+        .btn-invite:hover {
+            background: var(--primary-dark);
+        }
+
+        /* Create Group Modal */
+        .product-selector {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 2px solid var(--gray-200);
+            border-radius: 16px;
+            margin-bottom: 16px;
+        }
+
+        .product-select-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            border-bottom: 1px solid var(--gray-200);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .product-select-item:hover {
+            background: var(--gray-100);
+        }
+
+        .product-select-item.selected {
+            background: rgba(37, 99, 235, 0.1);
+            border-left: 4px solid var(--primary);
+        }
+
+        .product-select-image {
+            width: 50px;
+            height: 50px;
+            border-radius: 8px;
+            object-fit: cover;
+        }
+
+        .product-select-info {
+            flex: 1;
+        }
+
+        .product-select-name {
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+
+        .product-select-price {
+            font-size: 0.8rem;
+            color: var(--primary);
+            font-weight: 600;
         }
 
         /* Floating Cart */
@@ -845,6 +1120,49 @@
             background: var(--gray-200);
         }
 
+        /* Share Card */
+        .share-card {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: white;
+            padding: 20px;
+            border-radius: 24px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .share-link {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 12px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .share-link input {
+            background: transparent;
+            border: none;
+            color: white;
+            width: 100%;
+            font-size: 0.85rem;
+        }
+
+        .share-link input::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .copy-btn {
+            background: white;
+            color: var(--primary);
+            border: none;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
         /* Receipt */
         .receipt {
             background: var(--white);
@@ -898,27 +1216,6 @@
             display: flex;
             justify-content: center;
             margin: 20px 0;
-        }
-
-        /* Image Debug */
-        .image-debug {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: var(--dark);
-            color: white;
-            padding: 12px 20px;
-            border-radius: 30px;
-            font-size: 0.85rem;
-            z-index: 9999;
-            box-shadow: var(--shadow-lg);
-            cursor: pointer;
-            opacity: 0.8;
-            transition: opacity 0.3s ease;
-        }
-
-        .image-debug:hover {
-            opacity: 1;
         }
 
         .hidden {
@@ -1070,7 +1367,7 @@
                 </div>
                 <div class="search-box">
                     <i class="fas fa-search"></i>
-                    <input type="text" id="search-input" placeholder="Search products..." onkeyup="renderList()">
+                    <input type="text" id="search-input" placeholder="Search products..." onkeyup="handleSearch()">
                 </div>
             </div>
 
@@ -1079,15 +1376,15 @@
                 <button class="nav-tab active" id="nav-s" onclick="setMode('single')">
                     <i class="fas fa-store-alt"></i> Shop
                 </button>
-                <button class="nav-tab" id="nav-b" onclick="setMode('bulk')">
-                    <i class="fas fa-boxes"></i> Bulk Deals
+                <button class="nav-tab" id="nav-b" onclick="setMode('groups')">
+                    <i class="fas fa-users"></i> Buying Groups
                 </button>
                 <button class="nav-tab" id="nav-o" onclick="setMode('history')">
                     <i class="fas fa-history"></i> Orders
                 </button>
             </div>
 
-            <!-- Categories Strip -->
+            <!-- Categories Strip (shown only in shop mode) -->
             <div class="categories-strip" id="categoriesStrip">
                 <div class="categories-scroll" id="categoriesContainer">
                     <!-- Categories will be populated by JavaScript -->
@@ -1096,9 +1393,10 @@
 
             <!-- Content Area -->
             <div id="productsGrid" class="products-grid"></div>
+            <div id="groupsGrid" class="groups-grid hidden"></div>
             <div id="ordersList" class="orders-list hidden"></div>
 
-            <!-- Floating Cart -->
+            <!-- Floating Cart (hidden in groups mode) -->
             <div class="floating-cart" id="floatingCart">
                 <div class="cart-info">
                     <div class="cart-icon">
@@ -1113,6 +1411,112 @@
                 <button class="checkout-btn" onclick="showCheckout()">
                     Checkout <i class="fas fa-arrow-right"></i>
                 </button>
+            </div>
+        </div>
+
+        <!-- Create Group Modal -->
+        <div id="createGroupModal" class="modal-overlay hidden">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">Create Buying Group</h3>
+                    <button class="modal-close" onclick="hideCreateGroupModal()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                
+                <div class="form-group">
+                    <label class="input-label">Group Name</label>
+                    <input type="text" id="group-name" class="input-field" placeholder="e.g. Bulk Rice Buyers">
+                </div>
+                
+                <div class="form-group">
+                    <label class="input-label">Select Product</label>
+                    <div class="product-selector" id="product-selector">
+                        <!-- Products will be loaded here -->
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="input-label">Target Quantity (units)</label>
+                    <input type="number" id="group-target" class="input-field" placeholder="e.g. 100" min="1">
+                </div>
+                
+                <div class="form-group">
+                    <label class="input-label">Minimum Spaza Shops</label>
+                    <input type="number" id="group-min-spazas" class="input-field" value="10" min="2">
+                </div>
+                
+                <div class="form-group">
+                    <label class="input-label">Joining Fee (R)</label>
+                    <input type="number" id="group-joining-fee" class="input-field" value="50" min="0">
+                </div>
+                
+                <div class="form-group">
+                    <label class="input-label">Expiry Date (Optional)</label>
+                    <input type="date" id="group-expiry" class="input-field">
+                </div>
+                
+                <div class="form-group">
+                    <label class="input-label">Additional Details</label>
+                    <textarea id="group-details" class="input-field" rows="3" placeholder="Any special instructions..."></textarea>
+                </div>
+                
+                <button class="btn btn-primary" onclick="createBuyingGroup()">
+                    <i class="fas fa-users"></i> Create Group
+                </button>
+            </div>
+        </div>
+
+        <!-- Invite to Group Modal -->
+        <div id="inviteGroupModal" class="modal-overlay hidden">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">Invite Spaza Shops</h3>
+                    <button class="modal-close" onclick="hideInviteModal()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                
+                <div class="share-card">
+                    <i class="fas fa-share-alt fa-2x"></i>
+                    <p style="margin: 12px 0;">Share this link with other spaza shops</p>
+                    <div class="share-link">
+                        <input type="text" id="invite-link" readonly value="https://spazasure.co.za/join-group/">
+                        <button class="copy-btn" onclick="copyInviteLink()">
+                            <i class="fas fa-copy"></i> Copy
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="input-label">Or send WhatsApp invite</label>
+                    <input type="text" id="invite-phone" class="input-field" placeholder="Enter phone number">
+                </div>
+                
+                <button class="btn btn-success" onclick="sendWhatsAppInvite()">
+                    <i class="fab fa-whatsapp"></i> Send Invite
+                </button>
+            </div>
+        </div>
+
+        <!-- Join Group Confirmation Modal -->
+        <div id="joinGroupModal" class="modal-overlay hidden">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">Join Buying Group</h3>
+                    <button class="modal-close" onclick="hideJoinModal()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                
+                <div id="join-group-details"></div>
+                
+                <div style="display: flex; gap: 12px; margin-top: 20px;">
+                    <button class="btn btn-secondary" style="flex:1;" onclick="hideJoinModal()">Cancel</button>
+                    <button class="btn btn-success" style="flex:1;" onclick="confirmJoinGroup()">
+                        <i class="fas fa-check"></i> Join Group
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -1154,11 +1558,6 @@
         <div id="loadingSpinner" class="loading-spinner hidden">
             <div class="spinner"></div>
         </div>
-
-        <!-- Image Debug Button (Hidden by default, appears with keyboard shortcut) -->
-        <div id="imageDebug" class="image-debug hidden" onclick="debugImageAvailability()">
-            <i class="fas fa-image"></i> Check Images
-        </div>
     </div>
 
     <script>
@@ -1171,11 +1570,14 @@
         // State
         let cart = {};
         let products = [];
+        let buyingGroups = [];
         let currentMode = 'single';
         let selectedPayment = 'Cash';
         let editingOrderId = null;
         let currentUser = null;
         let selectedCategory = 'all';
+        let selectedGroupForJoin = null;
+        let selectedProductForGroup = null;
         
         // Image management
         let imageFileMap = new Map();
@@ -1194,15 +1596,6 @@
                 await initApp();
             }
         };
-
-        // Keyboard shortcut for debug (Ctrl+Shift+I)
-        document.addEventListener('keydown', (e) => {
-            if (e.ctrlKey && e.shiftKey && e.key === 'I') {
-                e.preventDefault();
-                document.getElementById('imageDebug').classList.toggle('hidden');
-                debugImageAvailability();
-            }
-        });
 
         // Toggle between login and register
         function toggleAuth(showReg) {
@@ -1333,7 +1726,6 @@
                     imageFileMap.set(baseName, fileName);
                     imageFileMap.set(cleanName, fileName);
                     
-                    // Store word variations
                     const words = baseName.split(/[\s-]+/);
                     words.forEach(word => {
                         if (word.length > 3) {
@@ -1356,7 +1748,6 @@
             
             const baseUrl = 'https://clbhfxqxcugxcqutngpo.supabase.co/storage/v1/object/public/Images/';
             
-            // Generate variations of the product name for matching
             const variations = [
                 productName,
                 productName.toLowerCase(),
@@ -1367,7 +1758,6 @@
                 productName.split(' ').slice(0, 2).join(' ')
             ];
             
-            // Try to find a match
             let matchedFile = null;
             let matchedScore = 0;
             
@@ -1375,21 +1765,18 @@
                 const normalizedVar = variation.toLowerCase().trim();
                 const cleanVar = normalizedVar.replace(/[^a-z0-9]/g, '');
                 
-                // Exact match
                 if (imageFileMap.has(normalizedVar)) {
                     matchedFile = imageFileMap.get(normalizedVar);
                     matchedScore = 100;
                     break;
                 }
                 
-                // Clean match
                 if (imageFileMap.has(cleanVar)) {
                     matchedFile = imageFileMap.get(cleanVar);
                     matchedScore = 90;
                     break;
                 }
                 
-                // Partial matches
                 for (let [key, filename] of imageFileMap.entries()) {
                     if (normalizedVar.includes(key) && key.length > 3) {
                         if (key.length > matchedScore) {
@@ -1409,13 +1796,11 @@
                 return baseUrl + encodeURIComponent(matchedFile);
             }
             
-            // Try common extensions
             const extensions = ['.png', '.jpg', '.jpeg', '.gif', '.webp'];
             for (let ext of extensions) {
                 return baseUrl + encodeURIComponent(productName + ext);
             }
             
-            // Ultimate fallback
             return `https://via.placeholder.com/300/2563eb/ffffff?text=${encodeURIComponent(productName.substring(0, 20))}`;
         }
 
@@ -1423,43 +1808,39 @@
         async function refreshImages() {
             showLoading(true);
             await loadImageMap(true);
-            await renderList();
+            await loadContent();
             showLoading(false);
             alert('✅ Image cache refreshed successfully!');
         }
 
-        // Debug image availability
-        async function debugImageAvailability() {
-            const { data: files, error } = await _client.storage.from('Images').list();
-            if (error) {
-                console.error('Error listing images:', error);
-                return;
+        // Handle search
+        function handleSearch() {
+            if (currentMode === 'single') {
+                renderList();
+            } else if (currentMode === 'groups') {
+                renderGroups();
             }
-            
-            console.log('📸 Available images in bucket:');
-            console.table(files.map(f => ({ name: f.name, size: f.metadata?.size || 0 })));
-            
-            console.log('\n🔍 Product image matches:');
-            products.forEach(p => {
-                const hasMatch = Array.from(imageFileMap.entries()).some(([key, filename]) => 
-                    p.name.toLowerCase().includes(key) || key.includes(p.name.toLowerCase())
-                );
-                console.log(`${p.name}: ${hasMatch ? '✅' : '❌'}`);
-            });
-            
-            alert('Check console (F12) for image debug info');
         }
 
         // Load content
         async function loadContent() {
             try {
-                const { data: p, error } = await _client.from('products').select('*');
-                if (error) throw error;
-                products = p && p.length > 0 ? p : [];
+                const [productsResult, groupsResult] = await Promise.all([
+                    _client.from('products').select('*'),
+                    _client.from('buying_groups').select('*, products(*)').order('created_at', { ascending: false })
+                ]);
+                
+                if (productsResult.error) throw productsResult.error;
+                if (groupsResult.error) throw groupsResult.error;
+                
+                products = productsResult.data || [];
+                buyingGroups = groupsResult.data || [];
+                
                 renderCategories();
                 await renderList();
+                renderGroups();
             } catch (error) {
-                console.error('Error loading products:', error);
+                console.error('Error loading content:', error);
             }
         }
 
@@ -1512,7 +1893,6 @@
                             <div class="product-badges">
                                 ${p.is_authentic_verified ? '<span class="badge badge-verified"><i class="fas fa-check-circle"></i> VERIFIED</span>' : ''}
                                 ${p.stock_quantity < 20 ? '<span class="badge badge-stock">LOW STOCK</span>' : ''}
-                                ${p.bulk_price && parseFloat(p.bulk_price) > price * 12 ? '<span class="badge badge-sale">SALE</span>' : ''}
                             </div>
                         </div>
                         <div class="product-info">
@@ -1521,7 +1901,7 @@
                             <p style="font-size: 0.75rem; color: var(--gray-600); margin-bottom: 8px;">${p.description || ''}</p>
                             <div class="product-price">
                                 <span class="current-price">R${price.toFixed(2)}</span>
-                                ${p.bulk_price && p.bulk_price !== 'N/A' ? `<span class="old-price">R${p.bulk_price}</span>` : ''}
+                                ${p.bulk_price ? `<span class="old-price">R${p.bulk_price}/unit</span>` : ''}
                             </div>
                             <div class="product-actions">
                                 <div class="quantity-control">
@@ -1539,6 +1919,290 @@
             }).join('') || '<p style="text-align: center; padding: 40px; color: var(--gray-600);">No products found</p>';
             
             updateCartDisplay();
+        }
+
+        // Render buying groups
+        function renderGroups() {
+            const query = document.getElementById('search-input').value.toLowerCase();
+            const filtered = buyingGroups.filter(g => 
+                (g.group_name || '').toLowerCase().includes(query) ||
+                (g.products?.name || '').toLowerCase().includes(query)
+            );
+
+            const grid = document.getElementById('groupsGrid');
+            if (!grid) return;
+
+            grid.innerHTML = filtered.map(g => {
+                const product = g.products || {};
+                const progress = (g.current_quantity / g.target_quantity) * 100;
+                const imgUrl = getImageUrl(product.name || '');
+                const isCreator = g.creator_id === currentUser?.id;
+                const canJoin = g.status === 'open' && g.current_quantity < g.target_quantity && !isCreator;
+                
+                return `
+                    <div class="group-card">
+                        <div class="group-header">
+                            <h3 class="group-title">${g.group_name}</h3>
+                            <span class="group-status status-${g.status}">${g.status}</span>
+                        </div>
+                        
+                        <div class="group-product">
+                            <img src="${imgUrl}" class="group-product-image" alt="${product.name || ''}">
+                            <div class="group-product-info">
+                                <div class="group-product-name">${product.name || 'Unknown Product'}</div>
+                                <div class="group-product-price">R${g.contribution_per_spaza?.toFixed(2) || '0.00'} per spaza</div>
+                            </div>
+                        </div>
+                        
+                        <div class="group-stats">
+                            <div class="group-stat">
+                                <div class="group-stat-value">${g.current_quantity}</div>
+                                <div class="group-stat-label">Current</div>
+                            </div>
+                            <div class="group-stat">
+                                <div class="group-stat-value">${g.target_quantity}</div>
+                                <div class="group-stat-label">Target</div>
+                            </div>
+                            <div class="group-stat">
+                                <div class="group-stat-value">${g.current_quantity > 0 ? Math.round(g.current_quantity / (g.target_quantity / 100)) : 0}%</div>
+                                <div class="group-stat-label">Progress</div>
+                            </div>
+                            <div class="group-stat">
+                                <div class="group-stat-value">${g.min_spazas || 10}</div>
+                                <div class="group-stat-label">Min Spazas</div>
+                            </div>
+                        </div>
+                        
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: ${progress}%"></div>
+                        </div>
+                        
+                        <div class="group-meta">
+                            <div class="group-creator">
+                                <i class="fas fa-user-circle"></i>
+                                <span>${g.created_by || 'Anonymous'}</span>
+                            </div>
+                            <div class="group-actions">
+                                ${canJoin ? `
+                                    <button class="group-action-btn btn-join" onclick="showJoinGroup('${g.id}')">
+                                        <i class="fas fa-user-plus"></i> Join
+                                    </button>
+                                ` : ''}
+                                ${isCreator ? `
+                                    <button class="group-action-btn btn-invite" onclick="showInviteModal('${g.id}')">
+                                        <i class="fas fa-share-alt"></i> Invite
+                                    </button>
+                                ` : ''}
+                            </div>
+                        </div>
+                        
+                        ${g.expiry_date ? `
+                            <div style="font-size: 0.75rem; color: var(--gray-600); margin-top: 8px;">
+                                <i class="far fa-clock"></i> Expires: ${new Date(g.expiry_date).toLocaleDateString()}
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            }).join('') || `
+                <div style="text-align: center; padding: 40px;">
+                    <i class="fas fa-users fa-3x" style="color: var(--gray-400); margin-bottom: 16px;"></i>
+                    <p style="color: var(--gray-600); margin-bottom: 16px;">No buying groups yet</p>
+                    <button class="btn btn-primary" onclick="showCreateGroupModal()">
+                        <i class="fas fa-plus"></i> Create a Group
+                    </button>
+                </div>
+            `;
+        }
+
+        // Show create group modal
+        async function showCreateGroupModal() {
+            // Load products into selector
+            const selector = document.getElementById('product-selector');
+            selector.innerHTML = products.map(p => {
+                const imgUrl = getImageUrl(p.name);
+                return `
+                    <div class="product-select-item" onclick="selectProductForGroup('${p.id}')" id="product-${p.id}">
+                        <img src="${imgUrl}" class="product-select-image" alt="${p.name}">
+                        <div class="product-select-info">
+                            <div class="product-select-name">${p.name}</div>
+                            <div class="product-select-price">R${p.price?.toFixed(2)} per unit</div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            document.getElementById('createGroupModal').classList.remove('hidden');
+        }
+
+        function hideCreateGroupModal() {
+            document.getElementById('createGroupModal').classList.add('hidden');
+            selectedProductForGroup = null;
+            document.querySelectorAll('.product-select-item').forEach(el => {
+                el.classList.remove('selected');
+            });
+        }
+
+        function selectProductForGroup(productId) {
+            selectedProductForGroup = productId;
+            document.querySelectorAll('.product-select-item').forEach(el => {
+                el.classList.remove('selected');
+            });
+            document.getElementById(`product-${productId}`).classList.add('selected');
+        }
+
+        // Create buying group
+        async function createBuyingGroup() {
+            if (!selectedProductForGroup) {
+                alert('Please select a product');
+                return;
+            }
+
+            const groupName = document.getElementById('group-name').value;
+            const targetQty = parseInt(document.getElementById('group-target').value);
+            const minSpazas = parseInt(document.getElementById('group-min-spazas').value);
+            const joiningFee = parseFloat(document.getElementById('group-joining-fee').value);
+            const expiryDate = document.getElementById('group-expiry').value;
+            const details = document.getElementById('group-details').value;
+
+            if (!groupName || !targetQty) {
+                alert('Please fill in all required fields');
+                return;
+            }
+
+            const product = products.find(p => p.id === selectedProductForGroup);
+            const contributionPerSpaza = product.price / minSpazas;
+
+            const groupData = {
+                product_id: selectedProductForGroup,
+                creator_id: currentUser.id,
+                created_by: currentUser.store_name,
+                group_name: groupName,
+                target_quantity: targetQty,
+                current_quantity: 0,
+                status: 'open',
+                min_spazas: minSpazas,
+                joining_fee: joiningFee,
+                contribution_per_spaza: contributionPerSpaza,
+                items_description: details,
+                expiry_date: expiryDate || null
+            };
+
+            showLoading(true);
+            const { error } = await _client.from('buying_groups').insert([groupData]);
+            showLoading(false);
+
+            if (error) {
+                alert('Error creating group: ' + error.message);
+            } else {
+                alert('✅ Buying group created successfully!');
+                hideCreateGroupModal();
+                await loadContent();
+            }
+        }
+
+        // Show join group modal
+        async function showJoinGroup(groupId) {
+            const group = buyingGroups.find(g => g.id === groupId);
+            if (!group) return;
+            
+            selectedGroupForJoin = group;
+            const product = group.products || {};
+            
+            document.getElementById('join-group-details').innerHTML = `
+                <div class="group-card" style="margin-bottom: 20px;">
+                    <h4 style="margin-bottom: 12px;">${group.group_name}</h4>
+                    <p><strong>Product:</strong> ${product.name}</p>
+                    <p><strong>Contribution:</strong> R${group.contribution_per_spaza?.toFixed(2)}</p>
+                    <p><strong>Joining Fee:</strong> R${group.joining_fee?.toFixed(2)}</p>
+                    <p><strong>Current Progress:</strong> ${group.current_quantity}/${group.target_quantity}</p>
+                    <p><strong>Min Spazas Required:</strong> ${group.min_spazas}</p>
+                </div>
+            `;
+            
+            document.getElementById('joinGroupModal').classList.remove('hidden');
+        }
+
+        function hideJoinModal() {
+            document.getElementById('joinGroupModal').classList.add('hidden');
+            selectedGroupForJoin = null;
+        }
+
+        // Confirm join group
+        async function confirmJoinGroup() {
+            if (!selectedGroupForJoin || !currentUser) return;
+
+            showLoading(true);
+            
+            // Update group current quantity
+            const newQuantity = (selectedGroupForJoin.current_quantity || 0) + 1;
+            const { error: updateError } = await _client
+                .from('buying_groups')
+                .update({ current_quantity: newQuantity })
+                .eq('id', selectedGroupForJoin.id);
+
+            if (updateError) {
+                showLoading(false);
+                alert('Error joining group: ' + updateError.message);
+                return;
+            }
+
+            // Create contribution record
+            const contributionData = {
+                group_id: selectedGroupForJoin.id,
+                profile_id: currentUser.id,
+                contribution_amount: selectedGroupForJoin.contribution_per_spaza,
+                joining_fee_paid: selectedGroupForJoin.joining_fee,
+                status: 'pending'
+            };
+
+            const { error: contributionError } = await _client
+                .from('group_contributions')
+                .insert([contributionData]);
+
+            showLoading(false);
+
+            if (contributionError) {
+                alert('Error recording contribution: ' + contributionError.message);
+            } else {
+                alert('✅ Successfully joined the buying group!');
+                hideJoinModal();
+                await loadContent();
+            }
+        }
+
+        // Show invite modal
+        function showInviteModal(groupId) {
+            const group = buyingGroups.find(g => g.id === groupId);
+            if (!group) return;
+            
+            const inviteLink = `https://spazasure.co.za/join-group/${groupId}`;
+            document.getElementById('invite-link').value = inviteLink;
+            document.getElementById('inviteGroupModal').classList.remove('hidden');
+        }
+
+        function hideInviteModal() {
+            document.getElementById('inviteGroupModal').classList.add('hidden');
+        }
+
+        function copyInviteLink() {
+            const linkInput = document.getElementById('invite-link');
+            linkInput.select();
+            document.execCommand('copy');
+            alert('Link copied to clipboard!');
+        }
+
+        function sendWhatsAppInvite() {
+            const phone = document.getElementById('invite-phone').value;
+            const link = document.getElementById('invite-link').value;
+            
+            if (!phone) {
+                alert('Please enter a phone number');
+                return;
+            }
+
+            const message = `Join my buying group on SpazaSure! ${link}`;
+            const whatsappUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+            window.open(whatsappUrl, '_blank');
         }
 
         // Update cart
@@ -1563,67 +2227,22 @@
             currentMode = mode;
             
             document.getElementById('nav-s').classList.toggle('active', mode === 'single');
-            document.getElementById('nav-b').classList.toggle('active', mode === 'bulk');
+            document.getElementById('nav-b').classList.toggle('active', mode === 'groups');
             document.getElementById('nav-o').classList.toggle('active', mode === 'history');
             
             document.getElementById('categoriesStrip').classList.toggle('hidden', mode !== 'single');
-            document.getElementById('productsGrid').classList.toggle('hidden', mode === 'history');
+            document.getElementById('productsGrid').classList.toggle('hidden', mode !== 'single');
+            document.getElementById('groupsGrid').classList.toggle('hidden', mode !== 'groups');
             document.getElementById('ordersList').classList.toggle('hidden', mode !== 'history');
-            document.getElementById('floatingCart').classList.toggle('hidden', mode === 'history');
+            document.getElementById('floatingCart').classList.toggle('hidden', mode === 'groups' || mode === 'history');
             
-            if (mode === 'history') {
+            if (mode === 'groups') {
+                renderGroups();
+            } else if (mode === 'history') {
                 loadOrderHistory();
-            } else if (mode === 'bulk') {
-                renderBulkDeals();
             } else {
                 renderList();
             }
-        }
-
-        // Render bulk deals
-        function renderBulkDeals() {
-            const bulkDeals = products
-                .filter(p => p.bulk_price && !isNaN(parseFloat(p.bulk_price)) && parseFloat(p.bulk_price) > p.price * 10)
-                .slice(0, 20)
-                .map(p => {
-                    const bulkNum = parseFloat(p.bulk_price);
-                    const savings = ((p.price * 12 - bulkNum) / (p.price * 12) * 100).toFixed(0);
-                    return { ...p, savings };
-                });
-
-            const grid = document.getElementById('productsGrid');
-            if (!grid) return;
-
-            grid.innerHTML = bulkDeals.map(p => {
-                const imgUrl = getImageUrl(p.name);
-                return `
-                    <div class="product-card" style="border-left: 4px solid var(--secondary);">
-                        <div class="product-image">
-                            <img src="${imgUrl}" alt="${p.name}" loading="lazy"
-                                 onerror="this.onerror=null; this.src='https://via.placeholder.com/300/2563eb/ffffff?text=${encodeURIComponent(p.name.substring(0, 20))}'">
-                            <div class="product-badges">
-                                <span class="badge badge-sale">SAVE ${p.savings}%</span>
-                            </div>
-                        </div>
-                        <div class="product-info">
-                            <div class="product-category">${p.category || 'Bulk Deal'}</div>
-                            <h4 class="product-name">${p.name}</h4>
-                            <div class="product-price">
-                                <span class="current-price">R${(parseFloat(p.bulk_price) / 12).toFixed(2)}</span>
-                                <span class="old-price">R${p.price.toFixed(2)}</span>
-                            </div>
-                            <button class="btn btn-primary" style="margin-top: 12px;" onclick="addBulkToCart('${p.name.replace(/'/g, "\\'")}', ${(parseFloat(p.bulk_price) / 12).toFixed(2)})">
-                                <i class="fas fa-gift"></i> Grab Deal
-                            </button>
-                        </div>
-                    </div>
-                `;
-            }).join('') || '<p style="text-align: center; padding: 40px;">No bulk deals available</p>';
-        }
-
-        // Add bulk to cart
-        function addBulkToCart(name, price) {
-            updateCart(name, price, 1);
         }
 
         // Load order history
