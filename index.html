@@ -1682,7 +1682,7 @@
             
             // Update welcome message
             const hour = new Date().getHours();
-            const greeting = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
+            const greeting = hour < 12 ? 'Good morning Spaza owner' : hour < 18 ? 'Good afternoon Spaza owner' : 'Good evening Spaza owner';
             document.getElementById('welcome-message').textContent = `${greeting}, ${user.first_name || 'Store Owner'}!`;
             
             document.getElementById('txt-store-name').textContent = user.store_name;
