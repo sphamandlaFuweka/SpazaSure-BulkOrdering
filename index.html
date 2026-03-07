@@ -1,3 +1,653 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SpazaSure - Premium Wholesale</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --primary-light: #3b82f6;
+            --secondary: #10b981;
+            --accent: #8b5cf6;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --dark: #1e293b;
+            --gray-800: #334155;
+            --gray-600: #64748b;
+            --gray-400: #94a3b8;
+            --gray-200: #e2e8f0;
+            --gray-100: #f1f5f9;
+            --white: #ffffff;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+            --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1);
+        }
+
+        body {
+            background: var(--gray-100);
+            color: var(--dark);
+        }
+
+        .app-container {
+            max-width: 480px;
+            margin: 0 auto;
+            min-height: 100vh;
+            background: var(--white);
+            position: relative;
+            box-shadow: var(--shadow-xl);
+        }
+
+        /* Toast Notifications */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10000;
+            width: 90%;
+            max-width: 400px;
+            pointer-events: none;
+        }
+
+        .toast {
+            background: var(--white);
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 10px;
+            box-shadow: var(--shadow-xl);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            animation: slideDown 0.3s ease;
+            border-left: 4px solid var(--secondary);
+            pointer-events: auto;
+        }
+
+        .toast.success {
+            border-left-color: var(--secondary);
+        }
+
+        .toast.error {
+            border-left-color: var(--danger);
+        }
+
+        .toast.warning {
+            border-left-color: var(--warning);
+        }
+
+        .toast-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+
+        .toast.success .toast-icon {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--secondary);
+        }
+
+        .toast.error .toast-icon {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+        }
+
+        .toast.warning .toast-icon {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--warning);
+        }
+
+        .toast-content {
+            flex: 1;
+        }
+
+        .toast-title {
+            font-weight: 700;
+            font-size: 0.95rem;
+            margin-bottom: 4px;
+        }
+
+        .toast-message {
+            font-size: 0.85rem;
+            color: var(--gray-600);
+        }
+
+        .toast-close {
+            background: none;
+            border: none;
+            color: var(--gray-400);
+            cursor: pointer;
+            font-size: 1rem;
+            padding: 4px;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Confirmation Modal */
+        .confirm-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 5000;
+            padding: 20px;
+        }
+
+        .confirm-content {
+            background: var(--white);
+            border-radius: 32px;
+            width: 100%;
+            max-width: 380px;
+            padding: 24px;
+            text-align: center;
+            animation: scaleIn 0.3s ease;
+        }
+
+        .confirm-icon {
+            width: 80px;
+            height: 80px;
+            background: rgba(37, 99, 235, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            font-size: 2.5rem;
+            color: var(--primary);
+        }
+
+        .confirm-title {
+            font-size: 1.5rem;
+            font-weight: 800;
+            margin-bottom: 12px;
+            color: var(--dark);
+        }
+
+        .confirm-message {
+            color: var(--gray-600);
+            margin-bottom: 24px;
+            line-height: 1.5;
+        }
+
+        .confirm-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .confirm-btn {
+            flex: 1;
+            padding: 14px;
+            border: none;
+            border-radius: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .confirm-btn.cancel {
+            background: var(--gray-200);
+            color: var(--dark);
+        }
+
+        .confirm-btn.cancel:hover {
+            background: var(--gray-400);
+        }
+
+        .confirm-btn.confirm {
+            background: var(--primary);
+            color: var(--white);
+        }
+
+        .confirm-btn.confirm:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+
+        .confirm-btn.danger {
+            background: var(--danger);
+            color: var(--white);
+        }
+
+        .confirm-btn.danger:hover {
+            background: #dc2626;
+        }
+
+        @keyframes scaleIn {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        /* Order Status Badges */
+        .order-status-badge {
+            padding: 6px 12px;
+            border-radius: 30px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .order-status-badge.pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .order-status-badge.processing {
+            background: #cfe2ff;
+            color: #084298;
+        }
+
+        .order-status-badge.completed {
+            background: #d1e7dd;
+            color: #0a3622;
+        }
+
+        .order-status-badge.cancelled {
+            background: #f8d7da;
+            color: #58151c;
+        }
+
+        /* Edit Mode Indicator */
+        .edit-mode-badge {
+            background: var(--accent);
+            color: var(--white);
+            padding: 4px 12px;
+            border-radius: 30px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            margin-left: 8px;
+        }
+
+        /* Floating Action Buttons */
+        .order-actions-floating {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: calc(100% - 40px);
+            max-width: 440px;
+            display: flex;
+            gap: 10px;
+            z-index: 2000;
+        }
+
+        .floating-action-btn {
+            flex: 1;
+            padding: 16px;
+            border: none;
+            border-radius: 30px;
+            font-weight: 700;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: var(--shadow-xl);
+        }
+
+        .floating-action-btn.cancel {
+            background: var(--danger);
+            color: var(--white);
+        }
+
+        .floating-action-btn.save {
+            background: var(--secondary);
+            color: var(--white);
+        }
+
+        .floating-action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-2xl);
+        }
+
+        /* Splash Screen */
+        .splash-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            animation: fadeOut 0.5s ease 2s forwards;
+        }
+
+        .splash-content {
+            text-align: center;
+            color: var(--white);
+        }
+
+        .splash-logo {
+            font-size: 4rem;
+            font-weight: 800;
+            letter-spacing: -2px;
+            margin-bottom: 1rem;
+            animation: pulse 2s infinite;
+        }
+
+        .splash-tagline {
+            font-size: 1rem;
+            opacity: 0.9;
+            letter-spacing: 2px;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        @keyframes fadeOut {
+            to {
+                opacity: 0;
+                visibility: hidden;
+            }
+        }
+
+        /* Auth Screens */
+        .auth-screen {
+            min-height: 100vh;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .auth-card {
+            background: var(--white);
+            border-radius: 32px;
+            padding: 32px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: var(--shadow-xl);
+            animation: slideUp 0.5s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .auth-header {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .auth-logo {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--primary);
+            margin-bottom: 8px;
+        }
+
+        .auth-subtitle {
+            color: var(--gray-600);
+            font-size: 0.9rem;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-label {
+            display: block;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--gray-800);
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid var(--gray-200);
+            border-radius: 16px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: var(--white);
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: 16px;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: var(--white);
+            box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
+        }
+
+        .btn-secondary {
+            background: var(--gray-200);
+            color: var(--dark);
+        }
+
+        .btn-success {
+            background: var(--secondary);
+            color: var(--white);
+        }
+
+        .btn-warning {
+            background: var(--warning);
+            color: var(--white);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 2px solid var(--primary);
+            color: var(--primary);
+        }
+
+        .btn-sm {
+            padding: 8px 16px;
+            font-size: 0.85rem;
+            border-radius: 12px;
+        }
+
+        .btn-refresh {
+            background: var(--gray-200);
+            color: var(--dark);
+            padding: 8px 16px;
+            border-radius: 30px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+            margin-left: auto;
+        }
+
+        .btn-refresh:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-refresh:hover i {
+            transform: rotate(180deg);
+        }
+
+        .btn-refresh i {
+            transition: transform 0.3s ease;
+        }
+
+        .auth-footer {
+            text-align: center;
+            margin-top: 24px;
+            color: var(--gray-600);
+            font-size: 0.9rem;
+        }
+
+        .auth-link {
+            color: var(--primary);
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        /* Main App Header */
+        .app-header {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: var(--white);
+            padding: 20px;
+            border-radius: 0 0 30px 30px;
+            box-shadow: var(--shadow-lg);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .store-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .store-avatar {
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            backdrop-filter: blur(5px);
+        }
+
+        .store-details {
+            line-height: 1.3;
+        }
+
+        .store-name {
+            font-weight: 700;
+            font-size: 1rem;
+        }
+
+        .store-badge {
+            font-size: 0.7rem;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 2px 8px;
+            border-radius: 20px;
+            display: inline-block;
+        }
+
+        .logout-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: var(--white);
+            padding: 8px 16px;
+            border-radius: 30px;
+            font-weight: 600;
+            font-size: 0.8rem;
+            backdrop-filter: blur(5px);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .welcome-message {
+            margin-bottom: 16px;
+        }
+
+        .welcome-title {
+            font-size: 1.5rem;
+            font-weight: 700;
             margin-bottom: 4px;
         }
 
@@ -487,128 +1137,100 @@
             background: var(--primary-dark);
         }
 
-        /* Create Group Modal */
-        .product-selector {
-            max-height: 300px;
+        /* Multi-product Selector */
+        .multi-product-selector {
+            max-height: 400px;
             overflow-y: auto;
             border: 2px solid var(--gray-200);
             border-radius: 16px;
             margin-bottom: 16px;
+            padding: 8px;
         }
 
-        .product-select-item {
+        .multi-product-item {
             display: flex;
             align-items: center;
             gap: 12px;
             padding: 12px;
             border-bottom: 1px solid var(--gray-200);
-            cursor: pointer;
             transition: all 0.2s ease;
+            cursor: pointer;
         }
 
-        .product-select-item:hover {
+        .multi-product-item:hover {
             background: var(--gray-100);
         }
 
-        .product-select-item.selected {
+        .multi-product-item.selected {
             background: rgba(37, 99, 235, 0.1);
             border-left: 4px solid var(--primary);
         }
 
-        .product-select-image {
-            width: 50px;
-            height: 50px;
-            border-radius: 8px;
-            object-fit: cover;
-        }
-
-        .product-select-info {
-            flex: 1;
-        }
-
-        .product-select-name {
-            font-weight: 700;
-            font-size: 0.9rem;
-        }
-
-        .product-select-price {
-            font-size: 0.8rem;
-            color: var(--primary);
-            font-weight: 600;
-        }
-
-        /* Floating Cart */
-        .floating-cart {
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: calc(100% - 40px);
-            max-width: 440px;
-            background: var(--white);
-            border-radius: 30px;
-            padding: 16px 20px;
-            box-shadow: var(--shadow-xl);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            z-index: 1000;
-            border: 1px solid var(--gray-200);
-            animation: slideUp 0.3s ease;
-        }
-
-        .cart-info {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .cart-icon {
-            position: relative;
-        }
-
-        .cart-badge {
-            position: absolute;
-            top: -8px;
-            right: -8px;
-            background: var(--danger);
-            color: var(--white);
-            font-size: 0.7rem;
-            font-weight: 700;
+        .product-checkbox {
             width: 20px;
             height: 20px;
-            border-radius: 10px;
+            cursor: pointer;
+            accent-color: var(--primary);
+        }
+
+        .selected-products-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin: 16px 0;
+            padding: 12px;
+            background: var(--gray-100);
+            border-radius: 16px;
+        }
+
+        .selected-product-tag {
+            background: var(--primary);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 30px;
+            font-size: 0.85rem;
             display: flex;
             align-items: center;
-            justify-content: center;
+            gap: 8px;
         }
 
-        .cart-total-label {
-            font-size: 0.75rem;
-            color: var(--gray-600);
-        }
-
-        .cart-total-value {
-            font-weight: 800;
-            font-size: 1.2rem;
-            color: var(--dark);
-        }
-
-        .checkout-btn {
-            padding: 12px 24px;
-            background: linear-gradient(135deg, var(--primary), var(--accent));
+        .selected-product-tag button {
+            background: none;
             border: none;
-            border-radius: 30px;
-            color: var(--white);
-            font-weight: 700;
+            color: white;
             cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
         }
 
-        .checkout-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
+        .quantity-input-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .quantity-input {
+            width: 80px;
+            padding: 8px;
+            border: 2px solid var(--gray-200);
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .group-summary {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: white;
+            padding: 16px;
+            border-radius: 16px;
+            margin-bottom: 16px;
+        }
+
+        .group-summary-item {
+            display: flex;
+            justify-content: space-between;
+            margin: 8px 0;
         }
 
         /* Order History */
@@ -627,11 +1249,17 @@
             box-shadow: var(--shadow);
             border: 1px solid var(--gray-200);
             transition: all 0.3s ease;
+            position: relative;
         }
 
         .order-card:hover {
             transform: translateX(4px);
             box-shadow: var(--shadow-lg);
+        }
+
+        .order-card.editing {
+            border: 2px solid var(--accent);
+            box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.1);
         }
 
         .order-header {
@@ -645,6 +1273,9 @@
             font-weight: 700;
             color: var(--primary);
             font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
         .order-status {
@@ -660,9 +1291,19 @@
             color: #856404;
         }
 
+        .status-processing {
+            background: #cfe2ff;
+            color: #084298;
+        }
+
         .status-completed {
             background: #d4edda;
             color: #155724;
+        }
+
+        .status-cancelled {
+            background: #f8d7da;
+            color: #721c24;
         }
 
         .order-date {
@@ -680,8 +1321,9 @@
 
         .order-actions {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: repeat(3, 1fr);
             gap: 8px;
+            margin-top: 12px;
         }
 
         .order-btn {
@@ -692,6 +1334,10 @@
             font-size: 0.8rem;
             cursor: pointer;
             transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
         }
 
         .btn-view {
@@ -705,8 +1351,23 @@
         }
 
         .btn-edit {
+            background: var(--accent);
+            color: var(--white);
+        }
+
+        .btn-cancel {
             background: var(--gray-200);
             color: var(--dark);
+        }
+
+        .btn-cancel-order {
+            background: var(--warning);
+            color: var(--white);
+        }
+
+        .order-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
         }
 
         /* Modal */
@@ -763,49 +1424,6 @@
 
         .modal-close:hover {
             background: var(--gray-200);
-        }
-
-        /* Share Card */
-        .share-card {
-            background: linear-gradient(135deg, var(--primary), var(--accent));
-            color: white;
-            padding: 20px;
-            border-radius: 24px;
-            margin-bottom: 20px;
-            text-align: center;
-        }
-
-        .share-link {
-            background: rgba(255, 255, 255, 0.2);
-            padding: 12px;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-top: 12px;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-        }
-
-        .share-link input {
-            background: transparent;
-            border: none;
-            color: white;
-            width: 100%;
-            font-size: 0.85rem;
-        }
-
-        .share-link input::placeholder {
-            color: rgba(255, 255, 255, 0.7);
-        }
-
-        .copy-btn {
-            background: white;
-            color: var(--primary);
-            border: none;
-            padding: 6px 12px;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
         }
 
         /* Receipt */
@@ -886,6 +1504,24 @@
 </head>
 <body>
     <div class="app-container" id="appContainer">
+        <!-- Toast Notifications Container -->
+        <div id="toastContainer" class="toast-container"></div>
+
+        <!-- Confirmation Modal -->
+        <div id="confirmModal" class="confirm-modal hidden">
+            <div class="confirm-content">
+                <div class="confirm-icon" id="confirmIcon">
+                    <i class="fas fa-question-circle"></i>
+                </div>
+                <h3 class="confirm-title" id="confirmTitle">Confirm Action</h3>
+                <p class="confirm-message" id="confirmMessage">Are you sure you want to proceed?</p>
+                <div class="confirm-actions">
+                    <button class="confirm-btn cancel" id="confirmCancelBtn">Cancel</button>
+                    <button class="confirm-btn confirm" id="confirmOkBtn">Confirm</button>
+                </div>
+            </div>
+        </div>
+
         <!-- Splash Screen -->
         <div class="splash-screen" id="splashScreen">
             <div class="splash-content">
@@ -1029,7 +1665,7 @@
                 </button>
             </div>
 
-            <!-- Categories Strip (shown only in shop mode) -->
+            <!-- Categories Strip -->
             <div class="categories-strip" id="categoriesStrip">
                 <div class="categories-scroll" id="categoriesContainer">
                     <!-- Categories will be populated by JavaScript -->
@@ -1041,7 +1677,7 @@
             <div id="groupsGrid" class="groups-grid hidden"></div>
             <div id="ordersList" class="orders-list hidden"></div>
 
-            <!-- Floating Cart (hidden in groups mode) -->
+            <!-- Floating Cart -->
             <div class="floating-cart" id="floatingCart">
                 <div class="cart-info">
                     <div class="cart-icon">
@@ -1055,6 +1691,16 @@
                 </div>
                 <button class="checkout-btn" onclick="showCheckout()">
                     Checkout <i class="fas fa-arrow-right"></i>
+                </button>
+            </div>
+
+            <!-- Edit Mode Floating Actions -->
+            <div id="editModeActions" class="order-actions-floating hidden">
+                <button class="floating-action-btn cancel" onclick="cancelEdit()">
+                    <i class="fas fa-times"></i> Cancel Edit
+                </button>
+                <button class="floating-action-btn save" onclick="saveEditedOrder()">
+                    <i class="fas fa-save"></i> Save Changes
                 </button>
             </div>
         </div>
@@ -1075,14 +1721,19 @@
                 </div>
                 
                 <div class="form-group">
-                    <label class="input-label">Select Product</label>
-                    <div class="product-selector" id="product-selector">
+                    <label class="input-label">Select Products (Multiple Allowed)</label>
+                    <div class="multi-product-selector" id="product-selector">
                         <!-- Products will be loaded here -->
                     </div>
                 </div>
+
+                <!-- Selected Products Summary -->
+                <div id="selected-products-summary" class="selected-products-list">
+                    <!-- Selected products will appear here -->
+                </div>
                 
                 <div class="form-group">
-                    <label class="input-label">Target Quantity (units)</label>
+                    <label class="input-label">Target Quantity (total units)</label>
                     <input type="number" id="group-target" class="input-field" placeholder="e.g. 100" min="1">
                 </div>
                 
@@ -1093,7 +1744,7 @@
                 
                 <div class="form-group">
                     <label class="input-label">Joining Fee (R)</label>
-                    <input type="number" id="group-joining-fee" class="input-field" value="50" min="0">
+                    <input type="number" id="group-joining-fee" class="input-field" value="50" min="0" step="0.01">
                 </div>
                 
                 <div class="form-group">
@@ -1104,6 +1755,20 @@
                 <div class="form-group">
                     <label class="input-label">Additional Details</label>
                     <textarea id="group-details" class="input-field" rows="3" placeholder="Any special instructions..."></textarea>
+                </div>
+
+                <!-- Group Summary -->
+                <div id="group-summary-preview" class="group-summary hidden">
+                    <h4 style="margin-bottom: 12px;">Group Summary</h4>
+                    <div id="group-summary-items"></div>
+                    <div class="group-summary-item">
+                        <span>Total Value:</span>
+                        <span id="group-total-value">R 0.00</span>
+                    </div>
+                    <div class="group-summary-item">
+                        <span>Contribution per Spaza:</span>
+                        <span id="group-per-spaza">R 0.00</span>
+                    </div>
                 </div>
                 
                 <button class="btn btn-primary" onclick="createBuyingGroup()">
@@ -1144,7 +1809,7 @@
             </div>
         </div>
 
-        <!-- Join Group Confirmation Modal -->
+        <!-- Join Group Modal -->
         <div id="joinGroupModal" class="modal-overlay hidden">
             <div class="modal-content">
                 <div class="modal-header">
@@ -1199,6 +1864,30 @@
             <div class="modal-content" id="receipt-view"></div>
         </div>
 
+        <!-- Cancel Order Modal -->
+        <div id="cancelOrderModal" class="modal-overlay hidden">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">Cancel Order</h3>
+                    <button class="modal-close" onclick="hideCancelOrderModal()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <i class="fas fa-exclamation-triangle" style="font-size: 3rem; color: var(--warning);"></i>
+                    <p style="margin-top: 12px; color: var(--gray-600);">Are you sure you want to cancel this order? This action cannot be undone.</p>
+                </div>
+                
+                <div style="display: flex; gap: 12px;">
+                    <button class="btn btn-secondary" style="flex:1;" onclick="hideCancelOrderModal()">No, Keep It</button>
+                    <button class="btn btn-danger" style="flex:1; background: var(--danger); color: white;" onclick="confirmCancelOrder()">
+                        <i class="fas fa-times"></i> Yes, Cancel
+                    </button>
+                </div>
+            </div>
+        </div>
+
         <!-- Loading Spinner -->
         <div id="loadingSpinner" class="loading-spinner hidden">
             <div class="spinner"></div>
@@ -1219,15 +1908,97 @@
         let currentMode = 'single';
         let selectedPayment = 'Cash';
         let editingOrderId = null;
+        let editingOrderData = null;
         let currentUser = null;
         let selectedCategory = 'all';
         let selectedGroupForJoin = null;
-        let selectedProductForGroup = null;
+        let selectedProducts = new Map(); // For multi-product selection in groups
         
         // Image management
         let imageFileMap = new Map();
         let lastImageRefresh = null;
         const IMAGE_CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+
+        // Toast Notification System
+        function showToast(title, message, type = 'success', duration = 5000) {
+            const container = document.getElementById('toastContainer');
+            const toastId = 'toast-' + Date.now();
+            
+            const icon = {
+                success: 'check-circle',
+                error: 'exclamation-circle',
+                warning: 'exclamation-triangle'
+            }[type] || 'info-circle';
+            
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.id = toastId;
+            toast.innerHTML = `
+                <div class="toast-icon">
+                    <i class="fas fa-${icon}"></i>
+                </div>
+                <div class="toast-content">
+                    <div class="toast-title">${title}</div>
+                    <div class="toast-message">${message}</div>
+                </div>
+                <button class="toast-close" onclick="document.getElementById('${toastId}').remove()">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+            
+            container.appendChild(toast);
+            
+            setTimeout(() => {
+                const toastEl = document.getElementById(toastId);
+                if (toastEl) {
+                    toastEl.style.opacity = '0';
+                    toastEl.style.transition = 'opacity 0.3s ease';
+                    setTimeout(() => toastEl.remove(), 300);
+                }
+            }, duration);
+        }
+
+        // Confirmation Dialog
+        function showConfirm(title, message, onConfirm, onCancel, type = 'confirm') {
+            const modal = document.getElementById('confirmModal');
+            const icon = document.getElementById('confirmIcon');
+            const titleEl = document.getElementById('confirmTitle');
+            const messageEl = document.getElementById('confirmMessage');
+            const cancelBtn = document.getElementById('confirmCancelBtn');
+            const okBtn = document.getElementById('confirmOkBtn');
+            
+            icon.innerHTML = type === 'danger' 
+                ? '<i class="fas fa-exclamation-triangle" style="color: var(--danger);"></i>'
+                : '<i class="fas fa-question-circle" style="color: var(--primary);"></i>';
+            
+            titleEl.textContent = title;
+            messageEl.textContent = message;
+            
+            okBtn.className = type === 'danger' ? 'confirm-btn danger' : 'confirm-btn confirm';
+            okBtn.textContent = type === 'danger' ? 'Yes, Proceed' : 'Confirm';
+            
+            modal.classList.remove('hidden');
+            
+            const handleConfirm = () => {
+                modal.classList.add('hidden');
+                if (onConfirm) onConfirm();
+                cleanup();
+            };
+            
+            const handleCancel = () => {
+                modal.classList.add('hidden');
+                if (onCancel) onCancel();
+                cleanup();
+            };
+            
+            const cleanup = () => {
+                cancelBtn.removeEventListener('click', handleCancel);
+                okBtn.removeEventListener('click', handleConfirm);
+            };
+            
+            cancelBtn.addEventListener('click', handleCancel);
+            okBtn.addEventListener('click', handleConfirm);
+        }
 
         // Hide splash screen after 2 seconds
         setTimeout(() => {
@@ -1327,7 +2098,7 @@
             
             // Update welcome message
             const hour = new Date().getHours();
-            const greeting = hour < 12 ? 'Good morning Spaza owner' : hour < 18 ? 'Good afternoon Spaza owner' : 'Good evening Spaza owner';
+            const greeting = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
             document.getElementById('welcome-message').textContent = `${greeting}, ${user.first_name || 'Store Owner'}!`;
             
             document.getElementById('txt-store-name').textContent = user.store_name;
@@ -1336,6 +2107,8 @@
             
             await loadImageMap(true);
             await loadContent();
+            
+            showToast('Welcome Back!', `Good to see you, ${user.first_name || 'Store Owner'}!`, 'success');
         }
 
         // Load image map from storage
@@ -1455,7 +2228,7 @@
             await loadImageMap(true);
             await loadContent();
             showLoading(false);
-            alert('✅ Image cache refreshed successfully!');
+            showToast('Images Refreshed', 'Product images have been updated successfully!', 'success');
         }
 
         // Handle search
@@ -1464,6 +2237,8 @@
                 renderList();
             } else if (currentMode === 'groups') {
                 renderGroups();
+            } else if (currentMode === 'history') {
+                loadOrderHistory();
             }
         }
 
@@ -1486,6 +2261,7 @@
                 renderGroups();
             } catch (error) {
                 console.error('Error loading content:', error);
+                showToast('Error', 'Failed to load content', 'error');
             }
         }
 
@@ -1571,7 +2347,7 @@
             const query = document.getElementById('search-input').value.toLowerCase();
             const filtered = buyingGroups.filter(g => 
                 (g.group_name || '').toLowerCase().includes(query) ||
-                (g.products?.name || '').toLowerCase().includes(query)
+                (g.items_description || '').toLowerCase().includes(query)
             );
 
             const grid = document.getElementById('groupsGrid');
@@ -1584,6 +2360,9 @@
                 const isCreator = g.creator_id === currentUser?.id;
                 const canJoin = g.status === 'open' && g.current_quantity < g.target_quantity && !isCreator;
                 
+                // Parse items description
+                const itemsList = g.items_description ? g.items_description.split(', ') : [];
+                
                 return `
                     <div class="group-card">
                         <div class="group-header">
@@ -1594,8 +2373,11 @@
                         <div class="group-product">
                             <img src="${imgUrl}" class="group-product-image" alt="${product.name || ''}">
                             <div class="group-product-info">
-                                <div class="group-product-name">${product.name || 'Unknown Product'}</div>
+                                <div class="group-product-name">${product.name || 'Multiple Items'}</div>
                                 <div class="group-product-price">R${g.contribution_per_spaza?.toFixed(2) || '0.00'} per spaza</div>
+                                <div style="font-size:0.8rem; color:var(--gray-600); margin-top:4px;">
+                                    <i class="fas fa-boxes"></i> ${itemsList.length} item(s)
+                                </div>
                             </div>
                         </div>
                         
@@ -1609,7 +2391,7 @@
                                 <div class="group-stat-label">Target</div>
                             </div>
                             <div class="group-stat">
-                                <div class="group-stat-value">${g.current_quantity > 0 ? Math.round(g.current_quantity / (g.target_quantity / 100)) : 0}%</div>
+                                <div class="group-stat-value">${g.current_quantity > 0 ? Math.round((g.current_quantity / g.target_quantity) * 100) : 0}%</div>
                                 <div class="group-stat-label">Progress</div>
                             </div>
                             <div class="group-stat">
@@ -1620,6 +2402,20 @@
                         
                         <div class="progress-bar">
                             <div class="progress-fill" style="width: ${progress}%"></div>
+                        </div>
+
+                        <!-- Items List -->
+                        <div style="margin: 12px 0; padding: 12px; background: var(--gray-100); border-radius: 12px;">
+                            <small style="color: var(--gray-600); display: block; margin-bottom: 8px;">
+                                <i class="fas fa-shopping-basket"></i> Items in this group:
+                            </small>
+                            <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+                                ${itemsList.map(item => `
+                                    <span style="background: var(--white); padding: 4px 8px; border-radius: 20px; font-size: 0.75rem;">
+                                        ${item}
+                                    </span>
+                                `).join('')}
+                            </div>
                         </div>
                         
                         <div class="group-meta">
@@ -1661,44 +2457,152 @@
 
         // Show create group modal
         async function showCreateGroupModal() {
-            // Load products into selector
+            // Load products into selector with checkboxes
             const selector = document.getElementById('product-selector');
             selector.innerHTML = products.map(p => {
                 const imgUrl = getImageUrl(p.name);
+                const isSelected = selectedProducts.has(p.id);
                 return `
-                    <div class="product-select-item" onclick="selectProductForGroup('${p.id}')" id="product-${p.id}">
+                    <div class="multi-product-item ${isSelected ? 'selected' : ''}" onclick="toggleProductSelection('${p.id}')">
+                        <input type="checkbox" class="product-checkbox" ${isSelected ? 'checked' : ''} data-product-id="${p.id}">
                         <img src="${imgUrl}" class="product-select-image" alt="${p.name}">
                         <div class="product-select-info">
                             <div class="product-select-name">${p.name}</div>
                             <div class="product-select-price">R${p.price?.toFixed(2)} per unit</div>
+                            <div class="quantity-input-group" onclick="event.stopPropagation()">
+                                <input type="number" class="quantity-input" 
+                                       value="${selectedProducts.get(p.id)?.quantity || 1}" 
+                                       min="1" 
+                                       data-product-id="${p.id}"
+                                       onchange="updateProductQuantity('${p.id}', this.value)">
+                            </div>
                         </div>
                     </div>
                 `;
             }).join('');
             
+            updateSelectedProductsSummary();
             document.getElementById('createGroupModal').classList.remove('hidden');
         }
 
         function hideCreateGroupModal() {
             document.getElementById('createGroupModal').classList.add('hidden');
-            selectedProductForGroup = null;
-            document.querySelectorAll('.product-select-item').forEach(el => {
-                el.classList.remove('selected');
-            });
+            selectedProducts.clear();
+            document.getElementById('group-name').value = '';
+            document.getElementById('group-target').value = '';
+            document.getElementById('group-min-spazas').value = '10';
+            document.getElementById('group-joining-fee').value = '50';
+            document.getElementById('group-expiry').value = '';
+            document.getElementById('group-details').value = '';
         }
 
-        function selectProductForGroup(productId) {
-            selectedProductForGroup = productId;
-            document.querySelectorAll('.product-select-item').forEach(el => {
-                el.classList.remove('selected');
+        // Toggle product selection
+        function toggleProductSelection(productId) {
+            if (selectedProducts.has(productId)) {
+                selectedProducts.delete(productId);
+            } else {
+                const product = products.find(p => p.id === productId);
+                if (product) {
+                    selectedProducts.set(productId, {
+                        product: product,
+                        quantity: 1
+                    });
+                }
+            }
+            
+            // Refresh the modal view
+            const selector = document.getElementById('product-selector');
+            const checkboxes = selector.querySelectorAll('input[type="checkbox"]');
+            checkboxes.forEach(cb => {
+                if (cb.dataset.productId === productId) {
+                    cb.checked = selectedProducts.has(productId);
+                }
             });
-            document.getElementById(`product-${productId}`).classList.add('selected');
+            
+            // Update item highlight
+            const items = selector.querySelectorAll('.multi-product-item');
+            items.forEach(item => {
+                const checkbox = item.querySelector('input[type="checkbox"]');
+                if (checkbox.dataset.productId === productId) {
+                    item.classList.toggle('selected', selectedProducts.has(productId));
+                }
+            });
+            
+            updateSelectedProductsSummary();
+        }
+
+        // Update product quantity
+        function updateProductQuantity(productId, quantity) {
+            if (selectedProducts.has(productId)) {
+                const item = selectedProducts.get(productId);
+                item.quantity = parseInt(quantity) || 1;
+                selectedProducts.set(productId, item);
+                updateSelectedProductsSummary();
+            }
+        }
+
+        // Update selected products summary
+        function updateSelectedProductsSummary() {
+            const summary = document.getElementById('selected-products-summary');
+            const summaryPreview = document.getElementById('group-summary-preview');
+            
+            if (selectedProducts.size === 0) {
+                summary.innerHTML = '<p style="color: var(--gray-600); text-align: center;">No products selected</p>';
+                summaryPreview.classList.add('hidden');
+                return;
+            }
+            
+            // Show selected product tags
+            summary.innerHTML = Array.from(selectedProducts.entries()).map(([id, item]) => `
+                <span class="selected-product-tag">
+                    ${item.product.name} (x${item.quantity})
+                    <button onclick="removeSelectedProduct('${id}')">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </span>
+            `).join('');
+            
+            // Update group summary preview
+            const totalValue = Array.from(selectedProducts.values()).reduce((sum, item) => 
+                sum + (item.product.price * item.quantity), 0);
+            
+            const minSpazas = parseInt(document.getElementById('group-min-spazas').value) || 10;
+            const perSpaza = totalValue / minSpazas;
+            
+            document.getElementById('group-summary-items').innerHTML = Array.from(selectedProducts.values()).map(item => `
+                <div class="group-summary-item">
+                    <span>${item.product.name} (x${item.quantity})</span>
+                    <span>R${(item.product.price * item.quantity).toFixed(2)}</span>
+                </div>
+            `).join('');
+            
+            document.getElementById('group-total-value').innerText = `R ${totalValue.toFixed(2)}`;
+            document.getElementById('group-per-spaza').innerText = `R ${perSpaza.toFixed(2)}`;
+            
+            summaryPreview.classList.remove('hidden');
+        }
+
+        // Remove selected product
+        function removeSelectedProduct(productId) {
+            selectedProducts.delete(productId);
+            
+            // Update checkbox in selector
+            const checkbox = document.querySelector(`input[type="checkbox"][data-product-id="${productId}"]`);
+            if (checkbox) {
+                checkbox.checked = false;
+                const item = checkbox.closest('.multi-product-item');
+                if (item) {
+                    item.classList.remove('selected');
+                }
+            }
+            
+            updateSelectedProductsSummary();
         }
 
         // Create buying group
         async function createBuyingGroup() {
-            if (!selectedProductForGroup) {
-                alert('Please select a product');
+            if (selectedProducts.size === 0) {
+                showToast('No Products', 'Please select at least one product', 'warning');
                 return;
             }
 
@@ -1710,15 +2614,26 @@
             const details = document.getElementById('group-details').value;
 
             if (!groupName || !targetQty) {
-                alert('Please fill in all required fields');
+                showToast('Missing Fields', 'Please fill in all required fields', 'warning');
                 return;
             }
 
-            const product = products.find(p => p.id === selectedProductForGroup);
-            const contributionPerSpaza = product.price / minSpazas;
+            // Calculate total value and contribution per spaza
+            const totalValue = Array.from(selectedProducts.values()).reduce((sum, item) => 
+                sum + (item.product.price * item.quantity), 0);
+            
+            const contributionPerSpaza = totalValue / minSpazas;
+
+            // Create items description
+            const itemsDescription = Array.from(selectedProducts.values()).map(item => 
+                `${item.quantity}x ${item.product.name}`
+            ).join(', ');
+
+            // Use the first product ID for the product_id field (required by schema)
+            const firstProductId = Array.from(selectedProducts.keys())[0];
 
             const groupData = {
-                product_id: selectedProductForGroup,
+                product_id: firstProductId,
                 creator_id: currentUser.id,
                 created_by: currentUser.store_name,
                 group_name: groupName,
@@ -1728,89 +2643,21 @@
                 min_spazas: minSpazas,
                 joining_fee: joiningFee,
                 contribution_per_spaza: contributionPerSpaza,
-                items_description: details,
+                items_description: itemsDescription,
                 expiry_date: expiryDate || null
             };
 
             showLoading(true);
-            const { error } = await _client.from('buying_groups').insert([groupData]);
+            const { data, error } = await _client.from('buying_groups').insert([groupData]).select();
             showLoading(false);
 
             if (error) {
-                alert('Error creating group: ' + error.message);
+                console.error('Error creating group:', error);
+                showToast('Error', 'Failed to create group: ' + error.message, 'error');
             } else {
-                alert('✅ Buying group created successfully!');
+                showToast('Success!', 'Buying group created successfully!', 'success');
                 hideCreateGroupModal();
-                await loadContent();
-            }
-        }
-
-        // Show join group modal
-        async function showJoinGroup(groupId) {
-            const group = buyingGroups.find(g => g.id === groupId);
-            if (!group) return;
-            
-            selectedGroupForJoin = group;
-            const product = group.products || {};
-            
-            document.getElementById('join-group-details').innerHTML = `
-                <div class="group-card" style="margin-bottom: 20px;">
-                    <h4 style="margin-bottom: 12px;">${group.group_name}</h4>
-                    <p><strong>Product:</strong> ${product.name}</p>
-                    <p><strong>Contribution:</strong> R${group.contribution_per_spaza?.toFixed(2)}</p>
-                    <p><strong>Joining Fee:</strong> R${group.joining_fee?.toFixed(2)}</p>
-                    <p><strong>Current Progress:</strong> ${group.current_quantity}/${group.target_quantity}</p>
-                    <p><strong>Min Spazas Required:</strong> ${group.min_spazas}</p>
-                </div>
-            `;
-            
-            document.getElementById('joinGroupModal').classList.remove('hidden');
-        }
-
-        function hideJoinModal() {
-            document.getElementById('joinGroupModal').classList.add('hidden');
-            selectedGroupForJoin = null;
-        }
-
-        // Confirm join group
-        async function confirmJoinGroup() {
-            if (!selectedGroupForJoin || !currentUser) return;
-
-            showLoading(true);
-            
-            // Update group current quantity
-            const newQuantity = (selectedGroupForJoin.current_quantity || 0) + 1;
-            const { error: updateError } = await _client
-                .from('buying_groups')
-                .update({ current_quantity: newQuantity })
-                .eq('id', selectedGroupForJoin.id);
-
-            if (updateError) {
-                showLoading(false);
-                alert('Error joining group: ' + updateError.message);
-                return;
-            }
-
-            // Create contribution record
-            const contributionData = {
-                group_id: selectedGroupForJoin.id,
-                profile_id: currentUser.id,
-                contribution_amount: selectedGroupForJoin.contribution_per_spaza,
-                joining_fee_paid: selectedGroupForJoin.joining_fee,
-                status: 'pending'
-            };
-
-            const { error: contributionError } = await _client
-                .from('group_contributions')
-                .insert([contributionData]);
-
-            showLoading(false);
-
-            if (contributionError) {
-                alert('Error recording contribution: ' + contributionError.message);
-            } else {
-                alert('✅ Successfully joined the buying group!');
-                hideJoinModal();
+                selectedProducts.clear();
                 await loadContent();
             }
         }
@@ -1833,7 +2680,7 @@
             const linkInput = document.getElementById('invite-link');
             linkInput.select();
             document.execCommand('copy');
-            alert('Link copied to clipboard!');
+            showToast('Copied!', 'Invite link copied to clipboard', 'success');
         }
 
         function sendWhatsAppInvite() {
@@ -1841,13 +2688,93 @@
             const link = document.getElementById('invite-link').value;
             
             if (!phone) {
-                alert('Please enter a phone number');
+                showToast('Error', 'Please enter a phone number', 'warning');
                 return;
             }
 
             const message = `Join my buying group on SpazaSure! ${link}`;
             const whatsappUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
             window.open(whatsappUrl, '_blank');
+            showToast('Invite Sent', 'WhatsApp invite opened', 'success');
+        }
+
+        // Show join group modal
+        async function showJoinGroup(groupId) {
+            const group = buyingGroups.find(g => g.id === groupId);
+            if (!group) return;
+            
+            selectedGroupForJoin = group;
+            const product = group.products || {};
+            
+            document.getElementById('join-group-details').innerHTML = `
+                <div class="group-card" style="margin-bottom: 20px;">
+                    <h4 style="margin-bottom: 12px;">${group.group_name}</h4>
+                    <p><strong>Product:</strong> ${product.name}</p>
+                    <p><strong>Contribution:</strong> R${group.contribution_per_spaza?.toFixed(2)}</p>
+                    <p><strong>Joining Fee:</strong> R${group.joining_fee?.toFixed(2)}</p>
+                    <p><strong>Current Progress:</strong> ${group.current_quantity}/${group.target_quantity}</p>
+                    <p><strong>Min Spazas Required:</strong> ${group.min_spazas}</p>
+                    ${group.items_description ? `
+                        <p><strong>Items:</strong> ${group.items_description}</p>
+                    ` : ''}
+                </div>
+            `;
+            
+            document.getElementById('joinGroupModal').classList.remove('hidden');
+        }
+
+        function hideJoinModal() {
+            document.getElementById('joinGroupModal').classList.add('hidden');
+            selectedGroupForJoin = null;
+        }
+
+        // Confirm join group
+        async function confirmJoinGroup() {
+            if (!selectedGroupForJoin || !currentUser) return;
+
+            showConfirm(
+                'Join Group',
+                `Are you sure you want to join this group? You will contribute R${selectedGroupForJoin.contribution_per_spaza?.toFixed(2)}.`,
+                async () => {
+                    showLoading(true);
+                    
+                    // Update group current quantity
+                    const newQuantity = (selectedGroupForJoin.current_quantity || 0) + 1;
+                    const { error: updateError } = await _client
+                        .from('buying_groups')
+                        .update({ current_quantity: newQuantity })
+                        .eq('id', selectedGroupForJoin.id);
+
+                    if (updateError) {
+                        showLoading(false);
+                        showToast('Error', 'Failed to join group: ' + updateError.message, 'error');
+                        return;
+                    }
+
+                    // Create contribution record
+                    const contributionData = {
+                        group_id: selectedGroupForJoin.id,
+                        profile_id: currentUser.id,
+                        contribution_amount: selectedGroupForJoin.contribution_per_spaza,
+                        joining_fee_paid: selectedGroupForJoin.joining_fee,
+                        status: 'pending'
+                    };
+
+                    const { error: contributionError } = await _client
+                        .from('group_contributions')
+                        .insert([contributionData]);
+
+                    showLoading(false);
+
+                    if (contributionError) {
+                        showToast('Error', 'Failed to record contribution: ' + contributionError.message, 'error');
+                    } else {
+                        showToast('Success!', 'You have successfully joined the buying group!', 'success');
+                        hideJoinModal();
+                        await loadContent();
+                    }
+                }
+            );
         }
 
         // Update cart
@@ -1905,36 +2832,157 @@
                 if (!ordersList) return;
 
                 ordersList.innerHTML = data && data.length > 0 
-                    ? data.map(o => `
-                        <div class="order-card">
-                            <div class="order-header">
-                                <span class="order-id">#${o.id.slice(-8)}</span>
-                                <span class="order-status status-${o.status}">${o.status}</span>
-                            </div>
-                            <div class="order-date">${new Date(o.created_at).toLocaleDateString()}</div>
-                            <div class="order-total">R${(o.total_amount || 0).toFixed(2)}</div>
-                            <div style="font-size: 0.85rem; color: var(--gray-600); margin-bottom: 16px;">
-                                ${o.business_type} • ${o.township}
-                            </div>
-                            <div class="order-actions">
-                                <button class="order-btn btn-view" onclick='viewOrder(${JSON.stringify(o).replace(/'/g, "\\'")})'>
-                                    <i class="fas fa-eye"></i> View
-                                </button>
-                                <button class="order-btn btn-pdf" onclick='generatePDFReceipt(${JSON.stringify(o).replace(/'/g, "\\'")})'>
-                                    <i class="fas fa-file-pdf"></i> PDF
-                                </button>
-                                ${o.status === 'pending' ? `
-                                    <button class="order-btn btn-edit" onclick='editOrder(${JSON.stringify(o).replace(/'/g, "\\'")})'>
-                                        <i class="fas fa-edit"></i> Edit
+                    ? data.map(o => {
+                        const isEditing = editingOrderId === o.id;
+                        return `
+                            <div class="order-card ${isEditing ? 'editing' : ''}" id="order-${o.id}">
+                                <div class="order-header">
+                                    <div class="order-id">
+                                        #${o.id.slice(-8)}
+                                        ${isEditing ? '<span class="edit-mode-badge"><i class="fas fa-edit"></i> EDITING</span>' : ''}
+                                    </div>
+                                    <span class="order-status status-${o.status}">${o.status}</span>
+                                </div>
+                                <div class="order-date">${new Date(o.created_at).toLocaleDateString()}</div>
+                                <div class="order-total">R${(o.total_amount || 0).toFixed(2)}</div>
+                                <div style="font-size: 0.85rem; color: var(--gray-600); margin-bottom: 16px;">
+                                    ${o.business_type} • ${o.township}
+                                </div>
+                                <div class="order-actions">
+                                    <button class="order-btn btn-view" onclick='viewOrder(${JSON.stringify(o).replace(/'/g, "\\'")})'>
+                                        <i class="fas fa-eye"></i> View
                                     </button>
-                                ` : ''}
+                                    <button class="order-btn btn-pdf" onclick='generatePDFReceipt(${JSON.stringify(o).replace(/'/g, "\\'")})'>
+                                        <i class="fas fa-file-pdf"></i> PDF
+                                    </button>
+                                    ${o.status === 'pending' ? `
+                                        <button class="order-btn btn-edit" onclick='editOrder(${JSON.stringify(o).replace(/'/g, "\\'")})'>
+                                            <i class="fas fa-edit"></i> Edit
+                                        </button>
+                                        <button class="order-btn btn-cancel-order" onclick='showCancelOrder("${o.id}")'>
+                                            <i class="fas fa-times"></i> Cancel
+                                        </button>
+                                    ` : ''}
+                                </div>
                             </div>
-                        </div>
-                    `).join('')
+                        `;
+                    }).join('')
                     : '<p style="text-align: center; padding: 40px; color: var(--gray-600);">No orders yet. Start shopping!</p>';
             } catch (error) {
                 console.error('Error loading orders:', error);
+                showToast('Error', 'Failed to load order history', 'error');
             }
+        }
+
+        // Edit order
+        function editOrder(order) {
+            editingOrderId = order.id;
+            editingOrderData = order;
+            cart = order.items || {};
+            updateCartDisplay();
+            setMode('single');
+            hideCheckout();
+            
+            // Show edit mode actions
+            document.getElementById('editModeActions').classList.remove('hidden');
+            
+            showToast('Edit Mode', 'You are now editing order #' + order.id.slice(-8), 'warning');
+        }
+
+        // Cancel edit
+        function cancelEdit() {
+            editingOrderId = null;
+            editingOrderData = null;
+            cart = {};
+            updateCartDisplay();
+            document.getElementById('editModeActions').classList.add('hidden');
+            setMode('history');
+            showToast('Edit Cancelled', 'Order edit has been cancelled', 'info');
+        }
+
+        // Save edited order
+        async function saveEditedOrder() {
+            if (!editingOrderId || !editingOrderData) return;
+            
+            const total = Object.values(cart).reduce((sum, item) => sum + (item.price * item.qty), 0);
+            
+            if (total <= 0) {
+                showToast('Error', 'Cart is empty', 'warning');
+                return;
+            }
+
+            showConfirm(
+                'Save Changes',
+                'Are you sure you want to update this order?',
+                async () => {
+                    showLoading(true);
+                    
+                    const itemsForDb = {};
+                    Object.entries(cart).forEach(([name, details]) => {
+                        itemsForDb[name] = {
+                            qty: details.qty,
+                            price: details.price,
+                            subtotal: details.price * details.qty
+                        };
+                    });
+
+                    const { error } = await _client
+                        .from('orders')
+                        .update({
+                            items: itemsForDb,
+                            total_amount: total
+                        })
+                        .eq('id', editingOrderId);
+
+                    showLoading(false);
+
+                    if (error) {
+                        showToast('Error', 'Failed to update order: ' + error.message, 'error');
+                    } else {
+                        showToast('Success!', 'Order updated successfully!', 'success');
+                        cancelEdit();
+                        await loadOrderHistory();
+                    }
+                }
+            );
+        }
+
+        // Show cancel order confirmation
+        function showCancelOrder(orderId) {
+            showConfirm(
+                'Cancel Order',
+                'Are you sure you want to cancel this order? This action cannot be undone.',
+                async () => {
+                    showLoading(true);
+                    
+                    const { error } = await _client
+                        .from('orders')
+                        .update({ status: 'cancelled' })
+                        .eq('id', orderId);
+
+                    showLoading(false);
+
+                    if (error) {
+                        showToast('Error', 'Failed to cancel order: ' + error.message, 'error');
+                    } else {
+                        showToast('Order Cancelled', 'Your order has been cancelled successfully', 'warning');
+                        await loadOrderHistory();
+                    }
+                },
+                null,
+                'danger'
+            );
+        }
+
+        // Hide cancel order modal
+        function hideCancelOrderModal() {
+            document.getElementById('cancelOrderModal').classList.add('hidden');
+        }
+
+        // Confirm cancel order
+        async function confirmCancelOrder() {
+            hideCancelOrderModal();
+            // Implementation will be in showCancelOrder
         }
 
         // View order
@@ -1961,7 +3009,7 @@
                     <div class="receipt-row"><span>Township:</span> <span>${order.township}</span></div>
                     <div class="receipt-row"><span>Date:</span> <span>${new Date(order.created_at).toLocaleString()}</span></div>
                     <div class="receipt-row"><span>Payment:</span> <span>${order.payment_method}</span></div>
-                    <div class="receipt-row"><span>Status:</span> <span style="color: ${order.status === 'pending' ? 'var(--warning)' : 'var(--secondary)'}">${order.status.toUpperCase()}</span></div>
+                    <div class="receipt-row"><span>Status:</span> <span style="color: ${order.status === 'pending' ? 'var(--warning)' : order.status === 'cancelled' ? 'var(--danger)' : 'var(--secondary)'}">${order.status.toUpperCase()}</span></div>
                     
                     <div class="receipt-divider"></div>
                     
@@ -2086,6 +3134,8 @@
             doc.text('Contact: 076 440 3803', 105, 285, { align: 'center' });
 
             doc.save(`SpazaSure_Order_${order.id.slice(-8)}.pdf`);
+            
+            showToast('PDF Generated', 'Your receipt has been downloaded', 'success');
         }
 
         // Resend WhatsApp
@@ -2096,26 +3146,17 @@
                 
                 const message = formatWhatsAppMessage(order);
                 window.open(`https://wa.me/${ADMIN_WHATSAPP}?text=${encodeURIComponent(message)}`, '_blank');
+                showToast('WhatsApp Sent', 'Order details sent via WhatsApp', 'success');
             } catch (error) {
                 console.error('Error resending WhatsApp:', error);
-                alert('Failed to resend WhatsApp message');
+                showToast('Error', 'Failed to send WhatsApp message', 'error');
             }
-        }
-
-        // Edit order
-        function editOrder(order) {
-            cart = order.items || {};
-            editingOrderId = order.id;
-            updateCartDisplay();
-            setMode('single');
-            hideCheckout();
-            showCheckout();
         }
 
         // Show checkout
         function showCheckout() {
             if (Object.keys(cart).length === 0) {
-                alert('Your cart is empty');
+                showToast('Empty Cart', 'Your cart is empty', 'warning');
                 return;
             }
 
@@ -2176,13 +3217,13 @@ ${items}
 *TOTAL: R${order.total_amount.toFixed(2)}*
 ━━━━━━━━━━━━━━━━━━━━━
 ✅ Order Confirmed
-📦 Status: Pending`;
+📦 Status: ${order.status}`;
         }
 
         // Final place order
         async function finalPlaceOrder() {
             if (!currentUser) {
-                alert('Please login again');
+                showToast('Error', 'Please login again', 'error');
                 logout();
                 return;
             }
@@ -2217,7 +3258,19 @@ ${items}
                     is_verified_at_order: currentUser.is_verified || false
                 };
 
-                const result = await _client.from('orders').insert([orderData]).select();
+                let result;
+                
+                if (editingOrderId) {
+                    // Update existing order
+                    result = await _client
+                        .from('orders')
+                        .update(orderData)
+                        .eq('id', editingOrderId)
+                        .select();
+                } else {
+                    // Create new order
+                    result = await _client.from('orders').insert([orderData]).select();
+                }
 
                 if (result.error) throw result.error;
 
@@ -2231,7 +3284,13 @@ ${items}
                 await generatePDFReceipt(newOrder);
 
                 showLoading(false);
-                alert(`✅ Order #${newOrder.id.slice(-8)} created successfully!`);
+                
+                if (editingOrderId) {
+                    showToast('Order Updated!', `Order #${newOrder.id.slice(-8)} has been updated successfully!`, 'success');
+                    cancelEdit();
+                } else {
+                    showToast('Order Success!', `Order #${newOrder.id.slice(-8)} has been placed successfully!`, 'success');
+                }
 
                 // Reset
                 cart = {};
@@ -2241,20 +3300,27 @@ ${items}
 
             } catch (error) {
                 showLoading(false);
-                document.getElementById('order-error').textContent = '❌ Error: ' + error.message;
-                document.getElementById('order-error').classList.remove('hidden');
+                console.error('Order error:', error);
+                showToast('Error', 'Failed to place order: ' + error.message, 'error');
             }
         }
 
         // Logout
         function logout() {
-            localStorage.clear();
-            currentUser = null;
-            cart = {};
-            document.getElementById('authSection').classList.remove('hidden');
-            document.getElementById('mainSection').classList.add('hidden');
-            document.getElementById('loginForm').classList.remove('hidden');
-            document.getElementById('registerForm').classList.add('hidden');
+            showConfirm(
+                'Logout',
+                'Are you sure you want to logout?',
+                () => {
+                    localStorage.clear();
+                    currentUser = null;
+                    cart = {};
+                    document.getElementById('authSection').classList.remove('hidden');
+                    document.getElementById('mainSection').classList.add('hidden');
+                    document.getElementById('loginForm').classList.remove('hidden');
+                    document.getElementById('registerForm').classList.add('hidden');
+                    showToast('Logged Out', 'You have been successfully logged out', 'info');
+                }
+            );
         }
     </script>
 </body>
