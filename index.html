@@ -3,609 +3,1331 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SpazaSure - Premium Wholesale</title>
+    <title>SpazaSure | Premium Wholesale</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* === RESET & VARIABLES === */
+        /* Keeta Modern UI - Clean & Professional */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         }
+
         :root {
-            --primary: #2563eb;
-            --primary-dark: #1d4ed8;
-            --primary-light: #3b82f6;
-            --secondary: #10b981;
-            --accent: #8b5cf6;
-            --danger: #ef4444;
-            --warning: #f59e0b;
-            --dark: #1e293b;
-            --gray-800: #334155;
-            --gray-600: #64748b;
-            --gray-400: #94a3b8;
-            --gray-200: #e2e8f0;
-            --gray-100: #f1f5f9;
-            --white: #ffffff;
-            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-            --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
-            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
-            --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1);
+            --primary: #1E3A8A;      /* Deep navy blue */
+            --primary-light: #3B82F6;
+            --secondary: #10B981;     /* Mint green */
+            --accent: #F59E0B;        /* Warm amber */
+            --danger: #EF4444;
+            --dark: #0F172A;
+            --gray-800: #1E293B;
+            --gray-600: #475569;
+            --gray-400: #94A3B8;
+            --gray-200: #E2E8F0;
+            --gray-100: #F8FAFC;
+            --white: #FFFFFF;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.03);
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+            --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.05);
+            --radius-sm: 12px;
+            --radius-md: 16px;
+            --radius-lg: 24px;
+            --radius-xl: 32px;
         }
+
         body {
             background: var(--gray-100);
             color: var(--dark);
         }
+
         .app-container {
             max-width: 480px;
             margin: 0 auto;
             min-height: 100vh;
             background: var(--white);
             position: relative;
-            box-shadow: var(--shadow-xl);
+            box-shadow: var(--shadow-lg);
             display: flex;
             flex-direction: column;
         }
 
-        /* === TOAST NOTIFICATIONS === */
-        .toast-container {
+        /* Splash Screen */
+        .splash-screen {
             position: fixed;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 10000;
-            width: 90%;
-            max-width: 400px;
-            pointer-events: none;
-        }
-        .toast {
-            background: var(--white);
-            border-radius: 16px;
-            padding: 16px;
-            margin-bottom: 10px;
-            box-shadow: var(--shadow-xl);
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--primary);
             display: flex;
             align-items: center;
-            gap: 12px;
-            animation: slideDown 0.3s ease;
-            border-left: 4px solid var(--secondary);
-            pointer-events: auto;
-        }
-        .toast.success { border-left-color: var(--secondary); }
-        .toast.error { border-left-color: var(--danger); }
-        .toast.warning { border-left-color: var(--warning); }
-        .toast.info { border-left-color: var(--primary); }
-        .toast-icon {
-            width: 40px; height: 40px; border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 1.2rem;
-        }
-        .toast.success .toast-icon { background: rgba(16,185,129,0.1); color: var(--secondary); }
-        .toast.error .toast-icon { background: rgba(239,68,68,0.1); color: var(--danger); }
-        .toast.warning .toast-icon { background: rgba(245,158,11,0.1); color: var(--warning); }
-        .toast.info .toast-icon { background: rgba(37,99,235,0.1); color: var(--primary); }
-        .toast-content { flex: 1; }
-        .toast-title { font-weight: 700; font-size: 0.95rem; margin-bottom: 4px; }
-        .toast-message { font-size: 0.85rem; color: var(--gray-600); }
-        .toast-close { background: none; border: none; color: var(--gray-400); cursor: pointer; font-size: 1rem; padding: 4px; }
-        @keyframes slideDown {
-            from { opacity: 0; transform: translateY(-20px); }
-            to { opacity: 1; transform: translateY(0); }
+            justify-content: center;
+            z-index: 9999;
+            animation: fadeOut 0.4s ease 1.2s forwards;
         }
 
-        /* === CONFIRMATION MODAL === */
-        .confirm-modal {
-            position: fixed; top:0; left:0; right:0; bottom:0;
-            background: rgba(0,0,0,0.5); backdrop-filter: blur(5px);
-            display: flex; align-items: center; justify-content: center;
-            z-index:5000; padding:20px;
-        }
-        .confirm-content {
-            background: var(--white); border-radius: 32px; width:100%; max-width:380px;
-            padding:24px; text-align: center; animation: scaleIn 0.3s ease;
-        }
-        .confirm-icon { width:80px; height:80px; background:rgba(37,99,235,0.1); border-radius:50%;
-            display:flex; align-items:center; justify-content:center; margin:0 auto 20px; font-size:2.5rem; color:var(--primary); }
-        .confirm-title { font-size:1.5rem; font-weight:800; margin-bottom:12px; color:var(--dark); }
-        .confirm-message { color:var(--gray-600); margin-bottom:24px; line-height:1.5; }
-        .confirm-actions { display:flex; gap:12px; }
-        .confirm-btn { flex:1; padding:14px; border:none; border-radius:16px; font-weight:700; cursor:pointer; transition:all 0.3s ease; }
-        .confirm-btn.cancel { background:var(--gray-200); color:var(--dark); }
-        .confirm-btn.cancel:hover { background:var(--gray-400); }
-        .confirm-btn.confirm { background:var(--primary); color:var(--white); }
-        .confirm-btn.confirm:hover { background:var(--primary-dark); transform:translateY(-2px); box-shadow:var(--shadow); }
-        .confirm-btn.danger { background:var(--danger); color:var(--white); }
-        .confirm-btn.danger:hover { background:#dc2626; }
-        @keyframes scaleIn {
-            from { opacity:0; transform:scale(0.9); }
-            to { opacity:1; transform:scale(1); }
+        .splash-content {
+            text-align: center;
+            color: white;
         }
 
-        /* === SPLASH SCREEN === */
-        .splash-screen {
-            position:fixed; top:0; left:0; right:0; bottom:0;
-            background: linear-gradient(135deg, var(--primary), var(--accent));
-            display:flex; align-items:center; justify-content:center; z-index:9999;
-            animation: fadeOut 0.5s ease 2s forwards;
+        .splash-logo {
+            font-size: 2.5rem;
+            font-weight: 700;
+            letter-spacing: -1px;
+            margin-bottom: 0.5rem;
         }
-        .splash-content { text-align:center; color:var(--white); }
-        .splash-logo { font-size:4rem; font-weight:800; letter-spacing:-2px; margin-bottom:1rem; animation:pulse 2s infinite; }
-        .splash-tagline { font-size:1rem; opacity:0.9; letter-spacing:2px; }
-        @keyframes pulse { 0%,100%{transform:scale(1);} 50%{transform:scale(1.05);} }
-        @keyframes fadeOut { to { opacity:0; visibility:hidden; } }
 
-        /* === LANDING PAGE === */
+        .splash-logo span {
+            color: var(--secondary);
+        }
+
+        @keyframes fadeOut {
+            to { opacity: 0; visibility: hidden; }
+        }
+
+        /* Landing Page */
         .landing-screen {
             min-height: 100vh;
-            background: linear-gradient(135deg, var(--primary), var(--accent));
+            background: var(--primary);
             display: flex;
             align-items: center;
             justify-content: center;
             padding: 20px;
         }
+
         .landing-card {
-            background: var(--white);
-            border-radius: 32px;
+            background: white;
+            border-radius: var(--radius-xl);
             padding: 40px 24px;
             width: 100%;
             max-width: 400px;
-            box-shadow: var(--shadow-xl);
-            animation: slideUp 0.5s ease;
-            text-align: center;
+            box-shadow: var(--shadow-lg);
+            animation: slideUp 0.4s ease;
         }
+
         .landing-logo {
-            font-size: 3rem;
-            font-weight: 800;
+            font-size: 2rem;
+            font-weight: 700;
             color: var(--primary);
             margin-bottom: 8px;
+            text-align: center;
         }
+
+        .landing-logo span {
+            color: var(--secondary);
+        }
+
         .landing-tagline {
             color: var(--gray-600);
-            font-size: 1rem;
+            text-align: center;
             margin-bottom: 32px;
+            font-size: 0.9rem;
         }
-        .user-type-option {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 16px;
-            margin-top: 24px;
-        }
+
         .user-type-btn {
             width: 100%;
-            padding: 24px;
-            border: 2px solid var(--gray-200);
-            border-radius: 24px;
-            background: var(--white);
+            padding: 20px;
+            border: 1px solid var(--gray-200);
+            border-radius: var(--radius-lg);
+            background: white;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.2s ease;
             display: flex;
             align-items: center;
             gap: 16px;
-            text-align: left;
+            margin-bottom: 12px;
         }
+
         .user-type-btn:hover {
             border-color: var(--primary);
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-lg);
+            background: var(--gray-100);
         }
+
         .user-type-icon {
-            width: 60px;
-            height: 60px;
-            background: rgba(37,99,235,0.1);
-            border-radius: 30px;
+            width: 48px;
+            height: 48px;
+            background: var(--gray-100);
+            border-radius: var(--radius-md);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 2rem;
+            font-size: 1.5rem;
             color: var(--primary);
         }
+
         .user-type-info h3 {
-            font-size: 1.2rem;
-            font-weight: 700;
+            font-size: 1.1rem;
+            font-weight: 600;
             margin-bottom: 4px;
-            color: var(--dark);
         }
+
         .user-type-info p {
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             color: var(--gray-600);
         }
 
-        /* === AUTH SCREEN === */
+        /* Auth Card */
         .auth-screen {
             min-height: 100vh;
-            background: linear-gradient(135deg, var(--primary), var(--accent));
+            background: var(--primary);
             display: flex;
             align-items: center;
             justify-content: center;
             padding: 20px;
         }
+
         .auth-card {
-            background: var(--white);
-            border-radius: 32px;
+            background: white;
+            border-radius: var(--radius-xl);
             padding: 32px;
             width: 100%;
             max-width: 400px;
-            box-shadow: var(--shadow-xl);
-            animation: slideUp 0.5s ease;
+            box-shadow: var(--shadow-lg);
+            animation: slideUp 0.4s ease;
         }
-        .auth-header {
-            text-align: center;
-            margin-bottom: 24px;
-        }
-        .auth-header h2 {
-            font-size: 1.8rem;
-            font-weight: 700;
-            color: var(--dark);
-            margin-bottom: 4px;
-        }
-        .auth-header p {
-            color: var(--gray-600);
-            font-size: 0.9rem;
-        }
+
         .back-btn {
             background: none;
             border: none;
-            color: var(--primary);
+            color: var(--gray-600);
             font-size: 0.9rem;
-            font-weight: 600;
+            font-weight: 500;
             cursor: pointer;
             display: flex;
             align-items: center;
             gap: 4px;
-            margin-bottom: 16px;
-            padding: 8px 0;
+            margin-bottom: 24px;
+            padding: 0;
         }
+
         .back-btn:hover {
-            color: var(--primary-dark);
+            color: var(--primary);
+        }
+
+        .auth-header {
+            margin-bottom: 32px;
+        }
+
+        .auth-header h2 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--dark);
+            margin-bottom: 8px;
+        }
+
+        .auth-header p {
+            color: var(--gray-600);
+            font-size: 0.9rem;
         }
 
         .input-group {
-            margin-bottom: 16px;
+            margin-bottom: 20px;
         }
+
         .input-label {
             display: block;
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             font-weight: 600;
-            color: var(--gray-800);
+            color: var(--gray-600);
             margin-bottom: 6px;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.3px;
         }
+
         .input-field {
             width: 100%;
             padding: 14px 16px;
-            border: 2px solid var(--gray-200);
-            border-radius: 16px;
+            border: 1px solid var(--gray-200);
+            border-radius: var(--radius-md);
             font-size: 1rem;
-            transition: all 0.3s ease;
+            transition: all 0.2s ease;
             background: var(--white);
         }
+
         .input-field:focus {
             outline: none;
             border-color: var(--primary);
-            box-shadow: 0 0 0 4px rgba(37,99,235,0.1);
+            box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.1);
         }
 
         .btn {
             width: 100%;
             padding: 16px;
             border: none;
-            border-radius: 16px;
-            font-weight: 700;
+            border-radius: var(--radius-md);
+            font-weight: 600;
             font-size: 1rem;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.2s ease;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 8px;
         }
+
         .btn-primary {
-            background: linear-gradient(135deg, var(--primary), var(--accent));
-            color: var(--white);
-            box-shadow: 0 4px 15px rgba(37,99,235,0.3);
+            background: var(--primary);
+            color: white;
         }
+
         .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(37,99,235,0.4);
+            background: var(--primary-light);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow);
         }
+
         .btn-secondary {
-            background: var(--gray-200);
+            background: var(--gray-100);
             color: var(--dark);
         }
+
         .btn-secondary:hover {
-            background: var(--gray-400);
+            background: var(--gray-200);
         }
 
         .auth-footer {
             text-align: center;
-            margin-top: 20px;
+            margin-top: 24px;
             color: var(--gray-600);
             font-size: 0.9rem;
         }
+
         .auth-link {
             color: var(--primary);
             font-weight: 600;
             cursor: pointer;
-            text-decoration: none;
-        }
-        .auth-link:hover {
-            text-decoration: underline;
         }
 
-        .error-message {
-            color: var(--danger);
-            font-size: 0.85rem;
-            text-align: center;
-            margin-top: 8px;
-        }
-
-        /* === MAIN APP HEADER === */
+        /* Main Header - Keeta Style */
         .app-header {
-            background:linear-gradient(135deg, var(--primary), var(--accent));
-            color:var(--white); padding:20px; border-radius:0 0 30px 30px; box-shadow:var(--shadow-lg);
-            position:sticky; top:0; z-index:100;
+            background: white;
+            padding: 20px 16px 12px;
+            border-bottom: 1px solid var(--gray-200);
+            position: sticky;
+            top: 0;
+            z-index: 100;
         }
-        .header-top { display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; }
-        .store-info { display:flex; align-items:center; gap:8px; }
-        .store-avatar { width:40px; height:40px; background:rgba(255,255,255,0.2); border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:1.2rem; backdrop-filter:blur(5px); }
-        .store-details { line-height:1.3; }
-        .user-name { font-weight:700; font-size:1rem; }
-        .user-badge { font-size:0.7rem; background:rgba(255,255,255,0.2); padding:2px 8px; border-radius:20px; display:inline-block; }
-        .header-actions { display:flex; gap:12px; align-items:center; }
-        .logout-btn { background:rgba(255,255,255,0.2); border:none; color:var(--white); padding:8px 16px; border-radius:30px; font-weight:600; font-size:0.8rem; backdrop-filter:blur(5px); cursor:pointer; display:flex; align-items:center; gap:6px; transition:all 0.3s ease; }
-        .logout-btn:hover { background:rgba(255,255,255,0.3); }
-        .welcome-message { margin-bottom:16px; }
-        .welcome-title { font-size:1.5rem; font-weight:700; margin-bottom:4px; }
-        .welcome-subtitle { font-size:0.9rem; opacity:0.9; }
-        .search-box { background:rgba(255,255,255,0.2); border-radius:30px; padding:12px 20px; display:flex; align-items:center; gap:10px; backdrop-filter:blur(5px); border:1px solid rgba(255,255,255,0.3); }
-        .search-box i { color:var(--white); opacity:0.8; }
-        .search-box input { background:transparent; border:none; width:100%; color:var(--white); font-size:0.95rem; }
-        .search-box input::placeholder { color:rgba(255,255,255,0.7); }
-        .search-box input:focus { outline:none; }
 
-        /* === CATEGORIES STRIP === */
-        .categories-strip { padding:16px 20px; background:var(--white); border-bottom:1px solid var(--gray-200); }
-        .categories-scroll { display:flex; gap:12px; overflow-x:auto; scrollbar-width:none; -ms-overflow-style:none; }
-        .categories-scroll::-webkit-scrollbar { display:none; }
-        .category-chip { padding:8px 20px; background:var(--gray-100); border-radius:30px; font-size:0.85rem; font-weight:600; color:var(--gray-600); white-space:nowrap; cursor:pointer; transition:all 0.3s ease; border:1px solid var(--gray-200); }
-        .category-chip:hover, .category-chip.active { background:var(--primary); color:var(--white); border-color:var(--primary); }
+        .header-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
 
-        /* === CONTENT AREA === */
-        .content-area { flex:1; overflow-y:auto; padding-bottom:160px; }
+        .store-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
 
-        /* === PRODUCTS GRID === */
-        .products-grid { padding:20px; display:grid; grid-template-columns:1fr 1fr; gap:16px; }
-        .product-card { background:var(--white); border-radius:24px; overflow:hidden; box-shadow:var(--shadow); transition:all 0.3s ease; border:1px solid var(--gray-200); animation:fadeIn 0.5s ease; }
-        .product-card:hover { transform:translateY(-4px); box-shadow:var(--shadow-lg); }
-        .product-image { position:relative; padding-top:100%; background:var(--gray-100); }
-        .product-image img { position:absolute; top:0; left:0; width:100%; height:100%; object-fit:cover; transition:transform 0.3s ease; }
-        .product-card:hover .product-image img { transform:scale(1.05); }
-        .product-badges { position:absolute; top:10px; left:10px; right:10px; display:flex; justify-content:space-between; z-index:2; }
-        .badge { padding:4px 8px; border-radius:20px; font-size:0.65rem; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; }
-        .badge-verified { background:var(--secondary); color:var(--white); }
-        .badge-stock { background:var(--danger); color:var(--white); }
-        .badge-sale { background:var(--warning); color:var(--white); }
-        .badge-customer { background:var(--accent); color:var(--white); }
-        .badge-spaza { background:var(--primary); color:var(--white); }
-        .product-info { padding:16px; }
-        .product-category { font-size:0.65rem; color:var(--gray-600); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px; }
-        .product-name { font-weight:700; font-size:0.95rem; margin-bottom:8px; color:var(--dark); line-height:1.3; }
-        .product-description-short { font-size:0.75rem; color:var(--gray-600); margin-bottom:8px; }
-        .product-price { display:flex; align-items:baseline; gap:8px; margin-bottom:12px; }
-        .current-price { font-weight:800; font-size:1.2rem; color:var(--primary); }
-        .old-price { font-size:0.8rem; color:var(--gray-400); text-decoration:line-through; }
-        .product-actions { display:flex; align-items:center; justify-content:space-between; margin-top:12px; }
-        .quantity-control { display:flex; align-items:center; background:var(--gray-100); border-radius:30px; padding:4px; }
-        .qty-btn { width:30px; height:30px; border:none; background:var(--white); border-radius:30px; font-weight:700; color:var(--primary); cursor:pointer; transition:all 0.2s ease; box-shadow:var(--shadow-sm); }
-        .qty-btn:hover { background:var(--primary); color:var(--white); }
-        .qty-value { min-width:30px; text-align:center; font-weight:700; }
-        .add-to-cart { width:36px; height:36px; border:none; background:linear-gradient(135deg, var(--primary), var(--accent)); border-radius:30px; color:var(--white); cursor:pointer; transition:all 0.3s ease; box-shadow:0 4px 10px rgba(37,99,235,0.3); }
-        .add-to-cart:hover { transform:scale(1.1); }
+        .store-avatar {
+            width: 44px;
+            height: 44px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.3rem;
+        }
 
-        /* === BUYING GROUPS GRID === */
-        .groups-grid { padding:20px; display:flex; flex-direction:column; gap:16px; }
-        .group-card { background:var(--white); border-radius:24px; padding:20px; box-shadow:var(--shadow); border:1px solid var(--gray-200); transition:all 0.3s ease; position:relative; overflow:hidden; }
-        .group-card:hover { transform:translateY(-4px); box-shadow:var(--shadow-lg); }
-        .group-card::before { content:''; position:absolute; top:0; left:0; right:0; height:6px; background:linear-gradient(90deg, var(--primary), var(--accent)); }
-        .group-header { display:flex; justify-content:space-between; align-items:start; margin-bottom:16px; }
-        .group-title { font-weight:800; font-size:1.2rem; color:var(--dark); }
-        .group-status { padding:4px 12px; border-radius:30px; font-size:0.7rem; font-weight:700; text-transform:uppercase; }
-        .status-open { background:#d1e7dd; color:#0a3622; }
-        .status-closed { background:#f8d7da; color:#58151c; }
-        .status-full { background:#cfe2ff; color:#084298; }
-        .group-product { display:flex; align-items:center; gap:12px; margin-bottom:16px; padding:12px; background:var(--gray-100); border-radius:16px; }
-        .group-product-image { width:60px; height:60px; border-radius:12px; object-fit:cover; background:var(--white); }
-        .group-product-info { flex:1; }
-        .group-product-name { font-weight:700; font-size:0.95rem; margin-bottom:4px; }
-        .group-product-price { font-weight:800; color:var(--primary); font-size:1.1rem; }
-        .group-stats { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:16px; }
-        .group-stat { text-align:center; padding:12px; background:var(--gray-100); border-radius:16px; }
-        .group-stat-value { font-weight:800; font-size:1.3rem; color:var(--dark); }
-        .group-stat-label { font-size:0.7rem; color:var(--gray-600); text-transform:uppercase; }
-        .progress-bar { width:100%; height:8px; background:var(--gray-200); border-radius:4px; overflow:hidden; margin:12px 0; }
-        .progress-fill { height:100%; background:linear-gradient(90deg, var(--primary), var(--accent)); border-radius:4px; transition:width 0.3s ease; }
-        .group-meta { display:flex; justify-content:space-between; align-items:center; margin-top:16px; padding-top:16px; border-top:1px solid var(--gray-200); }
-        .group-creator { display:flex; align-items:center; gap:6px; font-size:0.85rem; color:var(--gray-600); }
-        .group-actions { display:flex; gap:8px; }
-        .group-action-btn { padding:8px 16px; border:none; border-radius:30px; font-weight:600; font-size:0.8rem; cursor:pointer; transition:all 0.3s ease; }
-        .btn-join { background:var(--secondary); color:var(--white); }
-        .btn-join:hover { background:#0f9e6e; transform:scale(1.05); }
-        .btn-invite { background:var(--primary); color:var(--white); }
-        .btn-invite:hover { background:var(--primary-dark); }
+        .store-details {
+            line-height: 1.4;
+        }
 
-        /* === ORDER HISTORY === */
-        .orders-list { padding:20px; display:flex; flex-direction:column; gap:16px; }
-        .order-card { background:var(--white); border-radius:24px; padding:16px; box-shadow:var(--shadow); border:1px solid var(--gray-200); transition:all 0.3s ease; position:relative; }
-        .order-card:hover { transform:translateX(4px); box-shadow:var(--shadow-lg); }
-        .order-card.editing { border:2px solid var(--accent); box-shadow:0 0 0 4px rgba(139,92,246,0.1); }
-        .order-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
-        .order-id { font-weight:700; color:var(--primary); font-size:0.9rem; display:flex; align-items:center; gap:8px; }
-        .order-status { padding:4px 12px; border-radius:20px; font-size:0.7rem; font-weight:700; text-transform:uppercase; }
-        .status-pending { background:#fff3cd; color:#856404; }
-        .status-processing { background:#cfe2ff; color:#084298; }
-        .status-completed { background:#d4edda; color:#155724; }
-        .status-cancelled { background:#f8d7da; color:#721c24; }
-        .order-date { font-size:0.8rem; color:var(--gray-600); margin-bottom:8px; }
-        .order-total { font-weight:800; font-size:1.3rem; color:var(--dark); margin-bottom:12px; }
-        .order-actions { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:12px; }
-        .order-btn { padding:10px; border:none; border-radius:16px; font-weight:600; font-size:0.8rem; cursor:pointer; transition:all 0.3s ease; display:flex; align-items:center; justify-content:center; gap:4px; }
-        .btn-view { background:var(--primary); color:var(--white); }
-        .btn-pdf { background:var(--danger); color:var(--white); }
-        .btn-edit { background:var(--accent); color:var(--white); }
-        .btn-cancel { background:var(--gray-200); color:var(--dark); }
-        .btn-cancel-order { background:var(--warning); color:var(--white); }
-        .order-btn:hover { transform:translateY(-2px); box-shadow:var(--shadow); }
+        .user-name {
+            font-weight: 700;
+            font-size: 1rem;
+            color: var(--dark);
+        }
 
-        /* === FLOATING CART === */
+        .user-badge {
+            font-size: 0.7rem;
+            color: var(--gray-600);
+            background: var(--gray-100);
+            padding: 2px 8px;
+            border-radius: 30px;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .icon-btn {
+            width: 44px;
+            height: 44px;
+            background: var(--gray-100);
+            border: none;
+            border-radius: var(--radius-md);
+            color: var(--dark);
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .icon-btn:hover {
+            background: var(--gray-200);
+        }
+
+        .welcome-message {
+            margin-bottom: 16px;
+        }
+
+        .welcome-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 4px;
+            color: var(--dark);
+        }
+
+        .welcome-subtitle {
+            font-size: 0.9rem;
+            color: var(--gray-600);
+        }
+
+        .search-box {
+            background: var(--gray-100);
+            border-radius: var(--radius-lg);
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border: 1px solid var(--gray-200);
+        }
+
+        .search-box i {
+            color: var(--gray-400);
+            font-size: 1.1rem;
+        }
+
+        .search-box input {
+            background: transparent;
+            border: none;
+            width: 100%;
+            font-size: 0.95rem;
+        }
+
+        .search-box input::placeholder {
+            color: var(--gray-400);
+        }
+
+        /* Categories */
+        .categories-strip {
+            padding: 16px;
+            background: white;
+            border-bottom: 1px solid var(--gray-200);
+        }
+
+        .categories-scroll {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+
+        .categories-scroll::-webkit-scrollbar {
+            display: none;
+        }
+
+        .category-chip {
+            padding: 8px 16px;
+            background: var(--gray-100);
+            border-radius: 30px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--gray-600);
+            white-space: nowrap;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 1px solid var(--gray-200);
+        }
+
+        .category-chip.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        /* Products Grid - Keeta Style */
+        .products-grid {
+            padding: 16px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .product-card {
+            background: white;
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            border: 1px solid var(--gray-200);
+            transition: all 0.2s ease;
+        }
+
+        .product-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .product-image {
+            position: relative;
+            padding-top: 100%;
+            background: var(--gray-100);
+        }
+
+        .product-image img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .product-badges {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            display: flex;
+            gap: 4px;
+        }
+
+        .badge {
+            padding: 4px 8px;
+            border-radius: 30px;
+            font-size: 0.6rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .badge-verified {
+            background: var(--secondary);
+            color: white;
+        }
+
+        .badge-customer {
+            background: var(--accent);
+            color: white;
+        }
+
+        .badge-spaza {
+            background: var(--primary);
+            color: white;
+        }
+
+        .product-info {
+            padding: 12px;
+        }
+
+        .product-category {
+            font-size: 0.65rem;
+            color: var(--gray-600);
+            text-transform: uppercase;
+            margin-bottom: 4px;
+            letter-spacing: 0.3px;
+        }
+
+        .product-name {
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-bottom: 8px;
+            line-height: 1.3;
+            height: 2.4rem;
+            overflow: hidden;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            color: var(--dark);
+        }
+
+        .product-price {
+            display: flex;
+            align-items: baseline;
+            gap: 6px;
+            margin-bottom: 12px;
+        }
+
+        .current-price {
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: var(--primary);
+        }
+
+        .product-actions {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .quantity-control {
+            display: flex;
+            align-items: center;
+            background: var(--gray-100);
+            border-radius: 30px;
+            padding: 2px;
+        }
+
+        .qty-btn {
+            width: 28px;
+            height: 28px;
+            border: none;
+            background: white;
+            border-radius: 30px;
+            font-weight: 600;
+            color: var(--primary);
+            cursor: pointer;
+            box-shadow: var(--shadow-sm);
+            font-size: 1rem;
+        }
+
+        .qty-btn:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        .qty-value {
+            min-width: 28px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .add-to-cart {
+            width: 36px;
+            height: 36px;
+            border: none;
+            background: var(--primary);
+            border-radius: 30px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 1rem;
+        }
+
+        .add-to-cart:hover {
+            background: var(--primary-light);
+            transform: scale(1.05);
+        }
+
+        /* Floating Cart - Keeta Style */
         .floating-cart {
             position: fixed;
             bottom: 90px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: calc(100% - 40px);
-            max-width: 440px;
-            background: var(--white);
-            border-radius: 30px;
-            padding: 16px 20px;
-            box-shadow: var(--shadow-xl);
+            left: 16px;
+            right: 16px;
+            max-width: 448px;
+            margin: 0 auto;
+            background: white;
+            border-radius: var(--radius-xl);
+            padding: 14px 20px;
+            box-shadow: var(--shadow-lg);
             display: flex;
             align-items: center;
             justify-content: space-between;
             z-index: 950;
             border: 1px solid var(--gray-200);
-            animation: slideUp 0.3s ease;
         }
+
         .cart-info {
             display: flex;
             align-items: center;
             gap: 12px;
         }
+
         .cart-icon {
             position: relative;
         }
+
         .cart-badge {
             position: absolute;
-            top: -8px;
-            right: -8px;
-            background: var(--danger);
-            color: var(--white);
-            font-size: 0.7rem;
-            font-weight: 700;
-            width: 20px;
-            height: 20px;
-            border-radius: 10px;
+            top: -6px;
+            right: -6px;
+            background: var(--accent);
+            color: white;
+            font-size: 0.65rem;
+            font-weight: 600;
+            width: 18px;
+            height: 18px;
+            border-radius: 9px;
             display: flex;
             align-items: center;
             justify-content: center;
-            border: 2px solid var(--white);
         }
+
         .cart-total-label {
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             color: var(--gray-600);
         }
+
         .cart-total-value {
-            font-weight: 800;
+            font-weight: 700;
             font-size: 1.2rem;
             color: var(--dark);
         }
+
         .checkout-btn {
-            padding: 12px 24px;
-            background: linear-gradient(135deg, var(--primary), var(--accent));
+            padding: 10px 24px;
+            background: var(--primary);
             border: none;
             border-radius: 30px;
-            color: var(--white);
-            font-weight: 700;
+            color: white;
+            font-weight: 600;
+            font-size: 0.9rem;
             cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
-        }
-        .checkout-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
+            transition: all 0.2s ease;
         }
 
-        /* === BOTTOM NAVIGATION === */
+        .checkout-btn:hover {
+            background: var(--primary-light);
+        }
+
+        /* Bottom Navigation - Keeta Style */
         .bottom-nav {
             position: fixed;
             bottom: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 100%;
+            left: 0;
+            right: 0;
             max-width: 480px;
-            background: var(--white);
+            margin: 0 auto;
+            background: white;
             display: flex;
             justify-content: space-around;
-            padding: 12px 0;
+            padding: 10px 0 16px;
             border-top: 1px solid var(--gray-200);
-            box-shadow: 0 -4px 10px rgba(0,0,0,0.05);
+            box-shadow: 0 -4px 10px rgba(0,0,0,0.02);
             z-index: 900;
         }
-        .nav-item { display:flex; flex-direction:column; align-items:center; gap:4px; cursor:pointer; padding:8px 16px; border-radius:30px; transition:all 0.3s ease; }
-        .nav-item i { font-size:1.5rem; color:var(--gray-600); }
-        .nav-item span { font-size:0.7rem; font-weight:600; color:var(--gray-600); }
-        .nav-item.active i, .nav-item.active span { color:var(--primary); }
 
-        /* === MODALS === */
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+            padding: 6px 16px;
+            border-radius: 30px;
+            transition: all 0.2s ease;
+            color: var(--gray-600);
+        }
+
+        .nav-item i {
+            font-size: 1.3rem;
+        }
+
+        .nav-item span {
+            font-size: 0.7rem;
+            font-weight: 500;
+        }
+
+        .nav-item.active {
+            color: var(--primary);
+        }
+
+        /* Buying Groups */
+        .groups-grid {
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .group-card {
+            background: white;
+            border-radius: var(--radius-lg);
+            padding: 16px;
+            border: 1px solid var(--gray-200);
+            transition: all 0.2s ease;
+        }
+
+        .group-card:hover {
+            box-shadow: var(--shadow);
+        }
+
+        .group-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .group-title {
+            font-weight: 700;
+            font-size: 1rem;
+        }
+
+        .group-status {
+            padding: 4px 12px;
+            border-radius: 30px;
+            font-size: 0.65rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            background: #e6f7f0;
+            color: var(--secondary);
+        }
+
+        .group-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin: 12px 0;
+        }
+
+        .group-stat {
+            text-align: center;
+            padding: 10px;
+            background: var(--gray-100);
+            border-radius: var(--radius-md);
+        }
+
+        .group-stat-value {
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+
+        .group-stat-label {
+            font-size: 0.65rem;
+            color: var(--gray-600);
+            text-transform: uppercase;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: var(--gray-200);
+            border-radius: 3px;
+            overflow: hidden;
+            margin: 12px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--primary);
+            border-radius: 3px;
+            transition: width 0.3s ease;
+        }
+
+        .group-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-join, .btn-invite {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: var(--radius-md);
+            font-weight: 600;
+            font-size: 0.8rem;
+            cursor: pointer;
+        }
+
+        .btn-join {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-invite {
+            background: var(--gray-100);
+            color: var(--dark);
+        }
+
+        /* Order History */
+        .orders-list {
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .order-card {
+            background: white;
+            border-radius: var(--radius-lg);
+            padding: 16px;
+            border: 1px solid var(--gray-200);
+        }
+
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .order-id {
+            font-weight: 600;
+            color: var(--primary);
+            font-size: 0.9rem;
+        }
+
+        .order-status {
+            padding: 4px 12px;
+            border-radius: 30px;
+            font-size: 0.65rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-completed {
+            background: #e6f7f0;
+            color: var(--secondary);
+        }
+
+        .order-total {
+            font-weight: 700;
+            font-size: 1.2rem;
+            margin: 8px 0;
+        }
+
+        .order-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .order-btn {
+            padding: 10px;
+            border: none;
+            border-radius: var(--radius-md);
+            font-weight: 500;
+            font-size: 0.8rem;
+            cursor: pointer;
+        }
+
+        .btn-view {
+            background: var(--gray-100);
+            color: var(--primary);
+        }
+
+        .btn-pdf {
+            background: var(--gray-100);
+            color: var(--accent);
+        }
+
+        /* Scanner */
+        .scanner-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.9);
+            z-index: 3000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .scanner-header {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            color: white;
+            position: absolute;
+            top: 0;
+        }
+
+        .scanner-close {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            width: 44px;
+            height: 44px;
+            border-radius: 22px;
+            color: white;
+            font-size: 1.2rem;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+        }
+
+        #scanner-viewport {
+            width: 100%;
+            max-width: 400px;
+            height: 280px;
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .scanner-result {
+            background: white;
+            padding: 20px;
+            border-radius: var(--radius-lg);
+            margin-top: 20px;
+            width: 90%;
+            max-width: 400px;
+        }
+
+        /* Chatbot - Keeta Style */
+        .chatbot-toggle {
+            position: fixed;
+            bottom: 160px;
+            right: 16px;
+            width: 56px;
+            height: 56px;
+            background: var(--primary);
+            border-radius: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.4rem;
+            cursor: pointer;
+            box-shadow: var(--shadow-lg);
+            z-index: 1999;
+            border: none;
+        }
+
+        .chatbot-container {
+            position: fixed;
+            bottom: 160px;
+            right: 16px;
+            width: 320px;
+            height: 480px;
+            background: white;
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            flex-direction: column;
+            z-index: 2000;
+            overflow: hidden;
+            border: 1px solid var(--gray-200);
+        }
+
+        .chatbot-header {
+            background: var(--primary);
+            color: white;
+            padding: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chatbot-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+        }
+
+        .chatbot-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.1rem;
+            cursor: pointer;
+            opacity: 0.8;
+        }
+
+        .chatbot-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            background: var(--gray-100);
+        }
+
+        .message {
+            max-width: 85%;
+            padding: 12px 16px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            line-height: 1.4;
+        }
+
+        .message.bot {
+            background: white;
+            align-self: flex-start;
+            border-bottom-left-radius: 4px;
+        }
+
+        .message.user {
+            background: var(--primary);
+            color: white;
+            align-self: flex-end;
+            border-bottom-right-radius: 4px;
+        }
+
+        .chatbot-input {
+            display: flex;
+            padding: 12px;
+            gap: 8px;
+            border-top: 1px solid var(--gray-200);
+            background: white;
+        }
+
+        .chatbot-input input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 1px solid var(--gray-200);
+            border-radius: 30px;
+            outline: none;
+            font-size: 0.85rem;
+        }
+
+        .chatbot-send {
+            width: 44px;
+            height: 44px;
+            background: var(--primary);
+            border: none;
+            border-radius: 22px;
+            color: white;
+            cursor: pointer;
+        }
+
+        /* Report Modal - Keeta Style */
+        .report-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(5px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 4000;
+            padding: 20px;
+        }
+
+        .report-content {
+            background: white;
+            border-radius: var(--radius-xl);
+            width: 100%;
+            max-width: 400px;
+            max-height: 80vh;
+            overflow-y: auto;
+            padding: 24px;
+        }
+
+        .report-progress {
+            display: flex;
+            justify-content: space-between;
+            margin: 24px 0;
+            position: relative;
+        }
+
+        .report-progress::before {
+            content: '';
+            position: absolute;
+            top: 14px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--gray-200);
+            z-index: 1;
+        }
+
+        .progress-step {
+            width: 30px;
+            height: 30px;
+            background: var(--gray-200);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: var(--gray-600);
+            position: relative;
+            z-index: 2;
+        }
+
+        .progress-step.completed {
+            background: var(--secondary);
+            color: white;
+        }
+
+        .progress-step.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .report-step {
+            display: none;
+        }
+
+        .report-step.active {
+            display: block;
+        }
+
+        .report-field {
+            margin-bottom: 20px;
+        }
+
+        .report-label {
+            display: block;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--gray-800);
+            margin-bottom: 8px;
+        }
+
+        .report-image-upload {
+            border: 2px dashed var(--gray-200);
+            border-radius: var(--radius-md);
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            margin: 16px 0;
+        }
+
+        .report-image-preview {
+            width: 100%;
+            max-height: 150px;
+            object-fit: cover;
+            border-radius: var(--radius-md);
+            margin-top: 12px;
+        }
+
+        .report-navigation {
+            display: flex;
+            gap: 12px;
+            margin-top: 24px;
+        }
+
+        /* Modal */
         .modal-overlay {
-            position:fixed; top:0; left:0; right:0; bottom:0;
-            background:rgba(0,0,0,0.5); backdrop-filter:blur(5px);
-            display:flex; align-items:center; justify-content:center;
-            z-index:2000; padding:20px; animation:fadeIn 0.3s ease;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(5px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            padding: 20px;
         }
+
         .modal-content {
-            background:var(--white); border-radius:32px; width:100%; max-width:440px;
-            max-height:80vh; overflow-y:auto; padding:24px; box-shadow:var(--shadow-xl);
-            animation:slideUp 0.3s ease;
+            background: white;
+            border-radius: var(--radius-xl);
+            width: 100%;
+            max-width: 440px;
+            max-height: 80vh;
+            overflow-y: auto;
+            padding: 24px;
+            box-shadow: var(--shadow-lg);
         }
-        .modal-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; }
-        .modal-title { font-weight:800; font-size:1.3rem; color:var(--dark); }
-        .modal-close { background:var(--gray-100); border:none; width:40px; height:40px; border-radius:20px; cursor:pointer; transition:all 0.3s ease; }
-        .modal-close:hover { background:var(--gray-200); }
 
-        /* === CART MODAL === */
-        .cart-item { display:flex; justify-content:space-between; padding:12px 0; border-bottom:1px solid var(--gray-200); }
-        .cart-item-name { font-weight:600; }
-        .cart-item-price { color:var(--primary); font-weight:700; }
-        .cart-total { margin-top:16px; padding-top:16px; border-top:2px solid var(--primary); font-weight:800; font-size:1.2rem; text-align:right; }
-
-        /* === CREATE GROUP === */
-        .selected-product-item {
-            display:flex; justify-content:space-between; align-items:center;
-            padding:8px 12px; background:var(--white); border-radius:30px;
-            border:1px solid var(--gray-200); margin-bottom:6px;
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
         }
-        .selected-product-item .remove-btn {
-            background:none; border:none; color:var(--danger); cursor:pointer; font-size:1rem; padding:4px;
+
+        .modal-title {
+            font-weight: 700;
+            font-size: 1.3rem;
         }
-        .selected-product-item .remove-btn:hover { color:var(--danger-dark); }
 
-        .group-summary {
-            background:linear-gradient(135deg, var(--primary), var(--accent));
-            color:white; padding:16px; border-radius:16px; margin-bottom:16px;
+        .modal-close {
+            background: var(--gray-100);
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 20px;
+            cursor: pointer;
         }
-        .group-summary-item { display:flex; justify-content:space-between; margin:8px 0; }
 
-        /* === RECEIPT === */
-        .receipt { background:var(--white); }
-        .receipt-header { text-align:center; margin-bottom:20px; }
-        .receipt-logo { font-size:2rem; font-weight:800; color:var(--primary); margin-bottom:4px; }
-        .receipt-divider { height:2px; background:linear-gradient(90deg, transparent, var(--primary), transparent); margin:20px 0; }
-        .receipt-row { display:flex; justify-content:space-between; margin-bottom:8px; font-size:0.9rem; }
-        .receipt-items { margin:20px 0; }
-        .receipt-item { display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px dashed var(--gray-200); }
-        .receipt-total { font-size:1.3rem; font-weight:800; color:var(--primary); text-align:right; margin:20px 0; }
-        .qr-code { display:flex; justify-content:center; margin:20px 0; }
+        /* Cart Item */
+        .cart-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--gray-200);
+            font-size: 0.9rem;
+        }
 
-        /* === UTILITY === */
-        .hidden { display:none !important; }
-        @keyframes fadeIn { from{opacity:0;} to{opacity:1;} }
+        .cart-total {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 2px solid var(--primary);
+            font-weight: 700;
+            font-size: 1.2rem;
+            text-align: right;
+        }
+
+        /* Receipt */
+        .receipt {
+            font-size: 0.9rem;
+        }
+
+        .receipt-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .receipt-logo {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .receipt-divider {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--gray-200), transparent);
+            margin: 20px 0;
+        }
+
+        .receipt-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .receipt-total {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--primary);
+            text-align: right;
+            margin: 20px 0;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
     </style>
 </head>
 <body>
@@ -614,1477 +1336,19 @@
         <div id="toastContainer" class="toast-container"></div>
 
         <!-- Confirmation Modal -->
-        <div id="confirmModal" class="confirm-modal hidden">
-            <div class="confirm-content">
-                <div class="confirm-icon" id="confirmIcon"><i class="fas fa-question-circle"></i></div>
-                <h3 class="confirm-title" id="confirmTitle">Confirm Action</h3>
-                <p class="confirm-message" id="confirmMessage">Are you sure you want to proceed?</p>
-                <div class="confirm-actions">
-                    <button class="confirm-btn cancel" id="confirmCancelBtn">Cancel</button>
-                    <button class="confirm-btn confirm" id="confirmOkBtn">Confirm</button>
+        <div id="confirmModal" class="modal-overlay hidden">
+            <div class="confirm-content" style="background: white; border-radius: 32px; padding: 24px; max-width: 340px; text-align: center;">
+                <div class="confirm-icon" style="font-size: 2.5rem; color: var(--primary); margin-bottom: 16px;">
+                    <i class="fas fa-question-circle"></i>
+                </div>
+                <h3 class="confirm-title" style="font-size: 1.3rem; font-weight: 700; margin-bottom: 12px;" id="confirmTitle">Confirm Action</h3>
+                <p class="confirm-message" style="color: var(--gray-600); margin-bottom: 24px;" id="confirmMessage">Are you sure you want to proceed?</p>
+                <div class="confirm-actions" style="display: flex; gap: 12px;">
+                    <button class="btn btn-secondary" style="flex:1;" id="confirmCancelBtn">Cancel</button>
+                    <button class="btn btn-primary" style="flex:1;" id="confirmOkBtn">Confirm</button>
                 </div>
             </div>
         </div>
 
         <!-- Splash Screen -->
-        <div class="splash-screen" id="splashScreen">
-            <div class="splash-content">
-                <div class="splash-logo">SPAZASURE</div>
-                <div class="splash-tagline">Premium Wholesale Supply</div>
-            </div>
-        </div>
-
-        <!-- Landing Page -->
-        <div id="landingSection" class="landing-screen">
-            <div class="landing-card">
-                <div class="landing-logo">SPAZASURE</div>
-                <div class="landing-tagline">Choose your account type</div>
-                
-                <div class="user-type-option">
-                    <div class="user-type-btn" onclick="selectUserType('spaza')">
-                        <div class="user-type-icon">
-                            <i class="fas fa-store"></i>
-                        </div>
-                        <div class="user-type-info">
-                            <h3>Spaza Shop Owner</h3>
-                            <p>Bulk wholesale pricing • Manage your store inventory • Join buying groups</p>
-                        </div>
-                    </div>
-
-                    <div class="user-type-btn" onclick="selectUserType('customer')">
-                        <div class="user-type-icon">
-                            <i class="fas fa-user"></i>
-                        </div>
-                        <div class="user-type-info">
-                            <h3>Individual Customer</h3>
-                            <p>Personal shopping • Special customer pricing • No minimum order</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Auth Section -->
-        <div id="authSection" class="auth-screen hidden">
-            <div class="auth-card">
-                <button class="back-btn" onclick="goBackToLanding()">
-                    <i class="fas fa-arrow-left"></i> Back
-                </button>
-                
-                <div class="auth-header">
-                    <h2 id="authTitle">Sign In</h2>
-                    <p id="authSubtitle">Access your account</p>
-                </div>
-
-                <!-- Spaza Login Form -->
-                <div id="spazaLoginForm" class="hidden">
-                    <div class="input-group">
-                        <label class="input-label">WhatsApp Number</label>
-                        <input type="tel" id="login-wa" class="input-field" placeholder="e.g. 27821234567">
-                    </div>
-                    <button class="btn btn-primary" onclick="handleSpazaLogin()">
-                        <i class="fas fa-sign-in-alt"></i> Sign In
-                    </button>
-                    <div id="spaza-login-error" class="error-message"></div>
-                    <div class="auth-footer">
-                        New spaza shop? <span class="auth-link" onclick="showSpazaRegister()">Register here</span>
-                    </div>
-                </div>
-
-                <!-- Spaza Register Form -->
-                <div id="spazaRegisterForm" class="hidden">
-                    <h3 style="margin-bottom:20px;">Register Spaza Shop</h3>
-                    <div class="input-group"><label class="input-label">First Name</label><input type="text" id="reg-fname" class="input-field"></div>
-                    <div class="input-group"><label class="input-label">Last Name</label><input type="text" id="reg-lname" class="input-field"></div>
-                    <div class="input-group"><label class="input-label">Store Name</label><input type="text" id="reg-sname" class="input-field"></div>
-                    <div class="input-group"><label class="input-label">WhatsApp Number</label><input type="number" id="reg-wa" class="input-field"></div>
-                    <div class="input-group">
-                        <label class="input-label">Business Type</label>
-                        <select id="reg-bus-type" class="input-field">
-                            <option value="Spaza Shop">Spaza Shop</option>
-                            <option value="Tuck Shop">Tuck Shop</option>
-                            <option value="Street Vendor">Street Vendor</option>
-                            <option value="Home-based Retail">Home-based Retail</option>
-                        </select>
-                    </div>
-                    <div class="input-group">
-                        <label class="input-label">Store Size</label>
-                        <select id="reg-size" class="input-field">
-                            <option value="Small/Counter">Small/Counter</option>
-                            <option value="Medium/Walk-in">Medium/Walk-in</option>
-                            <option value="Large/Superette">Large/Superette</option>
-                        </select>
-                    </div>
-                    <div class="input-group"><label class="input-label">Township</label><input type="text" id="reg-town" class="input-field"></div>
-                    <div class="input-group"><label class="input-label">Street Address</label><input type="text" id="reg-address" class="input-field"></div>
-                    <div class="input-group">
-                        <label class="input-label">Gender</label>
-                        <select id="reg-gender" class="input-field">
-                            <option value="Male">Male</option>
-                            <option value="Female">Female</option>
-                            <option value="Other">Other</option>
-                            <option value="Prefer not to say">Prefer not to say</option>
-                        </select>
-                    </div>
-                    <button class="btn btn-primary" onclick="handleSpazaRegister()">Register & Sign In</button>
-                    <div id="spaza-register-error" class="error-message"></div>
-                    <div class="auth-footer"><span class="auth-link" onclick="showSpazaLogin()">Back to Login</span></div>
-                </div>
-
-                <!-- Customer Login Form -->
-                <div id="customerLoginForm" class="hidden">
-                    <div class="input-group">
-                        <label class="input-label">Email</label>
-                        <input type="email" id="customer-login-email" class="input-field" placeholder="your@email.com">
-                    </div>
-                    <div class="input-group">
-                        <label class="input-label">Password</label>
-                        <input type="password" id="customer-login-password" class="input-field" placeholder="••••••••">
-                    </div>
-                    <button class="btn btn-primary" onclick="handleCustomerLogin()">
-                        <i class="fas fa-sign-in-alt"></i> Sign In
-                    </button>
-                    <div id="customer-login-error" class="error-message"></div>
-                    <div class="auth-footer">
-                        New customer? <span class="auth-link" onclick="showCustomerRegister()">Register here</span>
-                    </div>
-                </div>
-
-                <!-- Customer Register Form -->
-                <div id="customerRegisterForm" class="hidden">
-                    <h3 style="margin-bottom:20px;">Register as Customer</h3>
-                    <div class="input-group">
-                        <label class="input-label">First Name *</label>
-                        <input type="text" id="cust-fname" class="input-field" required>
-                    </div>
-                    <div class="input-group">
-                        <label class="input-label">Last Name *</label>
-                        <input type="text" id="cust-lname" class="input-field" required>
-                    </div>
-                    <div class="input-group">
-                        <label class="input-label">Email *</label>
-                        <input type="email" id="cust-email" class="input-field" required>
-                    </div>
-                    <div class="input-group">
-                        <label class="input-label">Phone *</label>
-                        <input type="tel" id="cust-phone" class="input-field" required>
-                    </div>
-                    <div class="input-group">
-                        <label class="input-label">Password *</label>
-                        <input type="password" id="cust-password" class="input-field" required>
-                    </div>
-                    <div class="input-group">
-                        <label class="input-label">Confirm Password *</label>
-                        <input type="password" id="cust-confirm-password" class="input-field" required>
-                    </div>
-                    <div class="input-group">
-                        <label class="input-label">Township</label>
-                        <input type="text" id="cust-town" class="input-field">
-                    </div>
-                    <div class="input-group">
-                        <label class="input-label">Address</label>
-                        <input type="text" id="cust-address" class="input-field">
-                    </div>
-                    <button class="btn btn-primary" onclick="handleCustomerRegister()">
-                        <i class="fas fa-user-plus"></i> Register & Sign In
-                    </button>
-                    <div id="customer-register-error" class="error-message"></div>
-                    <div class="auth-footer">
-                        Already have an account? <span class="auth-link" onclick="showCustomerLogin()">Sign in</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Main App Section -->
-        <div id="mainSection" class="hidden" style="display: flex; flex-direction: column; height: 100vh;">
-            <!-- Header -->
-            <div class="app-header">
-                <div class="header-top">
-                    <div class="store-info">
-                        <div class="store-avatar"><i class="fas fa-store"></i></div>
-                        <div class="store-details">
-                            <div class="user-name" id="txt-user-name">Loading...</div>
-                            <span class="user-badge" id="txt-user-type">SPAZA SHOP</span>
-                        </div>
-                    </div>
-                    <div class="header-actions">
-                        <button class="logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i></button>
-                    </div>
-                </div>
-                <div class="welcome-message">
-                    <div class="welcome-title" id="welcome-message">Welcome back!</div>
-                    <div class="welcome-subtitle" id="welcome-subtitle">What would you like to order today?</div>
-                </div>
-                <div class="search-box">
-                    <i class="fas fa-search"></i>
-                    <input type="text" id="search-input" placeholder="Search products..." onkeyup="handleSearch()">
-                </div>
-            </div>
-
-            <!-- Categories Strip -->
-            <div class="categories-strip" id="categoriesStrip">
-                <div class="categories-scroll" id="categoriesContainer"></div>
-            </div>
-
-            <!-- Content Area -->
-            <div class="content-area" id="contentArea">
-                <div id="productsGrid" class="products-grid"></div>
-                <div id="groupsGrid" class="groups-grid hidden"></div>
-                <div id="ordersList" class="orders-list hidden"></div>
-            </div>
-
-            <!-- Floating Cart -->
-            <div class="floating-cart" id="floatingCart">
-                <div class="cart-info">
-                    <div class="cart-icon">
-                        <i class="fas fa-shopping-cart fa-2x" style="color: var(--primary);"></i>
-                        <span class="cart-badge" id="cart-count">0</span>
-                    </div>
-                    <div>
-                        <div class="cart-total-label">Total</div>
-                        <div class="cart-total-value" id="txt-total">R 0.00</div>
-                    </div>
-                </div>
-                <button class="checkout-btn" onclick="showCheckout()">
-                    Checkout <i class="fas fa-arrow-right"></i>
-                </button>
-            </div>
-
-            <!-- Bottom Navigation -->
-            <div class="bottom-nav">
-                <div class="nav-item active" id="nav-shop" onclick="setMode('single')">
-                    <i class="fas fa-store"></i><span>Shop</span>
-                </div>
-                <div class="nav-item" id="nav-groups" onclick="setMode('groups')">
-                    <i class="fas fa-users"></i><span>Groups</span>
-                </div>
-                <div class="nav-item" id="nav-orders" onclick="setMode('history')">
-                    <i class="fas fa-history"></i><span>Orders</span>
-                </div>
-            </div>
-
-            <!-- Edit Mode Floating Actions -->
-            <div id="editModeActions" class="order-actions-floating hidden">
-                <button class="floating-action-btn cancel" onclick="cancelEdit()"><i class="fas fa-times"></i> Cancel Edit</button>
-                <button class="floating-action-btn save" onclick="saveEditedOrder()"><i class="fas fa-save"></i> Save Changes</button>
-            </div>
-        </div>
-
-        <!-- Create Group Modal -->
-        <div id="createGroupModal" class="modal-overlay hidden">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h3 class="modal-title">Create Buying Group</h3>
-                    <button class="modal-close" onclick="hideCreateGroupModal()"><i class="fas fa-times"></i></button>
-                </div>
-                <div class="form-group">
-                    <label class="input-label">Group Name</label>
-                    <input type="text" id="group-name" class="input-field" placeholder="e.g. Bulk Rice Buyers">
-                </div>
-                <div class="form-group">
-                    <label class="input-label">Add Products</label>
-                    <div style="display: flex; gap: 8px; margin-bottom: 8px;">
-                        <select id="product-select" class="input-field" style="flex: 2;">
-                            <option value="">Select product</option>
-                        </select>
-                        <input type="number" id="product-quantity" class="input-field" style="flex: 1;" value="1" min="1">
-                        <button type="button" class="btn btn-secondary" style="flex: 0 0 auto; padding: 12px;" onclick="addProductToGroup()">
-                            <i class="fas fa-plus"></i>
-                        </button>
-                    </div>
-                    <div id="selected-products-list" class="selected-products-list"></div>
-                </div>
-                <div class="form-group">
-                    <label class="input-label">Target Quantity</label>
-                    <input type="number" id="group-target" class="input-field" placeholder="e.g. 100" min="1">
-                </div>
-                <div class="form-group">
-                    <label class="input-label">Minimum Spaza Shops</label>
-                    <input type="number" id="group-min-spazas" class="input-field" value="10" min="2">
-                </div>
-                <div class="form-group">
-                    <label class="input-label">Joining Fee (R)</label>
-                    <input type="number" id="group-joining-fee" class="input-field" value="50" min="0" step="0.01">
-                </div>
-                <div class="form-group">
-                    <label class="input-label">Expiry Date</label>
-                    <input type="date" id="group-expiry" class="input-field">
-                </div>
-                <div class="form-group">
-                    <label class="input-label">Additional Details</label>
-                    <textarea id="group-details" class="input-field" rows="3"></textarea>
-                </div>
-                <div id="group-summary-preview" class="group-summary hidden">
-                    <h4 style="margin-bottom:12px;">Group Summary</h4>
-                    <div id="group-summary-items"></div>
-                    <div class="group-summary-item"><span>Total Value:</span> <span id="group-total-value">R 0.00</span></div>
-                    <div class="group-summary-item"><span>Per Spaza:</span> <span id="group-per-spaza">R 0.00</span></div>
-                </div>
-                <button class="btn btn-primary" onclick="createBuyingGroup()"><i class="fas fa-users"></i> Create Group</button>
-            </div>
-        </div>
-
-        <!-- Invite to Group Modal -->
-        <div id="inviteGroupModal" class="modal-overlay hidden">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h3 class="modal-title">Invite Spaza Shops</h3>
-                    <button class="modal-close" onclick="hideInviteModal()"><i class="fas fa-times"></i></button>
-                </div>
-                <div class="share-card">
-                    <i class="fas fa-share-alt fa-2x"></i>
-                    <p style="margin:12px 0;">Share this link</p>
-                    <div class="share-link">
-                        <input type="text" id="invite-link" readonly>
-                        <button class="copy-btn" onclick="copyInviteLink()"><i class="fas fa-copy"></i> Copy</button>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label class="input-label">WhatsApp invite</label>
-                    <input type="text" id="invite-phone" class="input-field" placeholder="Phone number">
-                </div>
-                <button class="btn btn-success" onclick="sendWhatsAppInvite()"><i class="fab fa-whatsapp"></i> Send Invite</button>
-            </div>
-        </div>
-
-        <!-- Join Group Modal -->
-        <div id="joinGroupModal" class="modal-overlay hidden">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h3 class="modal-title">Join Buying Group</h3>
-                    <button class="modal-close" onclick="hideJoinModal()"><i class="fas fa-times"></i></button>
-                </div>
-                <div id="join-group-details"></div>
-                <div style="display:flex; gap:12px; margin-top:20px;">
-                    <button class="btn btn-secondary" style="flex:1;" onclick="hideJoinModal()">Cancel</button>
-                    <button class="btn btn-success" style="flex:1;" onclick="confirmJoinGroup()"><i class="fas fa-check"></i> Join</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Checkout Modal -->
-        <div id="checkoutModal" class="modal-overlay hidden">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h3 class="modal-title">Review Order</h3>
-                    <button class="modal-close" onclick="hideCheckout()"><i class="fas fa-times"></i></button>
-                </div>
-                <div id="checkout-list" style="margin-bottom:20px;"></div>
-                <div class="input-group">
-                    <label class="input-label">Payment Method</label>
-                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
-                        <button class="btn" id="pay-cash" style="border:2px solid var(--primary);" onclick="selectPayment('Cash')"><i class="fas fa-money-bill-wave"></i> Cash</button>
-                        <button class="btn" id="pay-eft" style="border:2px solid var(--gray-200);" onclick="selectPayment('EFT')"><i class="fas fa-university"></i> EFT</button>
-                    </div>
-                </div>
-                <button class="btn btn-primary" onclick="finalPlaceOrder()"><i class="fas fa-check-circle"></i> Confirm Order</button>
-                <div id="order-error" class="error-message"></div>
-            </div>
-        </div>
-
-        <!-- Order Detail Modal -->
-        <div id="orderDetailModal" class="modal-overlay hidden">
-            <div class="modal-content" id="receipt-view"></div>
-        </div>
-
-        <!-- Cancel Order Modal -->
-        <div id="cancelOrderModal" class="modal-overlay hidden">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h3 class="modal-title">Cancel Order</h3>
-                    <button class="modal-close" onclick="hideCancelOrderModal()"><i class="fas fa-times"></i></button>
-                </div>
-                <div style="text-align:center; margin-bottom:20px;">
-                    <i class="fas fa-exclamation-triangle" style="font-size:3rem; color:var(--warning);"></i>
-                    <p>Are you sure you want to cancel this order?</p>
-                </div>
-                <div style="display:flex; gap:12px;">
-                    <button class="btn btn-secondary" style="flex:1;" onclick="hideCancelOrderModal()">No</button>
-                    <button class="btn btn-danger" style="flex:1;" onclick="confirmCancelOrder()">Yes, Cancel</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Loading Spinner -->
-        <div id="loadingSpinner" class="loading-spinner hidden"><div class="spinner"></div></div>
-    </div>
-
-    <script>
-        // CONFIGURATION
-        const _supabaseUrl = 'https://clbhfxqxcugxcqutngpo.supabase.co';
-        const _supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNsYmhmeHF4Y3VneGNxdXRuZ3BvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE4MzgxMDMsImV4cCI6MjA4NzQxNDEwM30.VWj5TGjAQhj77BZyoSUmynUPDPTVGL_pAKNyrlpQR1Y';
-        const _client = supabase.createClient(_supabaseUrl, _supabaseKey);
-        const ADMIN_WHATSAPP = '27764403803';
-
-        // State
-        let cart = {};
-        let products = [];
-        let buyingGroups = [];
-        let customerPrices = new Map();
-        let currentMode = 'single';
-        let selectedPayment = 'Cash';
-        let editingOrderId = null;
-        let editingOrderData = null;
-        let currentUser = null;
-        let userType = null;
-        let selectedCategory = 'all';
-        let selectedGroupForJoin = null;
-        let groupProducts = [];
-
-        // Image cache
-        let imageFileMap = new Map();
-        let lastImageRefresh = null;
-        const IMAGE_CACHE_DURATION = 5 * 60 * 1000;
-
-        // ========== LANDING PAGE ==========
-        function selectUserType(type) {
-            userType = type;
-            document.getElementById('landingSection').classList.add('hidden');
-            document.getElementById('authSection').classList.remove('hidden');
-            
-            if (type === 'spaza') {
-                document.getElementById('authTitle').textContent = 'Spaza Shop Login';
-                document.getElementById('authSubtitle').textContent = 'Access your wholesale account';
-                showSpazaLogin();
-            } else {
-                document.getElementById('authTitle').textContent = 'Customer Login';
-                document.getElementById('authSubtitle').textContent = 'Access your personal account';
-                showCustomerLogin();
-            }
-        }
-
-        function goBackToLanding() {
-            document.getElementById('authSection').classList.add('hidden');
-            document.getElementById('landingSection').classList.remove('hidden');
-            document.getElementById('spazaLoginForm').classList.add('hidden');
-            document.getElementById('spazaRegisterForm').classList.add('hidden');
-            document.getElementById('customerLoginForm').classList.add('hidden');
-            document.getElementById('customerRegisterForm').classList.add('hidden');
-        }
-
-        function showSpazaLogin() {
-            document.getElementById('spazaRegisterForm').classList.add('hidden');
-            document.getElementById('customerLoginForm').classList.add('hidden');
-            document.getElementById('customerRegisterForm').classList.add('hidden');
-            document.getElementById('spazaLoginForm').classList.remove('hidden');
-        }
-
-        function showSpazaRegister() {
-            document.getElementById('spazaLoginForm').classList.add('hidden');
-            document.getElementById('spazaRegisterForm').classList.remove('hidden');
-        }
-
-        function showCustomerLogin() {
-            document.getElementById('customerRegisterForm').classList.add('hidden');
-            document.getElementById('spazaLoginForm').classList.add('hidden');
-            document.getElementById('spazaRegisterForm').classList.add('hidden');
-            document.getElementById('customerLoginForm').classList.remove('hidden');
-        }
-
-        function showCustomerRegister() {
-            document.getElementById('customerLoginForm').classList.add('hidden');
-            document.getElementById('customerRegisterForm').classList.remove('hidden');
-        }
-
-        // ========== HELPER FUNCTIONS ==========
-        function isValidUUID(uuid) {
-            return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(uuid);
-        }
-
-        function loadCartFromStorage() {
-            const saved = localStorage.getItem('spaza_cart');
-            if (saved) try { cart = JSON.parse(saved); } catch { cart = {}; }
-            updateCartDisplay();
-        }
-        function saveCartToStorage() { localStorage.setItem('spaza_cart', JSON.stringify(cart)); }
-
-        function showToast(title, message, type = 'success', duration = 5000) {
-            const container = document.getElementById('toastContainer');
-            const id = 'toast-' + Date.now();
-            const icon = { success: 'check-circle', error: 'exclamation-circle', warning: 'exclamation-triangle', info: 'info-circle' }[type] || 'info-circle';
-            const toast = document.createElement('div');
-            toast.className = `toast ${type}`; toast.id = id;
-            toast.innerHTML = `<div class="toast-icon"><i class="fas fa-${icon}"></i></div><div class="toast-content"><div class="toast-title">${title}</div><div class="toast-message">${message}</div></div><button class="toast-close" onclick="document.getElementById('${id}').remove()"><i class="fas fa-times"></i></button>`;
-            container.appendChild(toast);
-            setTimeout(() => { const el = document.getElementById(id); if (el) el.remove(); }, duration);
-        }
-
-        function showConfirm(title, message, onConfirm, onCancel, type = 'confirm') {
-            const modal = document.getElementById('confirmModal');
-            document.getElementById('confirmIcon').innerHTML = type === 'danger' ? '<i class="fas fa-exclamation-triangle" style="color:var(--danger);"></i>' : '<i class="fas fa-question-circle" style="color:var(--primary);"></i>';
-            document.getElementById('confirmTitle').textContent = title;
-            document.getElementById('confirmMessage').textContent = message;
-            document.getElementById('confirmOkBtn').className = type === 'danger' ? 'confirm-btn danger' : 'confirm-btn confirm';
-            document.getElementById('confirmOkBtn').textContent = type === 'danger' ? 'Yes, Proceed' : 'Confirm';
-            modal.classList.remove('hidden');
-            const handleConfirm = () => { modal.classList.add('hidden'); if (onConfirm) onConfirm(); cleanup(); };
-            const handleCancel = () => { modal.classList.add('hidden'); if (onCancel) onCancel(); cleanup(); };
-            const cleanup = () => { document.getElementById('confirmCancelBtn').removeEventListener('click', handleCancel); document.getElementById('confirmOkBtn').removeEventListener('click', handleConfirm); };
-            document.getElementById('confirmCancelBtn').addEventListener('click', handleCancel);
-            document.getElementById('confirmOkBtn').addEventListener('click', handleConfirm);
-        }
-
-        function showLoading(show) { document.getElementById('loadingSpinner').classList.toggle('hidden', !show); }
-        function showError(id, msg) {
-            const el = document.getElementById(id);
-            el.textContent = msg; el.classList.remove('hidden');
-            setTimeout(() => el.classList.add('hidden'), 5000);
-        }
-
-        // ========== AUTH FUNCTIONS ==========
-        async function handleSpazaLogin() {
-            const wa = document.getElementById('login-wa').value.trim();
-            if (!wa) return showError('spaza-login-error', 'Enter WhatsApp number');
-            showLoading(true);
-            const { data, error } = await _client.from('profiles').select('*').eq('whatsapp_number', wa).maybeSingle();
-            showLoading(false);
-            if (error) showError('spaza-login-error', 'Error logging in');
-            else if (data) await loginSuccess(data, 'spaza');
-            else showError('spaza-login-error', 'Store not found');
-        }
-
-        async function handleSpazaRegister() {
-            const payload = {
-                first_name: document.getElementById('reg-fname').value,
-                last_name: document.getElementById('reg-lname').value,
-                store_name: document.getElementById('reg-sname').value,
-                whatsapp_number: parseInt(document.getElementById('reg-wa').value),
-                business_type: document.getElementById('reg-bus-type').value,
-                store_size: document.getElementById('reg-size').value,
-                township: document.getElementById('reg-town').value,
-                address: document.getElementById('reg-address').value,
-                gender: document.getElementById('reg-gender').value,
-                role: 'spaza',
-                is_verified: false
-            };
-            for (let [k, v] of Object.entries(payload)) if (!v && k !== 'role' && k !== 'is_verified') return showError('spaza-register-error', `Please fill ${k.replace('_', ' ')}`);
-            showLoading(true);
-            const { data, error } = await _client.from('profiles').insert([payload]).select().single();
-            showLoading(false);
-            if (error) showError('spaza-register-error', error.message);
-            else await loginSuccess(data, 'spaza');
-        }
-
-        async function handleCustomerLogin() {
-            const email = document.getElementById('customer-login-email').value.trim();
-            const password = document.getElementById('customer-login-password').value;
-            if (!email || !password) return showError('customer-login-error', 'Enter email and password');
-            
-            showLoading(true);
-            const { data, error } = await _client.from('customers').select('*').eq('email', email).eq('password', password).maybeSingle();
-            showLoading(false);
-            
-            if (error) showError('customer-login-error', 'Error logging in');
-            else if (data) {
-                await loadCustomerPrices();
-                await loginSuccess(data, 'customer');
-            } else showError('customer-login-error', 'Invalid email or password');
-        }
-
-        async function handleCustomerRegister() {
-            const password = document.getElementById('cust-password').value;
-            const confirm = document.getElementById('cust-confirm-password').value;
-            
-            if (password !== confirm) {
-                showError('customer-register-error', 'Passwords do not match');
-                return;
-            }
-
-            const firstName = document.getElementById('cust-fname').value;
-            const lastName = document.getElementById('cust-lname').value;
-            const email = document.getElementById('cust-email').value;
-            const phone = document.getElementById('cust-phone').value;
-            const township = document.getElementById('cust-town').value;
-            const address = document.getElementById('cust-address').value;
-
-            if (!firstName) return showError('customer-register-error', 'Please fill First Name');
-            if (!lastName) return showError('customer-register-error', 'Please fill Last Name');
-            if (!email) return showError('customer-register-error', 'Please fill Email');
-            if (!password) return showError('customer-register-error', 'Please fill Password');
-            if (!phone) return showError('customer-register-error', 'Please fill Phone');
-
-            const payload = {
-                first_name: firstName,
-                last_name: lastName,
-                email: email,
-                phone: phone,
-                password: password,
-                township: township || null,
-                address: address || null,
-                is_verified: false
-            };
-
-            showLoading(true);
-            
-            try {
-                const { data, error } = await _client
-                    .from('customers')
-                    .insert([payload])
-                    .select()
-                    .single();
-                    
-                showLoading(false);
-                
-                if (error) {
-                    console.error('Registration error:', error);
-                    showError('customer-register-error', error.message);
-                } else {
-                    await loadCustomerPrices();
-                    await loginSuccess(data, 'customer');
-                }
-            } catch (error) {
-                showLoading(false);
-                console.error('Unexpected error:', error);
-                showError('customer-register-error', 'Registration failed. Please try again.');
-            }
-        }
-
-        // ========== CUSTOMER PRICES ==========
-        async function loadCustomerPrices() {
-            try {
-                const { data, error } = await _client
-                    .from('customer_prices')
-                    .select('product_description, price');
-                    
-                if (error) {
-                    console.error('Error loading customer prices:', error);
-                    return;
-                }
-                
-                customerPrices.clear();
-                data.forEach(item => {
-                    customerPrices.set(item.product_description, item.price);
-                });
-                
-                console.log(`Loaded ${customerPrices.size} customer prices`);
-            } catch (error) {
-                console.error('Error in loadCustomerPrices:', error);
-            }
-        }
-
-        // ========== LOGIN SUCCESS ==========
-        async function loginSuccess(user, type) {
-            currentUser = user;
-            userType = type;
-            localStorage.setItem('spaza_user', JSON.stringify({ user, type }));
-            
-            document.getElementById('authSection').classList.add('hidden');
-            document.getElementById('mainSection').classList.remove('hidden');
-            
-            const hour = new Date().getHours();
-            const greeting = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
-            
-            if (type === 'spaza') {
-                document.getElementById('txt-user-name').textContent = user.store_name;
-                document.getElementById('txt-user-type').textContent = 'SPAZA SHOP';
-                document.getElementById('welcome-message').textContent = `${greeting}, ${user.first_name || 'Store Owner'}!`;
-                document.getElementById('welcome-subtitle').textContent = 'Shop wholesale prices';
-            } else {
-                document.getElementById('txt-user-name').textContent = `${user.first_name} ${user.last_name}`;
-                document.getElementById('txt-user-type').textContent = 'CUSTOMER';
-                document.getElementById('welcome-message').textContent = `${greeting}, ${user.first_name}!`;
-                document.getElementById('welcome-subtitle').textContent = 'Your personal prices';
-                
-                await loadCustomerPrices();
-            }
-            
-            await loadImageMap(true);
-            await loadContent();
-            showToast('Welcome!', `Signed in as ${type === 'spaza' ? user.store_name : user.first_name}`, 'success');
-        }
-
-        // ========== IMAGE LOADING ==========
-        async function loadImageMap(forceRefresh = false) {
-            const now = Date.now();
-            if (!forceRefresh && lastImageRefresh && (now - lastImageRefresh) < IMAGE_CACHE_DURATION) return;
-            const { data: files, error } = await _client.storage.from('Images').list('', { limit: 100, sortBy: { column: 'name', order: 'asc' } });
-            if (error) return console.error("Error loading images:", error);
-            imageFileMap.clear();
-            files.forEach(file => {
-                const name = file.name;
-                const base = name.replace(/\.[^/.]+$/, "").toLowerCase();
-                const clean = base.replace(/[^a-z0-9]/g, '');
-                imageFileMap.set(base, name);
-                imageFileMap.set(clean, name);
-                base.split(/[\s-]+/).forEach(w => { if (w.length > 3) imageFileMap.set(w, name); });
-            });
-            lastImageRefresh = now;
-        }
-
-        function getImageUrl(productName) {
-            if (!productName) return 'https://via.placeholder.com/300/2563eb/ffffff?text=No+Name';
-            const baseUrl = 'https://clbhfxqxcugxcqutngpo.supabase.co/storage/v1/object/public/Images/';
-            const variations = [
-                productName, productName.toLowerCase(), productName.replace(/[()]/g, ''),
-                productName.replace(/[^a-zA-Z0-9]/g, ' ').replace(/\s+/g, ' ').trim(),
-                productName.replace(/[^a-zA-Z0-9]/g, ''),
-                productName.split(' ')[0], productName.split(' ').slice(0, 2).join(' ')
-            ];
-            let matched = null, score = 0;
-            for (let v of variations) {
-                const norm = v.toLowerCase().trim();
-                const clean = norm.replace(/[^a-z0-9]/g, '');
-                if (imageFileMap.has(norm)) { matched = imageFileMap.get(norm); break; }
-                if (imageFileMap.has(clean)) { matched = imageFileMap.get(clean); break; }
-                for (let [key, fn] of imageFileMap.entries()) {
-                    if (norm.includes(key) && key.length > 3 && key.length > score) { matched = fn; score = key.length; }
-                    else if (key.includes(norm) && norm.length > 3 && norm.length > score) { matched = fn; score = norm.length; }
-                }
-            }
-            if (matched) return baseUrl + encodeURIComponent(matched);
-            return `https://via.placeholder.com/300/2563eb/ffffff?text=${encodeURIComponent(productName.substring(0, 20))}`;
-        }
-
-        // ========== DATA LOADING ==========
-        async function loadContent() {
-            try {
-                const [pRes, gRes] = await Promise.all([
-                    _client.from('products').select('*'),
-                    _client.from('buying_groups').select('*, products(*)').order('created_at', { ascending: false })
-                ]);
-                if (pRes.error) throw pRes.error;
-                if (gRes.error) throw gRes.error;
-                
-                products = (pRes.data || []).filter(p => p && p.id && isValidUUID(p.id));
-                buyingGroups = gRes.data || [];
-                
-                renderCategories();
-                await renderList();
-                renderGroups();
-            } catch (e) { showToast('Error', 'Failed to load content', 'error'); }
-        }
-
-        function renderCategories() {
-            const cats = ['all', ...new Set(products.map(p => p.category).filter(Boolean))];
-            const container = document.getElementById('categoriesContainer');
-            if (container) container.innerHTML = cats.map(c => `<span class="category-chip ${selectedCategory === c ? 'active' : ''}" onclick="selectCategory('${c}')">${c === 'all' ? 'All' : c}</span>`).join('');
-        }
-        function selectCategory(c) { selectedCategory = c; renderCategories(); renderList(); }
-
-        function getProductPrice(product) {
-            if (!product) return 0;
-            
-            if (userType === 'customer') {
-                if (customerPrices.has(product.name)) {
-                    return customerPrices.get(product.name);
-                }
-                console.warn('No customer price found for product:', product.name);
-                return product.price || 0;
-            } else {
-                return product.price || 0;
-            }
-        }
-
-        async function renderList() {
-            const q = document.getElementById('search-input').value.toLowerCase();
-            const filtered = products.filter(p => (p.name || '').toLowerCase().includes(q) || (p.description || '').toLowerCase().includes(q));
-            const grid = document.getElementById('productsGrid');
-            if (!grid) return;
-            
-            grid.innerHTML = filtered.map(p => {
-                const price = getProductPrice(p);
-                const qty = cart[p.name]?.qty || 0;
-                const imgUrl = getImageUrl(p.name);
-                
-                let priceLabel = '';
-                let badgeClass = '';
-                if (userType === 'customer') {
-                    priceLabel = customerPrices.has(p.name) ? 'YOUR PRICE' : 'REGULAR PRICE';
-                    badgeClass = 'badge-customer';
-                } else {
-                    priceLabel = 'BULK PRICE';
-                    badgeClass = 'badge-spaza';
-                }
-                
-                return `<div class="product-card">
-                    <div class="product-image">
-                        <img src="${imgUrl}" alt="${p.name}" loading="lazy" onerror="this.onerror=null; this.src='https://via.placeholder.com/300/2563eb/ffffff?text=${encodeURIComponent(p.name.substring(0,20))}'">
-                        <div class="product-badges">
-                            ${p.is_authentic_verified ? '<span class="badge badge-verified"><i class="fas fa-check-circle"></i> VERIFIED</span>' : ''}
-                            <span class="badge ${badgeClass}">${priceLabel}</span>
-                        </div>
-                    </div>
-                    <div class="product-info">
-                        <div class="product-category">${p.category || 'General'}</div>
-                        <h4 class="product-name">${p.name}</h4>
-                        <div class="product-description-short">${p.description || ''}</div>
-                        <div class="product-price">
-                            <span class="current-price">R${price.toFixed(2)}</span>
-                            ${userType === 'spaza' && p.bulk_price ? `<span class="old-price">R${p.bulk_price}/unit</span>` : ''}
-                        </div>
-                        <div class="product-actions">
-                            <div class="quantity-control">
-                                <button class="qty-btn" onclick="updateCart('${p.name.replace(/'/g, "\\'")}', ${price}, -1)">-</button>
-                                <span class="qty-value">${qty}</span>
-                                <button class="qty-btn" onclick="updateCart('${p.name.replace(/'/g, "\\'")}', ${price}, 1)">+</button>
-                            </div>
-                            <button class="add-to-cart" onclick="updateCart('${p.name.replace(/'/g, "\\'")}', ${price}, 1)">
-                                <i class="fas fa-shopping-cart"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>`;
-            }).join('') || '<p style="text-align:center; padding:40px; color:var(--gray-600);">No products found</p>';
-            
-            updateCartDisplay();
-        }
-
-        function renderGroups() {
-            const q = document.getElementById('search-input').value.toLowerCase();
-            const filtered = buyingGroups.filter(g => (g.group_name || '').toLowerCase().includes(q) || (g.items_description || '').toLowerCase().includes(q));
-            const grid = document.getElementById('groupsGrid');
-            if (!grid) return;
-            
-            grid.innerHTML = filtered.map(g => {
-                const prod = g.products || {};
-                const progress = (g.current_quantity / g.target_quantity) * 100;
-                const img = getImageUrl(prod.name || '');
-                const isCreator = g.creator_id === currentUser?.id;
-                const canJoin = g.status === 'open' && g.current_quantity < g.target_quantity && !isCreator;
-                const items = g.items_description ? g.items_description.split(', ') : [];
-                
-                return `<div class="group-card"><div class="group-header"><h3 class="group-title">${g.group_name}</h3><span class="group-status status-${g.status}">${g.status}</span></div><div class="group-product"><img src="${img}" class="group-product-image" alt="${prod.name || ''}"><div class="group-product-info"><div class="group-product-name">${prod.name || 'Multiple Items'}</div><div class="group-product-price">R${(g.contribution_per_spaza || 0).toFixed(2)} per spaza</div><div style="font-size:0.8rem; color:var(--gray-600); margin-top:4px;"><i class="fas fa-boxes"></i> ${items.length} item(s)</div></div></div><div class="group-stats"><div class="group-stat"><div class="group-stat-value">${g.current_quantity || 0}</div><div class="group-stat-label">Current</div></div><div class="group-stat"><div class="group-stat-value">${g.target_quantity}</div><div class="group-stat-label">Target</div></div><div class="group-stat"><div class="group-stat-value">${g.current_quantity ? Math.round((g.current_quantity / g.target_quantity) * 100) : 0}%</div><div class="group-stat-label">Progress</div></div><div class="group-stat"><div class="group-stat-value">${g.min_spazas || 10}</div><div class="group-stat-label">Min Spazas</div></div></div><div class="progress-bar"><div class="progress-fill" style="width:${progress}%"></div></div><div style="margin:12px 0; padding:12px; background:var(--gray-100); border-radius:12px;"><small style="color:var(--gray-600); display:block; margin-bottom:8px;"><i class="fas fa-shopping-basket"></i> Items:</small><div style="display:flex; flex-wrap:wrap; gap:6px;">${items.map(i => `<span style="background:var(--white); padding:4px 8px; border-radius:20px; font-size:0.75rem;">${i}</span>`).join('')}</div></div><div class="group-meta"><div class="group-creator"><i class="fas fa-user-circle"></i> <span>${g.created_by || 'Anonymous'}</span></div><div class="group-actions">${canJoin ? `<button class="group-action-btn btn-join" onclick="showJoinGroup('${g.id}')"><i class="fas fa-user-plus"></i> Join</button>` : ''}${isCreator ? `<button class="group-action-btn btn-invite" onclick="showInviteModal('${g.id}')"><i class="fas fa-share-alt"></i> Invite</button>` : ''}</div></div>${g.expiry_date ? `<div style="font-size:0.75rem; color:var(--gray-600); margin-top:8px;"><i class="far fa-clock"></i> Expires: ${new Date(g.expiry_date).toLocaleDateString()}</div>` : ''}</div>`;
-            }).join('') || `<div style="text-align:center; padding:40px;"><i class="fas fa-users fa-3x" style="color:var(--gray-400); margin-bottom:16px;"></i><p style="color:var(--gray-600); margin-bottom:16px;">No buying groups yet</p><button class="btn btn-primary" onclick="showCreateGroupModal()"><i class="fas fa-plus"></i> Create a Group</button></div>`;
-        }
-
-        // ========== CART FUNCTIONS ==========
-        function updateCart(name, price, change) {
-            if (!cart[name]) cart[name] = { price, qty: 0 };
-            cart[name].qty += change;
-            if (cart[name].qty <= 0) delete cart[name];
-            saveCartToStorage();
-            updateCartDisplay();
-            renderList();
-        }
-        
-        function updateCartDisplay() {
-            const total = Object.values(cart).reduce((s, i) => s + i.price * i.qty, 0);
-            const cnt = Object.values(cart).reduce((s, i) => s + i.qty, 0);
-            document.getElementById('cart-count').textContent = cnt;
-            document.getElementById('txt-total').textContent = `R ${total.toFixed(2)}`;
-        }
-
-        // ========== CHECKOUT FUNCTIONS - FIXED ==========
-        function showCheckout() {
-            if (Object.keys(cart).length === 0) {
-                showToast('Empty Cart', 'Your cart is empty', 'warning');
-                return;
-            }
-            
-            const list = Object.entries(cart).map(([n, d]) => {
-                return `<div class="receipt-item">
-                    <span>${d.qty}x ${n}</span>
-                    <span>R${(d.price * d.qty).toFixed(2)}</span>
-                </div>`;
-            }).join('');
-            
-            const total = Object.values(cart).reduce((s, i) => s + i.price * i.qty, 0);
-            
-            document.getElementById('checkout-list').innerHTML = `
-                <div class="receipt-items">
-                    ${list}
-                    <div style="margin-top:16px; padding-top:16px; border-top:2px solid var(--primary); font-weight:800; font-size:1.2rem; text-align:right;">
-                        Total: R${total.toFixed(2)}
-                    </div>
-                </div>
-            `;
-            
-            document.getElementById('checkoutModal').classList.remove('hidden');
-        }
-
-        function hideCheckout() {
-            document.getElementById('checkoutModal').classList.add('hidden');
-            document.getElementById('order-error').classList.add('hidden');
-        }
-
-        function selectPayment(method) {
-            selectedPayment = method;
-            document.getElementById('pay-cash').style.borderColor = method === 'Cash' ? 'var(--primary)' : 'var(--gray-200)';
-            document.getElementById('pay-eft').style.borderColor = method === 'EFT' ? 'var(--primary)' : 'var(--gray-200)';
-        }
-
-        function formatWhatsAppMessage(o) {
-            const items = Object.entries(o.items).map(([n, d]) => 
-                `${d.qty}x ${n} @ R${d.price.toFixed(2)} = R${(d.qty * d.price).toFixed(2)}`
-            ).join('\n');
-            
-            return `🧾 *SPAZASURE ORDER* 🧾
-━━━━━━━━━━━━━━━━━━━━━
-*Order #:* ${o.id.slice(-8)}
-*Name:* ${o.store_name || 'Customer'}
-*Type:* ${o.business_type || 'Customer'}
-*Address:* ${o.store_address || o.address || ''}
-*Township:* ${o.township || ''}
-*Contact:* ${o.whatsapp_number || o.phone || ''}
-*Date:* ${new Date().toLocaleString()}
-*Payment:* ${o.payment_method}
-━━━━━━━━━━━━━━━━━━━━━
-*ITEMS:*
-${items}
-━━━━━━━━━━━━━━━━━━━━━
-*TOTAL: R${o.total_amount.toFixed(2)}*
-━━━━━━━━━━━━━━━━━━━━━
-✅ Order Confirmed
-📦 Status: ${o.status}`;
-        }
-
-        // ========== FINAL PLACE ORDER - FIXED VERSION WITH ERROR HANDLING ==========
-        async function finalPlaceOrder() {
-            if (!currentUser) {
-                showToast('Error', 'Please login again', 'error');
-                logout();
-                return;
-            }
-            
-            if (Object.keys(cart).length === 0) {
-                showToast('Error', 'Cart empty', 'error');
-                hideCheckout();
-                return;
-            }
-            
-            showLoading(true);
-            
-            try {
-                const total = Object.values(cart).reduce((s, i) => s + i.price * i.qty, 0);
-                const itemsForDb = {};
-                
-                Object.entries(cart).forEach(([n, d]) => {
-                    itemsForDb[n] = {
-                        qty: d.qty,
-                        price: d.price,
-                        subtotal: d.price * d.qty
-                    };
-                });
-                
-                // Build base order data
-                const orderData = {
-                    store_name: userType === 'spaza' ? currentUser.store_name : `${currentUser.first_name} ${currentUser.last_name}`,
-                    store_address: currentUser.address || 'No address provided',
-                    township: currentUser.township || 'Unknown',
-                    whatsapp_number: userType === 'spaza' ? currentUser.whatsapp_number : currentUser.phone,
-                    business_type: userType === 'spaza' ? currentUser.business_type : 'Customer',
-                    total_amount: total,
-                    items: itemsForDb,
-                    payment_method: selectedPayment,
-                    status: 'pending',
-                    created_at: new Date().toISOString()
-                };
-                
-                // Add user-specific ID based on type
-                if (userType === 'spaza') {
-                    orderData.profile_id = currentUser.id;
-                } else {
-                    orderData.customer_id = currentUser.id;
-                }
-                
-                console.log('Submitting order:', orderData);
-                
-                let result;
-                
-                if (editingOrderId) {
-                    result = await _client
-                        .from('orders')
-                        .update(orderData)
-                        .eq('id', editingOrderId)
-                        .select();
-                } else {
-                    result = await _client
-                        .from('orders')
-                        .insert([orderData])
-                        .select();
-                }
-                
-                // If there's an error, try fallback approaches
-                if (result.error) {
-                    console.error('Supabase error:', result.error);
-                    
-                    // Try without customer_id if that's the issue
-                    if (result.error.message.includes('customer_id')) {
-                        console.log('Trying fallback without customer_id...');
-                        delete orderData.customer_id;
-                        
-                        result = await _client
-                            .from('orders')
-                            .insert([orderData])
-                            .select();
-                            
-                        if (result.error) throw result.error;
-                    } else {
-                        throw new Error(result.error.message);
-                    }
-                }
-                
-                const newOrder = result.data[0];
-                
-                // Send WhatsApp
-                try {
-                    const message = formatWhatsAppMessage(newOrder);
-                    window.open(`https://wa.me/${ADMIN_WHATSAPP}?text=${encodeURIComponent(message)}`, '_blank');
-                } catch (e) {
-                    console.warn('WhatsApp failed:', e);
-                }
-                
-                // Generate PDF
-                try {
-                    await generatePDFReceipt(newOrder);
-                } catch (e) {
-                    console.warn('PDF generation failed:', e);
-                }
-                
-                showLoading(false);
-                
-                // Clear cart after successful order
-                cart = {};
-                saveCartToStorage();
-                updateCartDisplay();
-                
-                if (editingOrderId) {
-                    showToast('Order Updated!', 'Order updated successfully!', 'success');
-                    cancelEdit();
-                } else {
-                    showToast('Order Success!', `Order #${newOrder.id.slice(-8)} placed successfully!`, 'success');
-                }
-                
-                hideCheckout();
-                setMode('history');
-                
-            } catch (error) {
-                showLoading(false);
-                console.error('Order error:', error);
-                showToast('Error', 'Failed to place order: ' + error.message, 'error');
-            }
-        }
-
-        // ========== LOAD ORDER HISTORY - FIXED VERSION WITH FALLBACKS ==========
-        async function loadOrderHistory() {
-            try {
-                let query;
-                let data, error;
-                
-                // Try different query strategies based on user type
-                if (userType === 'spaza') {
-                    // Try with profile_id first
-                    const result = await _client
-                        .from('orders')
-                        .select('*')
-                        .eq('profile_id', currentUser.id)
-                        .order('created_at', { ascending: false });
-                    data = result.data;
-                    error = result.error;
-                    
-                    // If no results, try with whatsapp_number
-                    if (!data || data.length === 0) {
-                        console.log('Trying with whatsapp_number for spaza...');
-                        const fallbackResult = await _client
-                            .from('orders')
-                            .select('*')
-                            .eq('whatsapp_number', currentUser.whatsapp_number)
-                            .order('created_at', { ascending: false });
-                        data = fallbackResult.data;
-                        error = fallbackResult.error;
-                    }
-                } else {
-                    // Try with customer_id first
-                    const result = await _client
-                        .from('orders')
-                        .select('*')
-                        .eq('customer_id', currentUser.id)
-                        .order('created_at', { ascending: false });
-                    data = result.data;
-                    error = result.error;
-                    
-                    // If that fails, try with whatsapp_number
-                    if (!data || data.length === 0) {
-                        console.log('Trying with whatsapp_number for customer...');
-                        const fallbackResult = await _client
-                            .from('orders')
-                            .select('*')
-                            .eq('whatsapp_number', currentUser.phone)
-                            .order('created_at', { ascending: false });
-                        data = fallbackResult.data;
-                        error = fallbackResult.error;
-                    }
-                    
-                    // Finally try with name match
-                    if (!data || data.length === 0) {
-                        console.log('Trying with name match...');
-                        const nameResult = await _client
-                            .from('orders')
-                            .select('*')
-                            .eq('store_name', `${currentUser.first_name} ${currentUser.last_name}`)
-                            .order('created_at', { ascending: false });
-                        data = nameResult.data;
-                        error = nameResult.error;
-                    }
-                }
-                
-                if (error) throw error;
-                
-                const list = document.getElementById('ordersList');
-                list.innerHTML = data?.length ? data.map(o => {
-                    const isEditing = editingOrderId === o.id;
-                    return `<div class="order-card ${isEditing ? 'editing' : ''}" id="order-${o.id}">
-                        <div class="order-header">
-                            <div class="order-id">#${o.id.slice(-8)}${isEditing ? '<span class="edit-mode-badge"><i class="fas fa-edit"></i> EDITING</span>' : ''}</div>
-                            <span class="order-status status-${o.status}">${o.status}</span>
-                        </div>
-                        <div class="order-date">${new Date(o.created_at).toLocaleDateString()}</div>
-                        <div class="order-total">R${(o.total_amount || 0).toFixed(2)}</div>
-                        <div style="font-size:0.85rem; color:var(--gray-600); margin-bottom:16px;">${o.business_type || 'Customer'} • ${o.township || ''}</div>
-                        <div class="order-actions">
-                            <button class="order-btn btn-view" onclick='viewOrder(${JSON.stringify(o).replace(/'/g, "\\'")})'><i class="fas fa-eye"></i> View</button>
-                            <button class="order-btn btn-pdf" onclick='generatePDFReceipt(${JSON.stringify(o).replace(/'/g, "\\'")})'><i class="fas fa-file-pdf"></i> PDF</button>
-                            ${o.status === 'pending' ? `
-                                <button class="order-btn btn-edit" onclick='editOrder(${JSON.stringify(o).replace(/'/g, "\\'")})'><i class="fas fa-edit"></i> Edit</button>
-                                <button class="order-btn btn-cancel-order" onclick='showCancelOrder("${o.id}")'><i class="fas fa-times"></i> Cancel</button>
-                            ` : ''}
-                        </div>
-                    </div>`;
-                }).join('') : '<p style="text-align:center; padding:40px; color:var(--gray-600);">No orders yet</p>';
-            } catch (e) { 
-                console.error('Error loading orders:', e);
-                showToast('Error', 'Failed to load orders', 'error'); 
-            }
-        }
-
-        // ========== GROUP CREATION FUNCTIONS ==========
-        async function showCreateGroupModal() {
-            groupProducts = [];
-            updateGroupProductList();
-            const select = document.getElementById('product-select');
-            const validProducts = products.filter(p => p && p.id && isValidUUID(p.id));
-            select.innerHTML = '<option value="">Select a product</option>' + 
-                validProducts.map(p => `<option value="${p.id}">${p.name} - R${p.price?.toFixed(2)}</option>`).join('');
-            if (validProducts.length === 0) showToast('No Products', 'No valid products available', 'warning');
-            document.getElementById('createGroupModal').classList.remove('hidden');
-        }
-
-        function addProductToGroup() {
-            const productId = document.getElementById('product-select').value;
-            const quantity = parseInt(document.getElementById('product-quantity').value);
-            if (!productId) return showToast('Error', 'Select a product', 'error');
-            if (!quantity || quantity < 1) return showToast('Error', 'Valid quantity required', 'error');
-            const product = products.find(p => p.id === productId);
-            if (!product) return showToast('Error', 'Product not found', 'error');
-            if (!isValidUUID(product.id)) return showToast('Error', 'Invalid product ID', 'error');
-            const existing = groupProducts.find(p => p.product.id === productId);
-            if (existing) existing.quantity += quantity;
-            else groupProducts.push({ product, quantity });
-            updateGroupProductList();
-            document.getElementById('product-select').value = '';
-            document.getElementById('product-quantity').value = '1';
-        }
-
-        function removeGroupProduct(index) { groupProducts.splice(index, 1); updateGroupProductList(); }
-
-        function updateGroupProductList() {
-            const list = document.getElementById('selected-products-list');
-            const summ = document.getElementById('group-summary-preview');
-            if (groupProducts.length === 0) {
-                list.innerHTML = '<p style="color:var(--gray-600); text-align:center;">No products added</p>';
-                summ.classList.add('hidden');
-                return;
-            }
-            list.innerHTML = groupProducts.map((p, i) => 
-                `<div class="selected-product-item"><span>${p.product.name} x${p.quantity}</span><button class="remove-btn" onclick="removeGroupProduct(${i})"><i class="fas fa-times"></i></button></div>`
-            ).join('');
-            const total = groupProducts.reduce((s, it) => s + it.product.price * it.quantity, 0);
-            const min = parseInt(document.getElementById('group-min-spazas').value) || 10;
-            const per = total / min;
-            document.getElementById('group-summary-items').innerHTML = groupProducts.map(it =>
-                `<div class="group-summary-item"><span>${it.product.name} (x${it.quantity})</span><span>R${(it.product.price * it.quantity).toFixed(2)}</span></div>`
-            ).join('');
-            document.getElementById('group-total-value').innerText = `R ${total.toFixed(2)}`;
-            document.getElementById('group-per-spaza').innerText = `R ${per.toFixed(2)}`;
-            summ.classList.remove('hidden');
-        }
-
-        async function createBuyingGroup() {
-            if (groupProducts.length === 0) return showToast('No Products', 'Add at least one product', 'warning');
-            const name = document.getElementById('group-name').value;
-            const target = parseInt(document.getElementById('group-target').value);
-            const min = parseInt(document.getElementById('group-min-spazas').value);
-            const fee = parseFloat(document.getElementById('group-joining-fee').value);
-            const expiry = document.getElementById('group-expiry').value;
-            if (!name || !target) return showToast('Missing Fields', 'Fill required fields', 'warning');
-
-            for (let item of groupProducts) {
-                if (!isValidUUID(item.product.id)) return showToast('Error', `Product "${item.product.name}" has invalid ID`, 'error');
-            }
-
-            const total = groupProducts.reduce((s, it) => s + it.product.price * it.quantity, 0);
-            const per = total / min;
-            const desc = groupProducts.map(it => `${it.quantity}x ${it.product.name}`).join(', ');
-            const firstId = groupProducts[0].product.id;
-
-            const data = {
-                product_id: firstId,
-                creator_id: currentUser.id,
-                created_by: userType === 'spaza' ? currentUser.store_name : `${currentUser.first_name} ${currentUser.last_name}`,
-                group_name: name,
-                target_quantity: target,
-                current_quantity: 0,
-                status: 'open',
-                min_spazas: min,
-                joining_fee: fee,
-                contribution_per_spaza: per,
-                items_description: desc,
-                expiry_date: expiry || null
-            };
-            showLoading(true);
-            try {
-                const { error } = await _client.from('buying_groups').insert([data]);
-                if (error) throw error;
-                showToast('Success!', 'Group created!', 'success');
-                hideCreateGroupModal();
-                await loadContent();
-            } catch (e) { showToast('Error', 'Failed: ' + e.message, 'error'); } finally { showLoading(false); }
-        }
-
-        function hideCreateGroupModal() {
-            document.getElementById('createGroupModal').classList.add('hidden');
-            groupProducts = [];
-            document.getElementById('group-name').value = '';
-            document.getElementById('group-target').value = '';
-            document.getElementById('group-min-spazas').value = '10';
-            document.getElementById('group-joining-fee').value = '50';
-            document.getElementById('group-expiry').value = '';
-            document.getElementById('group-details').value = '';
-        }
-
-        // ========== INVITE FUNCTIONS ==========
-        function showInviteModal(groupId) {
-            const group = buyingGroups.find(g => g.id === groupId);
-            if (!group) return;
-            document.getElementById('invite-link').value = `https://spazasure.co.za/join-group/${groupId}`;
-            document.getElementById('inviteGroupModal').classList.remove('hidden');
-        }
-        function hideInviteModal() { document.getElementById('inviteGroupModal').classList.add('hidden'); }
-        function copyInviteLink() { const inp = document.getElementById('invite-link'); inp.select(); document.execCommand('copy'); showToast('Copied!', 'Link copied', 'success'); }
-        function sendWhatsAppInvite() {
-            const phone = document.getElementById('invite-phone').value;
-            const link = document.getElementById('invite-link').value;
-            if (!phone) return showToast('Error', 'Enter phone', 'warning');
-            window.open(`https://wa.me/${phone}?text=${encodeURIComponent('Join my buying group on SpazaSure! ' + link)}`, '_blank');
-            showToast('Invite Sent', 'WhatsApp opened', 'success');
-        }
-
-        // ========== JOIN GROUP FUNCTIONS ==========
-        async function showJoinGroup(groupId) {
-            const g = buyingGroups.find(x => x.id === groupId);
-            if (!g) return;
-            selectedGroupForJoin = g;
-            const prod = g.products || {};
-            document.getElementById('join-group-details').innerHTML = `<div class="group-card" style="margin-bottom:20px;"><h4 style="margin-bottom:12px;">${g.group_name}</h4><p><strong>Product:</strong> ${prod.name || 'Multiple Items'}</p><p><strong>Contribution:</strong> R${(g.contribution_per_spaza || 0).toFixed(2)}</p><p><strong>Joining Fee:</strong> R${(g.joining_fee || 0).toFixed(2)}</p><p><strong>Progress:</strong> ${g.current_quantity || 0}/${g.target_quantity}</p><p><strong>Min Spazas:</strong> ${g.min_spazas}</p>${g.items_description ? `<p><strong>Items:</strong> ${g.items_description}</p>` : ''}</div>`;
-            document.getElementById('joinGroupModal').classList.remove('hidden');
-        }
-        function hideJoinModal() { document.getElementById('joinGroupModal').classList.add('hidden'); selectedGroupForJoin = null; }
-        async function confirmJoinGroup() {
-            if (!selectedGroupForJoin || !currentUser) return;
-            showConfirm('Join Group', `Contribute R${selectedGroupForJoin.contribution_per_spaza?.toFixed(2)}?`, async () => {
-                showLoading(true);
-                try {
-                    const newQ = (selectedGroupForJoin.current_quantity || 0) + 1;
-                    await _client.from('buying_groups').update({ current_quantity: newQ }).eq('id', selectedGroupForJoin.id);
-                    await _client.from('group_contributions').insert([{
-                        group_id: selectedGroupForJoin.id,
-                        profile_id: currentUser.id,
-                        contribution_amount: selectedGroupForJoin.contribution_per_spaza,
-                        joining_fee_paid: selectedGroupForJoin.joining_fee,
-                        status: 'pending'
-                    }]);
-                    showToast('Success!', 'Joined group!', 'success');
-                    hideJoinModal();
-                    await loadContent();
-                } catch (e) { showToast('Error', 'Failed: ' + e.message, 'error'); } finally { showLoading(false); }
-            });
-        }
-
-        // ========== ORDER EDIT FUNCTIONS ==========
-        function editOrder(o) { 
-            editingOrderId = o.id; 
-            editingOrderData = o; 
-            cart = o.items || {}; 
-            updateCartDisplay(); 
-            setMode('single'); 
-            hideCheckout(); 
-            document.getElementById('editModeActions').classList.remove('hidden'); 
-            showToast('Edit Mode', 'Editing order', 'warning'); 
-        }
-        
-        function cancelEdit() { 
-            editingOrderId = null; 
-            editingOrderData = null; 
-            cart = {}; 
-            updateCartDisplay(); 
-            document.getElementById('editModeActions').classList.add('hidden'); 
-            setMode('history'); 
-            showToast('Edit Cancelled', 'Edit cancelled', 'info'); 
-        }
-        
-        async function saveEditedOrder() {
-            if (!editingOrderId || !editingOrderData) return;
-            const total = Object.values(cart).reduce((s, i) => s + i.price * i.qty, 0);
-            if (total <= 0) return showToast('Error', 'Cart empty', 'warning');
-            showConfirm('Save Changes', 'Update order?', async () => {
-                showLoading(true);
-                const itemsForDb = {};
-                Object.entries(cart).forEach(([n, d]) => itemsForDb[n] = { qty: d.qty, price: d.price, subtotal: d.price * d.qty });
-                const { error } = await _client.from('orders').update({ items: itemsForDb, total_amount: total }).eq('id', editingOrderId);
-                showLoading(false);
-                if (error) showToast('Error', 'Failed: ' + error.message, 'error');
-                else { showToast('Success!', 'Order updated!', 'success'); cancelEdit(); await loadOrderHistory(); }
-            });
-        }
-        
-        function showCancelOrder(id) { 
-            showConfirm('Cancel Order', 'Are you sure?', async () => { 
-                await _client.from('orders').update({ status: 'cancelled' }).eq('id', id); 
-                loadOrderHistory(); 
-                showToast('Cancelled', 'Order cancelled', 'warning'); 
-            }, null, 'danger'); 
-        }
-        
-        function hideCancelOrderModal() { document.getElementById('cancelOrderModal').classList.add('hidden'); }
-        function confirmCancelOrder() { hideCancelOrderModal(); }
-        
-        function viewOrder(o) {
-            const items = Object.entries(o.items).map(([n, d]) => `<div class="receipt-item"><span>${d.qty}x ${n}</span><span>R${(d.price * d.qty).toFixed(2)}</span></div>`).join('');
-            document.getElementById('receipt-view').innerHTML = `<div class="receipt">
-                <div class="receipt-header">
-                    <div class="receipt-logo">SPAZASURE</div>
-                    <div style="color:var(--gray-600);">Premium Wholesale</div>
-                </div>
-                <div class="receipt-divider"></div>
-                <div class="receipt-row"><span>Order #:</span><span>${o.id.slice(-8)}</span></div>
-                <div class="receipt-row"><span>Name:</span><span>${o.store_name || 'Customer'}</span></div>
-                <div class="receipt-row"><span>Type:</span><span>${o.business_type || 'Customer'}</span></div>
-                <div class="receipt-row"><span>Address:</span><span>${o.store_address || o.address || ''}</span></div>
-                <div class="receipt-row"><span>Township:</span><span>${o.township || ''}</span></div>
-                <div class="receipt-row"><span>Date:</span><span>${new Date(o.created_at).toLocaleString()}</span></div>
-                <div class="receipt-row"><span>Payment:</span><span>${o.payment_method}</span></div>
-                <div class="receipt-row"><span>Status:</span><span style="color:${o.status === 'pending' ? 'var(--warning)' : o.status === 'cancelled' ? 'var(--danger)' : 'var(--secondary)'}">${o.status.toUpperCase()}</span></div>
-                <div class="receipt-divider"></div>
-                <div class="receipt-items">${items}</div>
-                <div class="receipt-divider"></div>
-                <div class="receipt-total">TOTAL: R${(o.total_amount || 0).toFixed(2)}</div>
-                <div class="qr-code" id="qrCodeContainer"></div>
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:20px;">
-                    <button class="btn btn-primary" onclick="resendWhatsApp('${o.id}')"><i class="fab fa-whatsapp"></i> WhatsApp</button>
-                    <button class="btn btn-secondary" onclick="generatePDFReceipt(${JSON.stringify(o).replace(/'/g, "\\'")})"><i class="fas fa-file-pdf"></i> PDF</button>
-                </div>
-                <button class="btn btn-secondary" style="margin-top:12px;" onclick="document.getElementById('orderDetailModal').classList.add('hidden')">Close</button>
-            </div>`;
-            new QRCode(document.getElementById('qrCodeContainer'), { text: `SpazaSure Order:${o.id}\nTotal:R${o.total_amount}`, width: 150, height: 150 });
-            document.getElementById('orderDetailModal').classList.remove('hidden');
-        }
-        
-        async function generatePDFReceipt(o) {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
-            doc.setFontSize(20); doc.setTextColor(37, 99, 235); doc.text('SPAZASURE', 105, 20, { align: 'center' });
-            doc.setFontSize(10); doc.setTextColor(100, 116, 139); doc.text('Premium Wholesale Supply', 105, 27, { align: 'center' });
-            doc.line(20, 32, 190, 32);
-            let y = 42; doc.setFontSize(10); doc.setTextColor(0);
-            const details = [
-                `Order #: ${o.id.slice(-8)}`,
-                `Name: ${o.store_name || 'Customer'}`,
-                `Type: ${o.business_type || 'Customer'}`,
-                `Address: ${o.store_address || o.address || ''}`,
-                `Township: ${o.township || ''}`,
-                `Contact: ${o.whatsapp_number || o.phone || ''}`,
-                `Date: ${new Date(o.created_at).toLocaleString()}`,
-                `Payment: ${o.payment_method}`,
-                `Status: ${o.status.toUpperCase()}`
-            ];
-            details.forEach(line => { doc.text(line, 20, y); y += 6; });
-            doc.line(20, y, 190, y); y += 10;
-            doc.setFont(undefined, 'bold'); doc.text('Item', 20, y); doc.text('Qty', 120, y); doc.text('Price', 140, y); doc.text('Total', 165, y); doc.setFont(undefined, 'normal'); y += 5; doc.line(20, y, 190, y); y += 5;
-            let total = 0;
-            Object.entries(o.items).forEach(([n, d]) => {
-                if (y > 250) { doc.addPage(); y = 20; }
-                const lineTotal = d.qty * d.price; total += lineTotal;
-                doc.text(n.length > 30 ? n.substring(0, 27) + '...' : n, 20, y); doc.text(d.qty.toString(), 120, y); doc.text(`R${d.price.toFixed(2)}`, 140, y); doc.text(`R${lineTotal.toFixed(2)}`, 165, y);
-                y += 7;
-            });
-            doc.line(20, y, 190, y); y += 7;
-            doc.setFont(undefined, 'bold'); doc.setFontSize(12); doc.text(`TOTAL: R${(o.total_amount || total).toFixed(2)}`, 165, y, { align: 'right' });
-            doc.setFont(undefined, 'normal'); doc.setFontSize(8); doc.setTextColor(100, 116, 139);
-            doc.text('Thank you for choosing SpazaSure!', 105, 280, { align: 'center' }); doc.text('Contact: 076 440 3803', 105, 285, { align: 'center' });
-            doc.save(`SpazaSure_Order_${o.id.slice(-8)}.pdf`);
-            showToast('PDF Generated', 'Receipt downloaded', 'success');
-        }
-        
-        async function resendWhatsApp(oid) {
-            try {
-                const { data: order, error } = await _client.from('orders').select('*').eq('id', oid).single();
-                if (error) throw error;
-                window.open(`https://wa.me/${ADMIN_WHATSAPP}?text=${encodeURIComponent(formatWhatsAppMessage(order))}`, '_blank');
-                showToast('WhatsApp Sent', 'Order resent', 'success');
-            } catch (e) { showToast('Error', 'Failed to send', 'error'); }
-        }
-
-        // ========== MODE FUNCTIONS ==========
-        function setMode(mode) {
-            currentMode = mode;
-            document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-            if (mode === 'single') document.getElementById('nav-shop').classList.add('active');
-            else if (mode === 'groups') document.getElementById('nav-groups').classList.add('active');
-            else if (mode === 'history') document.getElementById('nav-orders').classList.add('active');
-            document.getElementById('categoriesStrip').classList.toggle('hidden', mode !== 'single');
-            document.getElementById('productsGrid').classList.toggle('hidden', mode !== 'single');
-            document.getElementById('groupsGrid').classList.toggle('hidden', mode !== 'groups');
-            document.getElementById('ordersList').classList.toggle('hidden', mode !== 'history');
-            if (mode === 'groups') renderGroups();
-            else if (mode === 'history') loadOrderHistory();
-        }
-
-        // ========== INIT ==========
-        window.onload = async () => {
-            loadCartFromStorage();
-            const saved = localStorage.getItem('spaza_user');
-            if (saved) {
-                try {
-                    const { user, type } = JSON.parse(saved);
-                    currentUser = user;
-                    userType = type;
-                    document.getElementById('landingSection').classList.add('hidden');
-                    document.getElementById('authSection').classList.add('hidden');
-                    document.getElementById('mainSection').classList.remove('hidden');
-                    
-                    if (type === 'customer') await loadCustomerPrices();
-                    
-                    const hour = new Date().getHours();
-                    const greeting = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
-                    
-                    if (type === 'spaza') {
-                        document.getElementById('txt-user-name').textContent = user.store_name;
-                        document.getElementById('txt-user-type').textContent = 'SPAZA SHOP';
-                        document.getElementById('welcome-message').textContent = `${greeting}, ${user.first_name || 'Store Owner'}!`;
-                        document.getElementById('welcome-subtitle').textContent = 'Shop wholesale prices';
-                    } else {
-                        document.getElementById('txt-user-name').textContent = `${user.first_name} ${user.last_name}`;
-                        document.getElementById('txt-user-type').textContent = 'CUSTOMER';
-                        document.getElementById('welcome-message').textContent = `${greeting}, ${user.first_name}!`;
-                        document.getElementById('welcome-subtitle').textContent = 'Your personal prices';
-                    }
-                    
-                    await loadImageMap(true);
-                    await loadContent();
-                } catch (e) { console.error('Error loading saved user', e); }
-            }
-        };
-
-        // ========== LOGOUT ==========
-        function logout() {
-            showConfirm('Logout', 'Are you sure?', () => {
-                localStorage.clear();
-                currentUser = null;
-                cart = {};
-                location.reload();
-            });
-        }
-    </script>
-</body>
-</html>
+        <div class="splash-screen" id="s
